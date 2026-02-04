@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 import requests
 import random
+from datetime import date, datetime, timedelta
 from deep_translator import GoogleTranslator
 from django.urls import reverse
 from django.contrib.auth import login, authenticate, logout
@@ -21,6 +22,10 @@ def get_base_template(request):
 
 @login_required
 def index(request):
+    es_invitado = False
+    if request.user.is_authenticated and hasattr(request.user, 'perfil'):
+        es_invitado = request.user.perfil.rol == 'GUEST'
+
     perfil = getattr(request.user, 'perfil', None)
     perfil_completo = False
     if perfil:
@@ -33,14 +38,37 @@ def index(request):
             perfil.objetivo
         ])
     
-    # Mostrar mensaje si el perfil está incompleto y no es invitado
-    if not perfil_completo and request.user.username != 'invitado':
+    # Mostrar mensaje si el perfil está incompleto SOLO si no es invitado
+    if not perfil_completo and not es_invitado:
         messages.info(request, "📋 Completa tu perfil para obtener recomendaciones nutricionales personalizadas y seguimiento preciso de tus objetivos.")
     
+    # Logic to generate informe
+    informe = None
+    if es_invitado:
+        informe = {
+            'plan': {
+                'calorias_dia': 2000,
+                'proteinas_g': 150,
+                'carbohidratos_g': 200,
+                'grasas_g': 65
+            },
+            'porcentajes': {
+                'prot_pct': 30,
+                'carbs_pct': 40,
+                'grasa_pct': 30
+            }
+        }
+    elif perfil and perfil_completo:
+        try:
+            informe = perfil.generar_informe_nutricional()
+        except Exception:
+            informe = None
+
     return render(request, 'base/index.html', {
         'base_template': get_base_template(request),
         'perfil_completo': perfil_completo,
-        'es_invitado': request.user.username == 'invitado'
+        'es_invitado': es_invitado,
+        'informe': informe
     })
 
 def panel(request):
@@ -110,7 +138,7 @@ def planes(request):
     params_spoon = {
         'apiKey': api_key,
         'query': query_term,
-        'number': 8,  # Reduced from 15 for faster loading
+        'number': 20, # Aumentado para tener más variedad
         'addRecipeInformation': 'true',
         'addRecipeNutrition': 'true'
     }
@@ -124,7 +152,7 @@ def planes(request):
     if should_fetch_api:
         try:
             # --- FETCH SPOONACULAR ---
-            response = requests.get(url_spoon, params=params_spoon, timeout=2)  # Reduced timeout
+            response = requests.get(url_spoon, params=params_spoon, timeout=3)
             if response.status_code == 200:
                 data = response.json()
                 for item in data.get('results', []):
@@ -162,13 +190,13 @@ def planes(request):
                         ))
 
             # --- FETCH THEMEALDB ---
-            if len(recetas) < 6:  # Only if we need more recipes
-                resp_db = requests.get(url_mealdb, timeout=2)  # Reduced timeout
+            if len(recetas) < 15:  # Aumentado el umbral
+                resp_db = requests.get(url_mealdb, timeout=3)
                 if resp_db.status_code == 200:
                     data_db = resp_db.json()
                     if data_db.get('meals'):
                         import random
-                        for meal in data_db['meals'][:5]:  # Reduced from 10
+                        for meal in data_db['meals'][:15]: # Aumentado de 5 a 15
                              if not any(r.titulo.lower() == meal['strMeal'].lower() for r in recetas):
                                 es_carne = any(x in meal['strMeal'].lower() for x in ['beef', 'chicken', 'pork', 'lamb'])
                                 prot = random.randint(25, 45) if es_carne else random.randint(5, 15)
@@ -210,10 +238,32 @@ def planes(request):
     if request.user.is_authenticated and hasattr(request.user, 'perfil'):
         favoritas_ids = list(RecetaFavorita.objects.filter(perfil=request.user.perfil).values_list('receta_id', flat=True))
 
+    # Inyección de Receta Especial IA
+    if not q or "ai" in q.lower() or "ia" in q.lower():
+        recetas.insert(0, Receta(
+            id=999999,
+            titulo="Bowl Metabólico 'nunut AI'",
+            descripcion="Optimizado por IA para mejorar tu metabolismo basal y control de glucosa.",
+            imagen_url="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=500",
+            calorias=485,
+            tiempo="15 min",
+            rating=5.0,
+            proteinas="32g",
+            carbos="14g",
+            grasas="22g",
+            tipo_dieta='KETO',
+            categoria='tendencia'
+        ))
+
+    es_invitado = False
+    if request.user.is_authenticated and hasattr(request.user, 'perfil'):
+        es_invitado = request.user.perfil.rol == 'GUEST'
+
     return render(request, 'base/planes.html', {
         'base_template': get_base_template(request),
         'recetas': recetas,
-        'favoritas_ids': favoritas_ids
+        'favoritas_ids': favoritas_ids,
+        'es_invitado': es_invitado
     })
 
 @login_required
@@ -645,6 +695,7 @@ def invitado(request):
     from .models import Perfil
     perfil, p_created = Perfil.objects.get_or_create(usuario=user)
     perfil.onboarding_completado = True
+    perfil.rol = 'GUEST'
     perfil.save()
 
     # Iniciar sesión especificando el backend explícitamente para evitar ambigüedades

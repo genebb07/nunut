@@ -98,6 +98,19 @@
             color: var(--text-secondary) !important;
         }
 
+        .text-primary {
+            color: var(--primary) !important;
+        }
+
+        .bg-primary {
+            background-color: var(--primary) !important;
+        }
+
+        .btn-primary {
+            background-color: var(--primary) !important;
+            border-color: var(--primary) !important;
+        }
+
         .text-muted {
             color: var(--text-muted) !important;
         }
@@ -137,8 +150,8 @@
         .desktop-header.scrolled {
             height: 70px;
             background: rgba(133, 200, 26, 0.01) !important;
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
@@ -152,6 +165,51 @@
 
         .desktop-header.scrolled .logo-text {
             font-size: 1.5rem;
+            color: var(--primary);
+            /* Cambia a verde en scroll */
+        }
+
+        .guest-indicator {
+            color: rgba(255, 255, 255, 0.5);
+            transition: color 0.3s ease;
+        }
+
+        .desktop-header.scrolled .guest-indicator {
+            color: var(--text-main) !important;
+        }
+
+        .desktop-header.scrolled .auth-group .btn-outline-light {
+            border: 2px solid var(--primary) !important;
+            color: var(--primary) !important;
+            background: transparent !important;
+        }
+
+        .desktop-header.scrolled .auth-group .btn-white {
+            background-color: var(--primary) !important;
+            color: white !important;
+            border: none !important;
+            box-shadow: 0 4px 12px var(--primary-glow) !important;
+        }
+
+        .desktop-header.scrolled .profile-avatar-container {
+            border-color: var(--primary) !important;
+        }
+
+        .dark-mode .desktop-header.scrolled .profile-avatar-container {
+            border-color: var(--primary-dark) !important;
+        }
+
+        .dark-mode .desktop-header.scrolled .auth-group .btn-outline-light {
+            border-color: var(--primary) !important;
+            color: var(--text-main) !important;
+        }
+
+        .desktop-header.scrolled .auth-group span {
+            color: var(--text-muted) !important;
+        }
+
+        .dark-mode .desktop-header.scrolled .logo-text {
+            color: var(--text-main) !important;
         }
 
         .dark-mode .desktop-header {
@@ -608,7 +666,7 @@
             </a>
 
             <div class="header-actions d-flex align-items-center gap-3">
-                {% if user.is_authenticated %}
+                {% if user.is_authenticated and user.username != 'invitado' %}
                 <!-- Saludo Dinámico Extremo Derecho -->
                 <div class="text-end d-none d-sm-block me-2">
                     <p class="mb-0 x-small fw-bold text-white opacity-75 text-uppercase tracking-wider"
@@ -632,9 +690,13 @@
                         color: var(--text-main) !important;
                     }
                 </style>
+                {% endif %}
 
+                {% if user.username == 'invitado' %}
+                <span class="guest-indicator small d-none d-lg-inline me-2 fw-bold">Invitado</span>
+                {% endif %}
 
-
+                {% if user.is_authenticated and user.username != 'invitado' %}
                 <!-- Single Unified Profile Icon with Streak -->
                 <a href="{% url 'base:perfil' %}"
                     class="position-relative profile-trigger cursor-pointer text-decoration-none">
@@ -655,18 +717,19 @@
                         <span class="ms-1">🔥 5</span>
                     </div>
                 </a>
-
-
-                {% else %}
-                <div class="auth-group d-flex gap-2">
-                    <a href="{% url 'base:iniciar_sesion' %}"
-                        class="btn btn-link text-decoration-none text-dark fw-bold btn-sm">Entrar</a>
-                    <a href="{% url 'base:registro' %}"
-                        class="btn btn-success rounded-pill px-4 fw-bold shadow-sm btn-sm">Join</a>
-                </div>
                 {% endif %}
 
                 <div class="vr mx-1 opacity-25 d-none d-md-block" style="height: 24px;"></div>
+
+                {% if not user.is_authenticated or user.username == 'invitado' %}
+                <div class="auth-group d-flex gap-2 align-items-center">
+                    <a href="{% url 'base:iniciar_sesion' %}"
+                        class="btn btn-outline-light rounded-pill px-3 fw-bold shadow-sm btn-sm">Entrar</a>
+                    <a href="{% url 'base:registro' %}"
+                        class="btn btn-white bg-white text-primary rounded-pill px-4 fw-bold shadow-sm btn-sm border-0">Crear
+                        Cuenta</a>
+                </div>
+                {% endif %}
 
                 <!-- Admin Panel Link (Only for Staff) -->
                 {% if user.is_authenticated and user.is_staff %}

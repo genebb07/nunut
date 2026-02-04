@@ -96,195 +96,261 @@
 </style>
 
 <div class="row g-4 mt-2">
+    <style>
+        .guest-lock-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            border-radius: 1.5rem;
+            padding-top: 5rem;
+        }
+
+        .dark-mode .guest-lock-overlay {
+            background: rgba(10, 11, 9, 0.6);
+        }
+
+        .lock-card {
+            background: var(--bg-content);
+            padding: 2rem;
+            border-radius: 2rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            border: 1px solid var(--primary-color);
+        }
+    </style>
+
     <!-- Header de sección -->
     <div class="col-12 mb-2">
-        <div class="d-flex align-items-center gap-3">
-            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
-                style="width: 50px; height: 50px;">
-                <span class="material-symbols-outlined fs-2">analytics</span>
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                    style="width: 50px; height: 50px;">
+                    <span class="material-symbols-outlined fs-2">analytics</span>
+                </div>
+                <div>
+                    <h1 class="h3 fw-900 mb-0" style="font-weight: 900;">Análisis de Rendimiento</h1>
+                    <p class="text-muted small mb-0 fw-bold">Seguimiento detallado de tus métricas biométricas.</p>
+                </div>
             </div>
-            <div>
-                <h1 class="h3 fw-900 mb-0" style="font-weight: 900;">Análisis de Rendimiento</h1>
-                <p class="text-muted small mb-0 fw-bold">Seguimiento detallado de tus métricas biométricas.</p>
+            {% if user.username == 'invitado' %}
+            <div class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold shadow-sm">
+                <i class="fas fa-lock me-2"></i>Vista de Muestra
             </div>
+            {% endif %}
         </div>
     </div>
 
-    <!-- Columna Principal -->
-    <div class="col-lg-8">
-        <!-- Evolución de Peso -->
-        <div class="card-progreso mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <span class="text-technical">Evolución de Peso (KG)</span>
-                <span
-                    class="badge bg-soft-green text-primary border-primary border-opacity-25 px-3 py-2 rounded-pill small fw-bold">7
-                    DÍAS</span>
-            </div>
-
-            <div class="row g-2 mb-4">
-                <div class="col-4">
-                    <div class="p-3 bg-light dark-mode-bg-dark rounded-4 text-center">
-                        <p class="text-technical mb-1" style="font-size: 0.6rem;">Inicial</p>
-                        <p class="font-mono fw-black mb-0 h5">{{ peso_actual|add:1.5|floatformat:1 }}</p>
-                    </div>
+    <!-- Contenedor con Posibilidad de Bloqueo -->
+    <div class="col-12 position-relative">
+        {% if user.username == 'invitado' %}
+        <div class="guest-lock-overlay">
+            <div class="lock-card">
+                <div class="icon-box bg-primary-subtle text-primary mb-3">
+                    <span class="material-symbols-outlined fs-1">person_add</span>
                 </div>
-                <div class="col-4">
-                    <div class="p-3 bg-light dark-mode-bg-dark rounded-4 text-center border-primary border">
-                        <p class="text-technical mb-1" style="font-size: 0.6rem;">Actual</p>
-                        <p class="font-mono fw-black mb-0 h5 text-primary">{{ peso_actual|floatformat:1 }}</p>
-                    </div>
-                </div>
-                <div class="col-4">
-                    <div class="p-3 bg-light dark-mode-bg-dark rounded-4 text-center">
-                        <p class="text-technical mb-1" style="font-size: 0.6rem;">Meta</p>
-                        <p class="font-mono fw-black mb-0 h5">75.0</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="chart-container">
-                <svg preserveAspectRatio="none" style="width: 100%; height: 100%; overflow: visible;"
-                    viewBox="0 0 400 120">
-                    <defs>
-                        <linearGradient id="progresoFill" x1="0" x2="0" y1="0" y2="1">
-                            <stop offset="0%" stop-color="#85c81a" stop-opacity="0.3"></stop>
-                            <stop offset="100%" stop-color="#85c81a" stop-opacity="0"></stop>
-                        </linearGradient>
-                    </defs>
-                    <path d="M0 100 Q 50 90, 100 70 T 200 65 T 300 45 T 400 35 V 120 H 0 Z" fill="url(#progresoFill)">
-                    </path>
-                    <path d="M0 100 Q 50 90, 100 70 T 200 65 T 300 45 T 400 35" fill="none" stroke="#85c81a"
-                        stroke-linecap="round" stroke-width="4"></path>
-                    <circle cx="400" cy="35" fill="#85c81a" r="6" stroke="white" stroke-width="3"></circle>
-                </svg>
-            </div>
-            <div class="d-flex justify-content-between mt-3 px-2">
-                <span class="text-technical">LUN</span>
-                <span class="text-technical">MAR</span>
-                <span class="text-technical">MIÉ</span>
-                <span class="text-technical">JUE</span>
-                <span class="text-technical">VIE</span>
-                <span class="text-technical">SÁB</span>
-                <span class="text-technical">DOM</span>
-            </div>
-        </div>
-
-        <!-- Composición Corporal Grid -->
-        <div class="row g-4">
-            <div class="col-md-6">
-                <div class="card-progreso h-100">
-                    <span class="text-technical d-block mb-4">Métricas de Salud</span>
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <div class="stat-card-mini bg-soft-green">
-                                <span class="material-symbols-outlined text-primary mb-2">monitor_weight</span>
-                                <p class="text-technical mb-1" style="font-size: 0.6rem;">IMC</p>
-                                <p class="h4 font-mono fw-black mb-0 text-primary">{{ imc }}</p>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="stat-card-mini bg-soft-blue">
-                                <span class="material-symbols-outlined text-info mb-2">water_drop</span>
-                                <p class="text-technical mb-1" style="font-size: 0.6rem;">Agua</p>
-                                <p class="h4 font-mono fw-black mb-0 text-info">{{ composicion.agua_lt }}L</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card-progreso h-100">
-                    <span class="text-technical d-block mb-4">Cumplimiento de Macros</span>
-                    <div class="d-flex justify-content-around align-items-center py-2">
-                        <div class="text-center">
-                            <div class="progress-circle mb-2">
-                                <svg>
-                                    <circle cx="30" cy="30" r="26" fill="transparent" stroke="rgba(0,0,0,0.05)"
-                                        stroke-width="5"></circle>
-                                    <circle cx="30" cy="30" r="26" fill="transparent" stroke="#85c81a" stroke-width="5"
-                                        stroke-dasharray="163.3" stroke-dashoffset="32"></circle>
-                                </svg>
-                                <span class="position-absolute font-mono fw-black small">80%</span>
-                            </div>
-                            <span class="text-technical" style="font-size: 0.55rem;">Prot</span>
-                        </div>
-                        <div class="text-center">
-                            <div class="progress-circle mb-2">
-                                <svg>
-                                    <circle cx="30" cy="30" r="26" fill="transparent" stroke="rgba(0,0,0,0.05)"
-                                        stroke-width="5"></circle>
-                                    <circle cx="30" cy="30" r="26" fill="transparent" stroke="#38bdf8" stroke-width="5"
-                                        stroke-dasharray="163.3" stroke-dashoffset="65"></circle>
-                                </svg>
-                                <span class="position-absolute font-mono fw-black small">60%</span>
-                            </div>
-                            <span class="text-technical" style="font-size: 0.55rem;">Carb</span>
-                        </div>
-                        <div class="text-center">
-                            <div class="progress-circle mb-2">
-                                <svg>
-                                    <circle cx="30" cy="30" r="26" fill="transparent" stroke="rgba(0,0,0,0.05)"
-                                        stroke-width="5"></circle>
-                                    <circle cx="30" cy="30" r="26" fill="transparent" stroke="#fbbf24" stroke-width="5"
-                                        stroke-dasharray="163.3" stroke-dashoffset="20"></circle>
-                                </svg>
-                                <span class="position-absolute font-mono fw-black small">88%</span>
-                            </div>
-                            <span class="text-technical" style="font-size: 0.55rem;">Gras</span>
-                        </div>
-                    </div>
+                <h3 class="fw-900 mb-2">Contenido Exclusivo</h3>
+                <p class="text-muted small mb-4">
+                    Al registrar tus datos reales, los cálculos de progreso serán <b>mucho más exactos</b> y
+                    personalizados para ti.
+                </p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'base:registro' %}" class="btn btn-primary rounded-pill fw-bold py-2">Crear mi
+                        cuenta gratuita</a>
+                    <a href="{% url 'base:iniciar_sesion' %}"
+                        class="btn btn-link text-muted small text-decoration-none">Ya tengo cuenta</a>
                 </div>
             </div>
         </div>
-    </div>
+        {% endif %}
 
-    <!-- Barra Lateral -->
-    <div class="col-lg-4">
-        <div class="card-progreso mb-4">
-            <h5 class="fw-black mb-4 h6 text-uppercase" style="letter-spacing: 1px;">Resumen Científico</h5>
-            <div class="table-responsive">
-                <table class="table table-progreso align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th>Métrica</th>
-                            <th class="text-end">Valor</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="small fw-bold py-3">Grasa Corporal</td>
-                            <td class="text-end font-mono fw-black text-primary">{{ composicion.grasa_pct }}%</td>
-                        </tr>
-                        <tr>
-                            <td class="small fw-bold py-3">Masa Magra</td>
-                            <td class="text-end font-mono fw-black">{{ composicion.masa_magra }}kg</td>
-                        </tr>
-                        <tr>
-                            <td class="small fw-bold py-3">TMB</td>
-                            <td class="text-end font-mono fw-black">{{ metabolismo.tmb }}kcal</td>
-                        </tr>
-                        <tr>
-                            <td class="small fw-bold py-3">Gasto Total</td>
-                            <td class="text-end font-mono fw-black">{{ metabolismo.tdee }}kcal</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="row g-4 {% if user.username == 'invitado' %}app-locked{% endif %}">
+            <!-- Evolución de Peso -->
+            <div class="card-progreso mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <span class="text-technical">Evolución de Peso (KG)</span>
+                    <span
+                        class="badge bg-soft-green text-primary border-primary border-opacity-25 px-3 py-2 rounded-pill small fw-bold">7
+                        DÍAS</span>
+                </div>
+
+                <div class="row g-2 mb-4">
+                    <div class="col-4">
+                        <div class="p-3 bg-light dark-mode-bg-dark rounded-4 text-center">
+                            <p class="text-technical mb-1" style="font-size: 0.6rem;">Inicial</p>
+                            <p class="font-mono fw-black mb-0 h5">{{ peso_actual|add:1.5|floatformat:1 }}</p>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 bg-light dark-mode-bg-dark rounded-4 text-center border-primary border">
+                            <p class="text-technical mb-1" style="font-size: 0.6rem;">Actual</p>
+                            <p class="font-mono fw-black mb-0 h5 text-primary">{{ peso_actual|floatformat:1 }}</p>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 bg-light dark-mode-bg-dark rounded-4 text-center">
+                            <p class="text-technical mb-1" style="font-size: 0.6rem;">Meta</p>
+                            <p class="font-mono fw-black mb-0 h5">75.0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <svg preserveAspectRatio="none" style="width: 100%; height: 100%; overflow: visible;"
+                        viewBox="0 0 400 120">
+                        <defs>
+                            <linearGradient id="progresoFill" x1="0" x2="0" y1="0" y2="1">
+                                <stop offset="0%" stop-color="#85c81a" stop-opacity="0.3"></stop>
+                                <stop offset="100%" stop-color="#85c81a" stop-opacity="0"></stop>
+                            </linearGradient>
+                        </defs>
+                        <path d="M0 100 Q 50 90, 100 70 T 200 65 T 300 45 T 400 35 V 120 H 0 Z"
+                            fill="url(#progresoFill)">
+                        </path>
+                        <path d="M0 100 Q 50 90, 100 70 T 200 65 T 300 45 T 400 35" fill="none" stroke="#85c81a"
+                            stroke-linecap="round" stroke-width="4"></path>
+                        <circle cx="400" cy="35" fill="#85c81a" r="6" stroke="white" stroke-width="3"></circle>
+                    </svg>
+                </div>
+                <div class="d-flex justify-content-between mt-3 px-2">
+                    <span class="text-technical">LUN</span>
+                    <span class="text-technical">MAR</span>
+                    <span class="text-technical">MIÉ</span>
+                    <span class="text-technical">JUE</span>
+                    <span class="text-technical">VIE</span>
+                    <span class="text-technical">SÁB</span>
+                    <span class="text-technical">DOM</span>
+                </div>
+            </div>
+
+            <!-- Composición Corporal Grid -->
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card-progreso h-100">
+                        <span class="text-technical d-block mb-4">Métricas de Salud</span>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="stat-card-mini bg-soft-green">
+                                    <span class="material-symbols-outlined text-primary mb-2">monitor_weight</span>
+                                    <p class="text-technical mb-1" style="font-size: 0.6rem;">IMC</p>
+                                    <p class="h4 font-mono fw-black mb-0 text-primary">{{ imc }}</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-card-mini bg-soft-blue">
+                                    <span class="material-symbols-outlined text-info mb-2">water_drop</span>
+                                    <p class="text-technical mb-1" style="font-size: 0.6rem;">Agua</p>
+                                    <p class="h4 font-mono fw-black mb-0 text-info">{{ composicion.agua_lt }}L</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card-progreso h-100">
+                        <span class="text-technical d-block mb-4">Cumplimiento de Macros</span>
+                        <div class="d-flex justify-content-around align-items-center py-2">
+                            <div class="text-center">
+                                <div class="progress-circle mb-2">
+                                    <svg>
+                                        <circle cx="30" cy="30" r="26" fill="transparent" stroke="rgba(0,0,0,0.05)"
+                                            stroke-width="5"></circle>
+                                        <circle cx="30" cy="30" r="26" fill="transparent" stroke="#85c81a"
+                                            stroke-width="5" stroke-dasharray="163.3" stroke-dashoffset="32"></circle>
+                                    </svg>
+                                    <span class="position-absolute font-mono fw-black small">80%</span>
+                                </div>
+                                <span class="text-technical" style="font-size: 0.55rem;">Prot</span>
+                            </div>
+                            <div class="text-center">
+                                <div class="progress-circle mb-2">
+                                    <svg>
+                                        <circle cx="30" cy="30" r="26" fill="transparent" stroke="rgba(0,0,0,0.05)"
+                                            stroke-width="5"></circle>
+                                        <circle cx="30" cy="30" r="26" fill="transparent" stroke="#38bdf8"
+                                            stroke-width="5" stroke-dasharray="163.3" stroke-dashoffset="65"></circle>
+                                    </svg>
+                                    <span class="position-absolute font-mono fw-black small">60%</span>
+                                </div>
+                                <span class="text-technical" style="font-size: 0.55rem;">Carb</span>
+                            </div>
+                            <div class="text-center">
+                                <div class="progress-circle mb-2">
+                                    <svg>
+                                        <circle cx="30" cy="30" r="26" fill="transparent" stroke="rgba(0,0,0,0.05)"
+                                            stroke-width="5"></circle>
+                                        <circle cx="30" cy="30" r="26" fill="transparent" stroke="#fbbf24"
+                                            stroke-width="5" stroke-dasharray="163.3" stroke-dashoffset="20"></circle>
+                                    </svg>
+                                    <span class="position-absolute font-mono fw-black small">88%</span>
+                                </div>
+                                <span class="text-technical" style="font-size: 0.55rem;">Gras</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="card-progreso bg-soft-purple border-0">
-            <div class="d-flex align-items-center gap-3 mb-3">
-                <span class="material-symbols-outlined text-purple">psychology</span>
-                <span class="text-technical" style="color: #a855f7;">Insight IA</span>
+        <!-- Barra Lateral -->
+        <div class="col-lg-4">
+            <div class="card-progreso mb-4">
+                <h5 class="fw-black mb-4 h6 text-uppercase" style="letter-spacing: 1px;">Resumen Científico</h5>
+                <div class="table-responsive">
+                    <table class="table table-progreso align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Métrica</th>
+                                <th class="text-end">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="small fw-bold py-3">Grasa Corporal</td>
+                                <td class="text-end font-mono fw-black text-primary">{{ composicion.grasa_pct }}%</td>
+                            </tr>
+                            <tr>
+                                <td class="small fw-bold py-3">Masa Magra</td>
+                                <td class="text-end font-mono fw-black">{{ composicion.masa_magra }}kg</td>
+                            </tr>
+                            <tr>
+                                <td class="small fw-bold py-3">TMB</td>
+                                <td class="text-end font-mono fw-black">{{ metabolismo.tmb }}kcal</td>
+                            </tr>
+                            <tr>
+                                <td class="small fw-bold py-3">Gasto Total</td>
+                                <td class="text-end font-mono fw-black">{{ metabolismo.tdee }}kcal</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <p class="small fw-bold mb-3" style="color: #6b21a8;">
-                Manteniendo el déficit actual de {{ metabolismo.tdee|add:metabolismo.objetivo_calorico|floatformat:0 }}
-                kcal, alcanzarás tu meta de 75kg en aproximadamente <span class="fw-black">45 días</span>.
-            </p>
-            <div class="progress" style="height: 6px; background-color: rgba(168, 85, 247, 0.2);">
-                <div class="progress-bar" style="width: 75%; background-color: #a855f7;"></div>
+
+            <div class="card-progreso bg-soft-purple border-0">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <span class="material-symbols-outlined text-purple">psychology</span>
+                    <span class="text-technical" style="color: #a855f7;">Insight IA</span>
+                </div>
+                <p class="small fw-bold mb-3" style="color: #6b21a8;">
+                    Manteniendo el déficit actual de {{ metabolismo.tdee|add:metabolismo.objetivo_calorico|floatformat:0
+                    }}
+                    kcal, alcanzarás tu meta de 75kg en aproximadamente <span class="fw-black">45 días</span>.
+                </p>
+                <div class="progress" style="height: 6px; background-color: rgba(168, 85, 247, 0.2);">
+                    <div class="progress-bar" style="width: 75%; background-color: #a855f7;"></div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
+    </div><!-- Cierre row g-4 -->
+</div><!-- Cierre col-12 position-relative -->
+</div><!-- Cierre row g-4 mt-2 inicial -->
 {% endblock %}

@@ -251,14 +251,16 @@
                     <svg height="180" width="180">
                         <circle class="calorie-ring-bg" cx="90" cy="90" r="70"></circle>
                         <circle class="calorie-ring-progress" cx="90" cy="90" r="70" stroke-opacity="0.9"
-                            style="stroke-dashoffset: calc(440 - (440 * {{ progress.calorias }}) / 100);"></circle>
+                            style="stroke-dashoffset: calc(440 - (440 * {{ progress.calorias|default:0 }}) / 100);">
+                        </circle>
                     </svg>
                     <div class="calorie-ring-content">
-                        <span class="d-block h2 fw-black mb-0">{{ consumo.calorias }}</span>
+                        <span class="d-block h2 fw-black mb-0">{{ consumo.calorias|default:0 }}</span>
                         <span class="text-xs text-secondary fw-bold text-uppercase">Consumidas</span>
                         <hr class="my-1 text-secondary opacity-25" />
                         <span class="text-sm fw-black" style="color: var(--primary-color);">
-                            {% if progress.faltan_kcal > 0 %}Faltan {{ progress.faltan_kcal }}{% else %}Meta cumplida{% endif %}
+                            {% if progress.faltan_kcal > 0 %}Faltan {{ progress.faltan_kcal }}{% else %}Meta cumplida{%
+                            endif %}
                         </span>
                     </div>
                 </div>
@@ -274,11 +276,13 @@
                             </div>
                             <span class="text-xs fw-bold text-secondary">Proteína</span>
                         </div>
-                        <span class="text-sm fw-black">{{ consumo.proteinas }}g / {{ plan.proteinas_g }}g</span>
+                        <span class="text-sm fw-black">{{ consumo.proteinas|default:0 }}g / {{
+                            plan.proteinas_g|default:0 }}g</span>
                     </div>
                     <div class="micro-progress">
                         <div class="h-100"
-                            style="width: {{ progress.proteinas }}%; background-color: var(--protein-color);"></div>
+                            style="width: {{ progress.proteinas|default:0 }}%; background-color: var(--protein-color);">
+                        </div>
                     </div>
                 </div>
 
@@ -291,10 +295,12 @@
                             </div>
                             <span class="text-xs fw-bold text-secondary">Carbos</span>
                         </div>
-                        <span class="text-sm fw-black">{{ consumo.carbos }}g / {{ plan.carbohidratos_g }}g</span>
+                        <span class="text-sm fw-black">{{ consumo.carbos|default:0 }}g / {{
+                            plan.carbohidratos_g|default:0 }}g</span>
                     </div>
                     <div class="micro-progress">
-                        <div class="h-100" style="width: {{ progress.carbos }}%; background-color: var(--carbs-color);">
+                        <div class="h-100"
+                            style="width: {{ progress.carbos|default:0 }}%; background-color: var(--carbs-color);">
                         </div>
                     </div>
                 </div>
@@ -308,13 +314,24 @@
                             </div>
                             <span class="text-xs fw-bold text-secondary">Grasas</span>
                         </div>
-                        <span class="text-sm fw-black">{{ consumo.grasas }}g / {{ plan.grasas_g }}g</span>
+                        <span class="text-sm fw-black">{{ consumo.grasas|default:0 }}g / {{ plan.grasas_g|default:0
+                            }}g</span>
                     </div>
                     <div class="micro-progress">
-                        <div class="h-100" style="width: {{ progress.grasas }}%; background-color: var(--fats-color);">
+                        <div class="h-100"
+                            style="width: {{ progress.grasas|default:0 }}%; background-color: var(--fats-color);">
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Botón de acción -->
+            <div class="text-center mt-4 mb-4">
+                <button id="add-log-btn"
+                    class="btn btn-primary-custom d-inline-flex align-items-center justify-content-center gap-2 shadow-sm">
+                    <span class="material-symbols-outlined">add_circle</span>
+                    Añadir Registro
+                </button>
             </div>
 
             <div class="row g-2">
@@ -333,18 +350,51 @@
                     </div>
                 </div>
             </div>
-        </section>
-
-        <section class="card meal-card p-4 shadow-sm border-0">
-            <div class="mb-4">
-                <h2 class="h5 fw-black mb-2">Crea tu Plan</h2>
-                <p class="text-sm text-secondary">Ajusta tus objetivos para maximizar tu rendimiento físico.</p>
-            </div>
-            <button class="btn btn-primary-custom d-flex align-items-center justify-content-center gap-2">
-                <span class="material-symbols-outlined">add_circle</span>
-                Crear Dieta Personalizada
-            </button>
-        </section>
     </div>
+    </section>
+
+    <section class="card meal-card p-4 shadow-sm border-0">
+        <div class="mb-4">
+            <h2 class="h5 fw-black mb-2">Crea tu Plan</h2>
+            <p class="text-sm text-secondary">Ajusta tus objetivos para maximizar tu rendimiento físico.</p>
+        </div>
+        <button class="btn btn-primary-custom d-flex align-items-center justify-content-center gap-2">
+            <span class="material-symbols-outlined">add_circle</span>
+            Crear Dieta Personalizada
+        </button>
+    </section>
 </div>
+</div>
+
+<script>
+    document.getElementById('add-log-btn').addEventListener('click', function () {
+        let count = parseInt(localStorage.getItem('diary_usage_count') || '0');
+
+        if (count >= 3) {
+            showToast('Has alcanzado el límite de 3 registros diarios.', 'warning');
+            return;
+        }
+
+        count++;
+        localStorage.setItem('diary_usage_count', count);
+        showToast(`Registro #${count} añadido. Te quedan ${3 - count} usos gratis hoy.`, 'success');
+
+        const logList = document.querySelector('.log-list');
+        const newItem = document.createElement('div');
+        newItem.className = 'log-item';
+        newItem.innerHTML = `
+            <div class="log-time">04:00 PM</div>
+            <div class="log-icon bg-soft-green"><span class="material-symbols-outlined">restaurant</span></div>
+            <div class="flex-grow-1">
+                <h6 class="fw-black mb-0">Comida Extra #${count}</h6>
+                <p class="small text-muted mb-0 fw-bold">Registro rápido</p>
+            </div>
+            <div class="text-end">
+                <p class="fw-black mb-0">350</p>
+                <p class="x-small text-muted mb-0 fw-bold">kcal</p>
+            </div>
+        `;
+        logList.appendChild(newItem);
+    });
+</script>
 {% endblock %}
