@@ -14,6 +14,7 @@ from .forms import CustomAuthenticationForm, CustomUserCreationForm
 from .forms import OnboardingForm
 from django.core.mail import send_mail
 from django.contrib.auth.hashers import make_password
+from datetime import date, timedelta, datetime
 
 def get_base_template(request):
     return 'partial.html' if request.headers.get('HX-Request') else 'base.html'
@@ -215,8 +216,76 @@ def planes(request):
         'favoritas_ids': favoritas_ids
     })
 
+@login_required
 def diario(request):
-    return render(request, 'base/diario.html', {'base_template': get_base_template(request)})
+    perfil = request.user.perfil
+    
+    # 1. Manejo de Fecha
+    date_str = request.GET.get('date')
+    if date_str:
+        try:
+            current_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            current_date = date.today()
+    else:
+        current_date = date.today()
+
+    # 2. Obtener Comidas
+    comidas = perfil.comidas_diarias.filter(fecha=current_date).order_by('hora')
+    
+    # 3. Resumen de Macros Reales (Consumidos)
+    consumo = {
+        'calorias': sum(c.calorias for c in comidas),
+        'proteinas': sum(c.proteinas for c in comidas),
+        'carbos': sum(c.carbos for c in comidas),
+        'grasas': sum(c.grasas for c in comidas),
+    }
+
+    # 4. Objetivos del Perfil
+    informe = perfil.generar_informe_nutricional()
+    plan = informe['plan']
+    
+    # 5. Porcentajes de Cumplimiento
+    progress = {
+        'calorias': min(round((consumo['calorias'] / plan['calorias_dia']) * 100), 100) if plan['calorias_dia'] > 0 else 0,
+        'proteinas': min(round((consumo['proteinas'] / plan['proteinas_g']) * 100), 100) if plan['proteinas_g'] > 0 else 0,
+        'carbos': min(round((consumo['carbos'] / plan['carbohidratos_g']) * 100), 100) if plan['carbohidratos_g'] > 0 else 0,
+        'grasas': min(round((consumo['grasas'] / plan['grasas_g']) * 100), 100) if plan['grasas_g'] > 0 else 0,
+        'faltan_kcal': max(plan['calorias_dia'] - consumo['calorias'], 0)
+    }
+
+    # 6. Generar Calendario Semanal (la semana del current_date)
+    start_of_week = current_date - timedelta(days=current_date.weekday() + 1 if current_date.weekday() != 6 else 0) # Domingo
+    semana = []
+    dias_nombres = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB']
+    for i in range(7):
+        d = start_of_week + timedelta(days=i)
+        semana.append({
+            'fecha': d,
+            'dia_num': d.day,
+            'nombre': dias_nombres[i],
+            'is_today': d == date.today(),
+            'is_active': d == current_date,
+            'fecha_iso': d.isoformat()
+        })
+
+    context = {
+        'base_template': get_base_template(request),
+        'current_date': current_date,
+        'prev_week': (current_date - timedelta(days=7)).isoformat(),
+        'next_week': (current_date + timedelta(days=7)).isoformat(),
+        'comidas': comidas,
+        'consumo': consumo,
+        'plan': plan,
+        'progress': progress,
+        'semana': semana,
+        'mes_nombre': current_date.strftime('%B %Y')
+    }
+
+    if request.headers.get('HX-Request'):
+        return render(request, 'base/diario.html', context)
+    
+    return render(request, 'base/diario.html', context)
 
 def progreso(request):
     perfil = request.user.perfil

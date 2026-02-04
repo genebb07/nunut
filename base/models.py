@@ -322,3 +322,19 @@ class ArticuloGuardado(models.Model):
     class Meta:
         unique_together = ('perfil', 'articulo')
 
+
+class ComidaDiaria(models.Model):
+    perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name='comidas_diarias')
+    receta = models.ForeignKey(Receta, on_delete=models.SET_NULL, null=True, blank=True)
+    nombre = models.CharField(max_length=200)
+    calorias = models.IntegerField()
+    proteinas = models.IntegerField(default=0)
+    carbos = models.IntegerField(default=0)
+    grasas = models.IntegerField(default=0)
+    fecha = models.DateField()
+    hora = models.TimeField(null=True, blank=True)
+    completada = models.BooleanField(default=False)
+    imagen_url = models.URLField(max_length=500, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.nombre} - {self.fecha} ({self.perfil.usuario.username})"
