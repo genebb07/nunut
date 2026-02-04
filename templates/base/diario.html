@@ -1,0 +1,163 @@
+{% extends base_template %}
+{% load static %}
+
+{% block title %}Mi Diario | nunut{% endblock %}
+
+{% block content %}
+<style>
+    .log-item {
+        background: var(--bg-content);
+        border-radius: 20px;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.25rem;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        transition: var(--transition-fluid);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    }
+
+    .log-item:hover {
+        transform: scale(1.01);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+    }
+
+    .dark-mode .log-item {
+        border-color: rgba(255, 255, 255, 0.05);
+        background-color: #1a1b15;
+    }
+
+    .log-time {
+        width: 80px;
+        font-weight: 800;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+    }
+
+    .log-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        transition: all 0.3s;
+    }
+
+    .bg-soft-green {
+        background-color: rgba(133, 200, 26, 0.1);
+        color: var(--primary);
+    }
+
+    .bg-soft-blue {
+        background-color: rgba(56, 189, 248, 0.1);
+        color: #0ea5e9;
+    }
+
+    .bg-soft-orange {
+        background-color: rgba(249, 115, 22, 0.1);
+        color: #f97316;
+    }
+
+    .summary-card {
+        background: var(--bg-content);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 1.5rem;
+        padding: 1.5rem;
+        text-align: center;
+    }
+</style>
+
+<header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-5 mt-2">
+    <div>
+        <h1 class="h3 fw-900 mb-1" style="font-weight: 900;">Tu Diario Personal</h1>
+        <p class="text-muted small mb-0 fw-bold">Seguimiento diario de nutrición y bienestar.</p>
+    </div>
+    <div class="bg-white dark-mode-bg-dark border rounded-pill px-4 py-2 fw-black shadow-sm d-inline-flex align-items-center"
+        style="font-size: 0.9rem;">
+        <span class="material-symbols-outlined me-2 text-primary" style="font-size: 1.2rem;">calendar_month</span>
+        Hoy, {% now "j M" %}
+    </div>
+</header>
+
+<!-- Resumen del día -->
+<div class="row g-3 mb-5">
+    <div class="col-6 col-md-3">
+        <div class="summary-card">
+            <p class="text-xs-bold text-muted mb-2">Proteínas</p>
+            <p class="h4 fw-black mb-0">65g</p>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="summary-card">
+            <p class="text-xs-bold text-muted mb-2">Carbos</p>
+            <p class="h4 fw-black mb-0">120g</p>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="summary-card">
+            <p class="text-xs-bold text-muted mb-2">Grasas</p>
+            <p class="h4 fw-black mb-0">42g</p>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="summary-card border-primary border-opacity-50">
+            <p class="text-xs-bold text-primary mb-2">Calorías</p>
+            <p class="h4 fw-black mb-0 text-primary">1,118</p>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de registros -->
+<div class="log-list">
+    <div class="log-item">
+        <div class="log-time">08:30 AM</div>
+        <div class="log-icon bg-soft-green"><span class="material-symbols-outlined">coffee</span></div>
+        <div class="flex-grow-1">
+            <h6 class="fw-black mb-0">Desayuno Completo</h6>
+            <p class="small text-muted mb-0 fw-bold">Avena, Huevos, Café</p>
+        </div>
+        <div class="text-end">
+            <p class="fw-black mb-0">420</p>
+            <p class="x-small text-muted mb-0 fw-bold">kcal</p>
+        </div>
+    </div>
+
+    <div class="log-item">
+        <div class="log-time">11:15 AM</div>
+        <div class="log-icon bg-soft-blue"><span class="material-symbols-outlined">water_drop</span></div>
+        <div class="flex-grow-1">
+            <h6 class="fw-black mb-0">Hidratación</h6>
+            <p class="small text-muted mb-0 fw-bold">500ml agua mineral</p>
+        </div>
+        <div class="text-end">
+            <p class="fw-black mb-0 text-primary">0</p>
+            <p class="x-small text-muted mb-0 fw-bold">kcal</p>
+        </div>
+    </div>
+
+    <div class="log-item">
+        <div class="log-time">02:20 PM</div>
+        <div class="log-icon bg-soft-orange"><span class="material-symbols-outlined">restaurant</span></div>
+        <div class="flex-grow-1">
+            <h6 class="fw-black mb-0">Almuerzo Ejecutivo</h6>
+            <p class="small text-muted mb-0 fw-bold">Pechuga, Arroz integral, Ensalada</p>
+        </div>
+        <div class="text-end">
+            <p class="fw-black mb-0">698</p>
+            <p class="x-small text-muted mb-0 fw-bold">kcal</p>
+        </div>
+    </div>
+</div>
+
+<!-- Botón flotante para añadir -->
+<div class="text-center mt-5 mb-5">
+    <button class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-lg d-inline-flex align-items-center gap-2">
+        <span class="material-symbols-outlined">add_circle</span>
+        Añadir Registro
+    </button>
+</div>
+{% endblock %}

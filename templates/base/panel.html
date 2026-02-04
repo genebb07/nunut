@@ -1,0 +1,131 @@
+{% extends base_template %}
+{% load static %}
+
+{% block title %}Panel de Control | nunut{% endblock %}
+
+{% block content %}
+<style>
+    .panel-header {
+        margin-bottom: 2.5rem;
+    }
+
+    .panel-card {
+        background: var(--bg-content);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 2rem;
+        padding: 2rem;
+        height: 100%;
+        transition: var(--transition-fluid);
+        box-shadow: var(--card-shadow);
+    }
+
+    .panel-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .dark-mode .panel-card {
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-outline-profile {
+        border-color: var(--primary);
+        color: var(--primary);
+        transition: all 0.3s;
+    }
+
+    .btn-outline-profile:hover {
+        background-color: var(--primary);
+        color: white;
+        box-shadow: 0 5px 15px var(--primary-glow);
+    }
+
+    .stat-badge {
+        font-size: 0.75rem;
+        font-weight: 800;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+    }
+</style>
+
+<div class="panel-header mt-2">
+    <div class="d-flex align-items-center gap-3">
+        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+            style="width: 56px; height: 56px; box-shadow: 0 10px 20px var(--primary-glow);">
+            <span class="material-symbols-outlined fs-2">settings_account_box</span>
+        </div>
+        <div>
+            <h1 class="h3 fw-900 mb-0" style="font-weight: 900;">Ajustes del Sistema</h1>
+            <p class="text-muted small mb-0 fw-bold">Gestiona tu experiencia personalizada en nunut.</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="panel-card">
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <h5 class="fw-black m-0 h6 text-uppercase" style="letter-spacing: 1px;">Cuenta</h5>
+                <span class="material-symbols-outlined text-primary">verified_user</span>
+            </div>
+
+            <div class="d-flex align-items-center gap-4 mb-4">
+                <div class="position-relative">
+                    <img src="{% if user.perfil.foto_perfil %}data:image/png;base64,{{ user.perfil.get_foto_base64 }}{% else %}https://ui-avatars.com/api/?name={{ user.username }}&background=85c81a&color=fff{% endif %}"
+                        class="rounded-circle shadow-sm"
+                        style="width: 80px; height: 80px; object-fit: cover; border: 3px solid white;">
+                    <div class="position-absolute bottom-0 end-0 bg-success border border-white rounded-circle"
+                        style="width: 15px; height: 15px;"></div>
+                </div>
+                <div>
+                    <h6 class="fw-black mb-1 fs-5">{{ user.get_full_name|default:user.username }}</h6>
+                    <p class="small text-muted mb-0 fw-bold">{{ user.email }}</p>
+                    <span class="badge bg-soft-green text-primary mt-2">Nivel Elite</span>
+                </div>
+            </div>
+
+            <div class="d-grid">
+                <a href="{% url 'base:perfil' %}" hx-get="{% url 'base:perfil' %}" hx-target="#main-content"
+                    hx-push-url="true" class="btn btn-outline-profile rounded-pill fw-bold py-2">
+                    Editar Perfil Completo
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-7">
+        <div class="panel-card">
+            <h5 class="fw-black mb-4 h6 text-uppercase" style="letter-spacing: 1px;">Estado de Configuración</h5>
+
+            <div class="mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined text-success">task_alt</span>
+                        <span class="small fw-bold">Perfil Nutricional</span>
+                    </div>
+                    <span class="stat-badge bg-primary text-white">COMPLETADO</span>
+                </div>
+                <div class="progress"
+                    style="height: 10px; border-radius: 10px; background-color: var(--primary-light);">
+                    <div class="progress-bar bg-primary" style="width: 100%; border-radius: 10px;"></div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <div class="p-3 bg-light dark-mode-bg-dark rounded-4 border-0 text-center">
+                        <p class="x-small fw-bold text-muted mb-1 text-uppercase">Objetivo</p>
+                        <p class="fw-black mb-0 text-primary">{{ user.perfil.get_objetivo_display|default:"No definido"
+                            }}</p>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="p-3 bg-light dark-mode-bg-dark rounded-4 border-0 text-center">
+                        <p class="x-small fw-bold text-muted mb-1 text-uppercase">Gasto Diario</p>
+                        <p class="fw-black mb-0 text-primary">-- kcal</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,596 @@
+{% extends base_template %}
+{% load static %}
+
+{% block title %}Biblioteca de Salud | nunut{% endblock %}
+
+{% block content %}
+<style>
+    .text-primary-nunut {
+        color: var(--primary) !important;
+    }
+    /* UTILITIES & BRANDING */
+    .small-caps {
+        font-variant: all-small-caps;
+        letter-spacing: 0.12em;
+    }
+
+    /* HERO SECTION */
+    .parallax-hero {
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        position: relative;
+        border-radius: 2.5rem;
+        overflow: hidden;
+        height: 60vh;
+        min-height: 500px;
+        color: white;
+        background-color: #222;
+        display: flex;
+        align-items: flex-end;
+        margin-bottom: 3rem;
+        box-shadow: var(--card-shadow);
+        transition: background-image 0.5s ease-in-out;
+    }
+
+    .parallax-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.85) 100%);
+        z-index: 1;
+    }
+
+    .hero-content {
+        padding: 4rem;
+        width: 100%;
+        max-width: 900px;
+        z-index: 2;
+    }
+
+    /* CARDS */
+    .card-article {
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 1.5rem;
+        background: var(--bg-content);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        height: 100%;
+        transition: var(--transition-fluid);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+    .card-article:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+    }
+
+    .dark-mode .card-article {
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .img-container {
+        height: 180px;
+        position: relative;
+        background: #e0e0e0;
+        overflow: hidden;
+    }
+
+    .img-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+    }
+
+    .card-article:hover .img-container img {
+        transform: scale(1.1);
+    }
+
+    /* FILTER CHIPS */
+    .filter-chip {
+        padding: 8px 18px;
+        border-radius: 50px;
+        background: var(--bg-content);
+        color: var(--text-muted);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        font-weight: 700;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        white-space: nowrap;
+    }
+
+    .filter-chip.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        box-shadow: 0 5px 15px var(--primary-glow);
+    }
+
+    .dark-mode .filter-chip {
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-brand {
+        background-color: var(--primary);
+        color: white;
+        border-radius: 50px;
+        padding: 0.75rem 2rem;
+        font-weight: 800;
+        border: none;
+        transition: all 0.3s;
+    }
+
+    .btn-brand:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px var(--primary-glow);
+        color: white;
+    }
+
+    .btn-save-inline {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        color: var(--text-secondary);
+    }
+
+    .btn-save-inline:hover {
+        transform: scale(1.1);
+        background: white;
+        color: var(--primary);
+    }
+
+    .badge-cat {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        z-index: 5;
+    }
+
+    .card-body-api {
+        padding: 1rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-title {
+        font-size: 0.95rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+    }
+
+    .article-desc {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+        line-height: 1.5;
+        flex-grow: 1;
+    }
+
+    .article-meta {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .img-container {
+        height: 150px;
+        /* Reduced height */
+    }
+</style>
+
+<!-- 1. DYNAMIC HERO SECTION -->
+<div class="parallax-hero" id="hero-section">
+    <div class="hero-content" id="hero-content">
+        <span class="skeleton d-inline-block mb-3" style="width: 150px; height: 30px; border-radius: 50px;"></span>
+        <div class="skeleton mb-3" style="width: 90%; height: 80px;"></div>
+        <div class="skeleton mb-4" style="width: 70%; height: 40px;"></div>
+        <div class="skeleton" style="width: 200px; height: 50px; border-radius: 50px;"></div>
+    </div>
+</div>
+
+<!-- 2. ÚLTIMAS NOVEDADES (TOP 4) -->
+<div class="section-header mt-5">
+    <div>
+        <h3 class="section-title">Últimas Novedades</h3>
+        <p class="text-muted small mb-0">Lo más reciente en ciencia y bienestar.</p>
+    </div>
+    <a href="#section-explore" class="fw-bold small-caps"
+        style="color: var(--primary-color); text-decoration: none;">Ver Todo</a>
+</div>
+
+<div id="grid-destacados" class="row g-4 mb-4">
+    {% for i in "1234" %}
+    <div class="col-6 col-md-4 col-lg-3">
+        <div class="card-article">
+            <div class="img-container skeleton"></div>
+            <div class="card-body-api">
+                <div class="skeleton" style="height:60px;"></div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- 3. DYNAMIC GUIDE SECTION -->
+<div id="guide-container" class="my-5">
+    <!-- Will be populated by JS -->
+    <div class="detailed-guide-card">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="skeleton" style="width: 60px; height: 60px; border-radius: 50%;"></div>
+            <div class="w-75">
+                <div class="skeleton mb-2" style="width: 40%; height: 20px;"></div>
+                <div class="skeleton" style="width: 80%; height: 30px;"></div>
+            </div>
+        </div>
+        <div class="skeleton w-100" style="height: 100px;"></div>
+    </div>
+</div>
+
+<!-- 4. BIBLIOTECA DE SALUD (EXPLORE) -->
+<div class="section-header" id="section-explore">
+    <div class="w-100 d-flex justify-content-between align-items-end">
+        <div>
+            <h3 class="section-title">Biblioteca de Salud</h3>
+            <p class="text-muted small mb-0">Nutrición, tips y ciencia para tu cuerpo.</p>
+        </div>
+    </div>
+</div>
+
+<!-- SEARCH & FILTER -->
+<div class="d-flex flex-column flex-md-row gap-3 mb-4 w-100">
+    
+    <div class="search-wrapper flex-shrink-0" style="width: 100%; max-width: 280px;">
+        <span class="material-symbols-outlined search-icon" style="font-size: 1.2rem;">search</span>
+        <input type="text" id="searchInput" class="form-control rounded-pill py-2 ps-5 bg-white border-0 shadow-sm"
+            style="font-size: 0.9rem;" placeholder="Buscar temas..." onkeyup="handleSearch(this.value)">
+    </div>
+
+    <div class="filter-scroll flex-grow-1 d-flex align-items-center ps-0 pb-0 overflow-auto" style="gap: 8px; white-space: nowrap;">
+        <div class="filter-chip active" onclick="setFilter(this, 'all')">Todos</div>
+        <div class="filter-chip" onclick="setFilter(this, 'nutricion')">Nutrición</div>
+        <div class="filter-chip" onclick="setFilter(this, 'tips')">Tips & Salud</div>
+        <div class="filter-chip" onclick="setFilter(this, 'ciencia')">Ciencia</div>
+    </div>
+</div>
+
+
+<div id="grid-explorar" class="row g-4 mb-4">
+    {% for i in "12345678" %}
+    <div class="col-6 col-md-4 col-lg-3">
+        <div class="card-article">
+            <div class="img-container skeleton"></div>
+            <div class="card-body-api">
+                <div class="skeleton" style="height:60px;"></div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- PAGINATION BUTTON -->
+<div class="d-flex justify-content-center mb-5" id="load-more-container">
+    <button class="btn btn-brand rounded-pill px-5 py-3 fw-bold d-flex align-items-center gap-2 shadow-sm"
+        onclick="showMoreArticles()">
+        Ver más artículos
+        <span class="material-symbols-outlined">expand_more</span>
+    </button>
+</div>
+
+<!-- 5. MÁS PARA TI (FUNCIONAL) -->
+<div class="py-4 mt-2 border-top">
+    <div class="section-header">
+        <div>
+            <h3 class="section-title">Más para ti</h3>
+            <p class="text-muted small mb-0">Herramientas interactivas.</p>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-12 col-md-6">
+            <a href="{% url 'base:progreso' %}"
+                class="card p-3 flex-row align-items-center gap-3 border-0 shadow-sm h-100 interactive-card text-decoration-none"
+                style="background: var(--bg-content);">
+                <div class="rounded-4 bg-light d-flex align-items-center justify-content-center flex-shrink-0"
+                    style="width: 70px; height: 70px;">
+                    <span class="material-symbols-outlined text-primary-nunut fs-2">psychology</span>
+                </div>
+                <div>
+                    <span class="fw-bold x-small text-uppercase text-primary-nunut mb-1 d-block">IA Coach</span>
+                    <h6 class="fw-black mb-0">Análisis Inteligente</h6>
+                    <p class="x-small text-muted mb-0">Revisar mi progreso con IA.</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-12 col-md-6">
+            <a href="{% url 'base:planes' %}"
+                class="card p-3 flex-row align-items-center gap-3 border-0 shadow-sm h-100 interactive-card text-decoration-none"
+                style="background: var(--bg-content);">
+                <div class="rounded-4 bg-light d-flex align-items-center justify-content-center flex-shrink-0"
+                    style="width: 70px; height: 70px;">
+                    <span class="material-symbols-outlined text-primary-nunut fs-2">restaurant_menu</span>
+                </div>
+                <div>
+                    <span class="fw-bold x-small text-primary-nunut mb-1 d-block">Planes</span>
+                    <h6 class="fw-black mb-0">Buscar Recetas</h6>
+                    <p class="x-small text-muted mb-0">Encuentra comidas para tu plan.</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-12 col-md-6">
+            <a href="https://www.youtube.com/results?search_query=rutina+hiit+15+min" target="_blank"
+                class="card p-3 flex-row align-items-center gap-3 border-0 shadow-sm h-100 interactive-card text-decoration-none"
+                style="background: var(--bg-content);">
+                <div class="rounded-4 bg-light d-flex align-items-center justify-content-center flex-shrink-0"
+                    style="width: 70px; height: 70px;">
+                    <span class="material-symbols-outlined text-primary-nunut fs-2">local_fire_department</span>
+                </div>
+                <div>
+                    <span class="fw-bold x-small text-primary-nunut mb-1 d-block">Exterior</span>
+                    <h6 class="fw-black mb-0">Reto HIIT</h6>
+                    <p class="x-small text-muted mb-0">Videos de rutinas rápidas.</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-12 col-md-6">
+            <a href="#" onclick="showToast('Próximamente', 'info'); return false;"
+                class="card p-3 flex-row align-items-center gap-3 border-0 shadow-sm h-100 interactive-card text-decoration-none"
+                style="background: var(--bg-content);">
+                <div class="rounded-4 bg-light d-flex align-items-center justify-content-center flex-shrink-0"
+                    style="width: 70px; height: 70px;">
+                    <span class="material-symbols-outlined text-primary-nunut fs-2">forum</span>
+                </div>
+                <div>
+                    <span class="fw-bold x-small text-primary-nunut mb-1 d-block">Comunidad</span>
+                    <h6 class="fw-black mb-0">Foro Salud</h6>
+                    <p class="x-small text-muted mb-0">Comparte con otros usuarios.</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_KEY = "4936c3f3a0fe483c84f6a7996512cb9b";
+    let allArticles = [];
+    let displayedArticles = [];
+    let initialCount = window.innerWidth < 768 ? 6 : 8;
+    let currentLimit = initialCount;
+    let currentFilter = 'all';
+    let currentSearch = '';
+
+    // DATASET
+    const MOCK_DB = [
+        { title: "El Poder del Magnesio", description: "Descubre por qué este mineral es esencial para tu recuperación muscular y sueño profundo.", category: "Nutrición", urlToImage: "https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=500", url: "#", type: "article" },
+        { title: "¿Ayuno Intermitente?", description: "Guía basada en evidencia sobre los beneficios y contraindicaciones del ayuno 16/8.", category: "Ciencia", urlToImage: "https://images.unsplash.com/photo-1549488497-64906a2374c0?q=80&w=500", url: "#", type: "guide" },
+        { title: "Sueño y Grasa", description: "Dormir menos de 6 horas puede reducir tu capacidad de quemar grasa en un 55%.", category: "Tips", urlToImage: "https://images.unsplash.com/photo-1520206183501-b80df61043c2?q=80&w=500", url: "#", type: "fact" },
+        { title: "Proteína Vegetal", description: "Top 5 fuentes de proteína completa para dietas basadas en plantas.", category: "Nutrición", urlToImage: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=500", url: "#", type: "article" },
+        { title: "Mito del Colesterol", description: "Nuevos estudios revelan que el huevo no es el enemigo. Entiende el HDL vs LDL.", category: "Ciencia", urlToImage: "https://images.unsplash.com/photo-1506808823611-6b8a8b0c4456?q=80&w=500", url: "#", type: "article" },
+        { title: "Hidratación Real", description: "Beber agua no es suficiente. Necesitas electrolitos para una hidratación celular real.", category: "Tips", urlToImage: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?q=80&w=500", url: "#", type: "fact" },
+        { title: "Guía de Suplementos", description: "Creatina, Whey, Omega-3: ¿Cuáles valen realmente la pena según la ciencia?", category: "Ciencia", urlToImage: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=500", url: "#", type: "guide" }
+    ];
+
+    async function fetchData() {
+        const query = '(nutricion ciencia) OR (salud metabolica) OR (biologia cuerpo) OR (consejos salud) OR (superalimentos beneficos)';
+        const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&language=es&sortBy=relevancy&pageSize=50&apiKey=${API_KEY}`;
+        const finalUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+
+        try {
+            const res = await fetch(finalUrl);
+            const data = await res.json();
+
+            let apiNews = [];
+            if (data.status === "ok") {
+                apiNews = data.articles.filter(a => {
+                    const t = (a.title + " " + a.description).toLowerCase();
+                    return a.urlToImage && !t.includes('política') && !t.includes('muerte');
+                }).map(a => {
+                    let c = 'Nutrición';
+                    const t = (a.title + a.description).toLowerCase();
+                    if (t.includes('estudio') || t.includes('científico')) c = 'Ciencia';
+                    else if (t.includes('tip') || t.includes('consejo')) c = 'Tips';
+                    return { ...a, category: c, type: 'article' };
+                });
+            }
+            allArticles = [...MOCK_DB, ...apiNews];
+            allArticles = allArticles.filter((v, i, a) => a.findIndex(t => (t.title === v.title)) === i);
+            renderPage();
+        } catch (e) {
+            console.error("API failed, using Mock", e);
+            allArticles = MOCK_DB;
+            renderPage();
+        }
+    }
+
+    function renderPage() {
+        // Hero & Guide Logic similar to before
+        const heroArt = allArticles.find(a => a.description && a.description.length > 50) || allArticles[0];
+        renderHero(heroArt);
+
+        const guideArt = allArticles.find(a => a.type === 'guide' || a.title.includes('Guía')) || MOCK_DB[1];
+        renderGuide(guideArt);
+
+        let remaining = allArticles.filter(a => a !== heroArt && a !== guideArt);
+        const topNews = remaining.slice(0, 4);
+        renderGrid('grid-destacados', topNews);
+
+        remaining = remaining.slice(4);
+        displayedArticles = remaining;
+
+        applyFilters();
+    }
+
+    function renderHero(art) {
+        const hero = document.getElementById('hero-section');
+        const content = document.getElementById('hero-content');
+        hero.style.backgroundImage = `url('${art.urlToImage}')`;
+        content.innerHTML = `
+            <span class="badge mb-3 small-caps px-4 py-2 border-0 shadow-sm" style="background: var(--primary); color: white; border-radius: 50px;">
+                <i class="fas fa-star me-2"></i>Destacado
+            </span>
+            <h1 class="display-4 fw-black mb-3 text-white line-clamp-2" style="text-shadow: 0 5px 30px rgba(0,0,0,0.8);">${art.title}</h1>
+            <p class="opacity-90 mb-4 lead text-white line-clamp-2" style="max-width: 700px; text-shadow: 0 2px 10px rgba(0,0,0,0.8);">${art.description}</p>
+            <a href="${art.url}" target="_blank" class="btn btn-hero rounded-pill px-5 py-3 fw-bold d-inline-flex align-items-center gap-2">
+                Leer Artículo Completo
+                <span class="material-symbols-outlined">arrow_forward</span>
+            </a>
+        `;
+    }
+
+    function renderGuide(art) {
+        const container = document.getElementById('guide-container');
+        container.innerHTML = `
+            <div class="detailed-guide-card fade-in-article">
+                <div class="row align-items-center">
+                    <div class="col-lg-7 position-relative" style="z-index:1;">
+                        <span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-3 py-2 rounded-pill fw-bold mb-3 small-caps">Guía Recomendada por IA</span>
+                        <h2 class="fw-black mb-3">${art.title}</h2>
+                        <p class="text-muted mb-4 fs-5 line-clamp-3">${art.description}</p>
+                        <a href="${art.url}" target="_blank" class="btn btn-brand rounded-pill px-4 py-3 fw-bold shadow-lg d-inline-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined">auto_stories</span>
+                            Leer Guía Interactiva
+                        </a>
+                    </div>
+                    <div class="col-lg-5 d-none d-lg-block">
+                        <div class="rounded-5 overflow-hidden shadow-lg position-relative" style="height: 250px; transform: rotate(2deg);">
+                            <img src="${art.urlToImage}" class="w-100 h-100 object-fit-cover">
+                            <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(to right, rgba(0,0,0,0.4), transparent);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderGrid(id, articles) {
+        const grid = document.getElementById(id);
+        grid.innerHTML = '';
+        articles.forEach(a => grid.appendChild(createCard(a)));
+    }
+
+    function applyFilters() {
+        const grid = document.getElementById('grid-explorar');
+        grid.innerHTML = '';
+
+        let filtered = displayedArticles;
+
+        // 1. Text Search
+        if (currentSearch.length > 0) {
+            filtered = filtered.filter(a => (a.title + a.description).toLowerCase().includes(currentSearch));
+        }
+
+        // 2. Category Filter
+        if (currentFilter !== 'all') {
+            filtered = filtered.filter(a => {
+                const catNorm = a.category.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const filterNorm = currentFilter.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                return catNorm.includes(filterNorm);
+            });
+        }
+
+        // 3. Pagination
+        let toShow = filtered.slice(0, currentLimit);
+
+        if (toShow.length === 0) {
+            grid.innerHTML = '<div class="col-12 text-center text-muted py-5">No se encontraron artículos con estos criterios.</div>';
+            document.getElementById('load-more-container').classList.add('d-none');
+            return;
+        }
+
+        toShow.forEach(a => grid.appendChild(createCard(a)));
+
+        const btn = document.getElementById('load-more-container');
+        if (filtered.length > currentLimit) {
+            btn.classList.remove('d-none');
+        } else {
+            btn.classList.add('d-none');
+        }
+    }
+
+    function showMoreArticles() {
+        currentLimit += 4;
+        applyFilters();
+    }
+
+    function handleSearch(val) {
+        currentSearch = val.toLowerCase().trim();
+        currentLimit = initialCount; // Reset pagination on search
+        applyFilters();
+    }
+
+    function setFilter(el, filter) {
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        currentFilter = filter;
+        initialCount = window.innerWidth < 768 ? 6 : 8; // Refresh count based on responsive
+        currentLimit = initialCount; // Reset pagination on cat switch
+        applyFilters();
+    }
+
+    function createCard(art) {
+        const col = document.createElement('div');
+        col.className = 'col-6 col-md-4 col-lg-3';
+        col.innerHTML = `
+            <div class="card-article h-100">
+                <div class="img-container">
+                    <span class="badge-cat">${art.category}</span>
+                    <button class="btn-save-inline" onclick="event.preventDefault(); toggleSave(this)">
+                        <span class="material-symbols-outlined fs-6">bookmark</span>
+                    </button>
+                    <img src="${art.urlToImage}" alt="Img">
+                </div>
+                <div class="card-body-api">
+                    <h3 class="article-title line-clamp-2">${art.title}</h3>
+                    <p class="article-desc line-clamp-3">${art.description || ''}</p>
+                    <div class="article-meta">
+                         <span class="material-symbols-outlined fs-6" style="font-size: 14px !important;">schedule</span>
+                         ${Math.floor(Math.random() * 8) + 3} min
+                    </div>
+                    <a href="${art.url}" target="_blank" class="stretched-link"></a>
+                </div>
+            </div>
+        `;
+        return col;
+    }
+
+    function toggleSave(btn) {
+        const icon = btn.querySelector('span');
+        if (icon.style.fontVariationSettings) { icon.style = ''; icon.style.color = ''; }
+        else { icon.style = "font-variation-settings: 'FILL' 1; color: var(--primary);"; }
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchData);
+</script>
+{% endblock %}

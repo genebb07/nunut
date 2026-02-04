@@ -1,0 +1,1004 @@
+{% extends base_template %}
+{% load static %}
+
+{% block title %}Perfil{% endblock %}
+
+{% block extra_body %}
+<!-- Privacy Modal -->
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content premium-card border-0">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="fw-black mb-0">Detalles de Privacidad</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted small">Tus datos personales, biometría y preferencias de salud están protegidos
+                    con
+                    cifrado de grado militar.</p>
+                <div class="bg-light p-3 rounded-4 mb-3 dark-mode-bg-dark">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="material-symbols-outlined text-brand">visibility_off</span>
+                        <span class="fw-bold small">Privacidad Estricta</span>
+                    </div>
+                    <p class="x-small text-muted mb-0">NutriPro no comparte tus métricas físicas con terceros ni
+                        anunciantes.</p>
+                </div>
+                <div class="bg-light p-3 rounded-4 dark-mode-bg-dark">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="material-symbols-outlined text-brand">data_object</span>
+                        <span class="fw-bold small">Derechos de Datos</span>
+                    </div>
+                    <p class="x-small text-muted mb-0">Puedes descargar o eliminar tu historial biométrico en
+                        cualquier
+                        momento desde esta sección.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Botón Regresar -->
+<div class="mb-4 d-flex align-items-center">
+    <a href="{% url 'base:index' %}" hx-get="{% url 'base:index' %}" hx-target="#main-content" hx-push-url="true"
+        class="btn btn-light rounded-pill px-4 d-inline-flex align-items-center gap-2 shadow-sm border fw-bold text-muted hover-brand">
+        <span class="material-symbols-outlined">arrow_back</span>
+        Regresar al Dashboard
+    </a>
+</div>
+
+<style>
+    :root {
+        --brand-primary: #85c81a;
+        --brand-dark: #6ba115;
+        --brand-soft: #f4faeb;
+    }
+
+    .hover-brand:hover {
+        background-color: var(--brand-primary) !important;
+        color: white !important;
+        border-color: var(--brand-primary) !important;
+        box-shadow: 0 5px 15px var(--primary-glow);
+    }
+
+    .dark-mode .btn-light {
+        background-color: #25271d !important;
+        border-color: #313426 !important;
+        color: var(--text-muted) !important;
+    }
+
+    .premium-card {
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 2rem;
+        background: var(--bg-content);
+        box-shadow: var(--card-shadow);
+        transition: var(--transition-fluid);
+        overflow: hidden;
+    }
+
+    .premium-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(133, 200, 26, 0.1);
+    }
+
+    .dark-mode .premium-card {
+        background: #1a1b15;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Metric Cards */
+    .metric-card {
+        padding: 1.5rem;
+        border-radius: 1.25rem;
+        background: var(--bg-content);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+        transition: all 0.3s;
+    }
+
+    .metric-card.active {
+        background: linear-gradient(135deg, var(--brand-primary), var(--brand-dark));
+        color: white !important;
+        border: none;
+    }
+
+    .metric-card.active .text-muted,
+    .metric-card.active .material-symbols-outlined {
+        color: rgba(255, 255, 255, 0.8) !important;
+    }
+
+    .metric-card.active h3 {
+        color: white !important;
+    }
+
+    /* Avatar Branding */
+    .profile-avatar-container {
+        position: relative;
+        display: inline-block;
+        padding: 2px;
+        background: linear-gradient(45deg, var(--brand-primary), #fff, var(--brand-primary));
+        background-size: 200% 200%;
+        animation: rotateGradient 4s linear infinite;
+        border-radius: 50%;
+    }
+
+    @keyframes rotateGradient {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 50%;
+        display: block;
+    }
+
+    .verified-badge {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        background: var(--brand-primary);
+        color: white;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid white;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .dark-mode .verified-badge {
+        border-color: #1a1b15;
+    }
+
+    /* Form Styling */
+    .custom-input {
+        border-radius: 1rem;
+        padding: 0.75rem 1.25rem;
+        border: 2px solid #f0f0f0;
+        background: #fdfdfd;
+        transition: all 0.3s;
+        font-weight: 500;
+        color: var(--text-main);
+    }
+
+    .dark-mode .custom-input {
+        background: #25271d;
+        border-color: #313426;
+        color: white;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--brand-primary);
+        border-color: var(--brand-primary);
+    }
+
+    .form-check-input:focus {
+        border-color: var(--brand-primary);
+        box-shadow: 0 0 0 4px rgba(133, 200, 26, 0.15);
+    }
+
+    .custom-input:focus {
+        border-color: var(--brand-primary);
+        box-shadow: 0 0 0 4px rgba(133, 200, 26, 0.15);
+        outline: none;
+    }
+
+    .dark-mode .card-header {
+        background-color: rgba(255, 255, 255, 0.02) !important;
+        color: white;
+    }
+
+    /* Tabs / Pills Styling */
+    .nav-custom {
+        background: #f8f9fa;
+        padding: 5px;
+        border-radius: 50px;
+    }
+
+    .dark-mode .nav-custom {
+        background: #25271d;
+    }
+
+    .nav-custom .nav-link {
+        border-radius: 50px;
+        padding: 8px 20px;
+        font-weight: 700;
+        color: var(--text-muted);
+        transition: all 0.3s;
+    }
+
+    .nav-custom .nav-link.active {
+        background: var(--brand-primary) !important;
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(133, 200, 26, 0.3);
+    }
+
+    /* Subscription Card */
+    .sub-card {
+        background: linear-gradient(135deg, #111, #333);
+        color: white;
+        border-radius: 1.5rem;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .sub-card::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 150px;
+        height: 150px;
+        background: rgba(133, 200, 26, 0.2);
+        filter: blur(50px);
+        border-radius: 50%;
+    }
+
+    .list-group-item {
+        background: transparent;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1rem 0.5rem;
+    }
+
+    .dark-mode .list-group-item {
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-premium {
+        background: var(--brand-primary);
+        color: white;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-weight: 800;
+        transition: all 0.3s;
+    }
+
+    .btn-premium:hover {
+        background: var(--brand-dark);
+        transform: scale(1.02);
+        box-shadow: 0 10px 20px rgba(133, 200, 26, 0.3);
+    }
+
+    /* DARK MODE REFINEMENTS */
+    .dark-mode .bg-light,
+    .dark-mode .list-group-item:hover {
+        background-color: #25271d !important;
+        color: #e0e0e0;
+    }
+
+    .dark-mode .bg-brand-soft {
+        background-color: rgba(133, 200, 26, 0.15) !important;
+        color: #badc88 !important;
+    }
+
+    .dark-mode .list-group-item-action:hover {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        cursor: pointer;
+    }
+
+    .dark-mode .text-muted {
+        color: #a0a0a0 !important;
+    }
+
+    .dark-mode .border-warning {
+        border-color: rgba(255, 193, 7, 0.2) !important;
+    }
+
+    .dark-mode .metric-card {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .dark-mode .metric-card:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: var(--brand-primary) !important;
+        transform: translateY(-3px);
+    }
+
+    .sidebar-wrapper {
+        transition: all 0.3s ease;
+    }
+
+    /* Form Section Dividers */
+    .form-section-title {
+        font-size: 0.8rem;
+        letter-spacing: 1.5px;
+        color: var(--brand-primary);
+        border-bottom: 2px solid var(--brand-soft);
+        padding-bottom: 8px;
+        margin-top: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Checkbox Group Styling */
+    .checkbox-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 12px;
+        padding: 1.25rem;
+        background: #fcfcfc;
+        border-radius: 1rem;
+        border: 1px solid #f0f0f0;
+    }
+
+    .dark-mode .checkbox-grid {
+        background: #1e2015;
+        border-color: #313426;
+    }
+
+    .checkbox-grid div {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .checkbox-grid label {
+        cursor: pointer;
+        margin-bottom: 0;
+    }
+
+    /* PROFILE EDIT OVERLAY */
+    .profile-edit-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(10px);
+        z-index: 5000 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        padding: 20px;
+    }
+
+    .profile-edit-overlay.show {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .overlay-container {
+        width: 100%;
+        max-width: 900px;
+        max-height: 90vh;
+        background: var(--bg-content);
+        color: var(--text-main);
+        border-radius: 2rem;
+        overflow-y: auto;
+        transform: translateY(50px);
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    }
+
+    .profile-edit-overlay.show .overlay-container {
+        transform: translateY(0);
+    }
+
+    .dark-mode .overlay-container {
+        background: #1a1b15 !important;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    /* Hide scrollbar for overlay container */
+    .overlay-container::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .overlay-container::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .overlay-container::-webkit-scrollbar-thumb {
+        background: rgba(133, 200, 26, 0.2);
+        border-radius: 10px;
+    }
+
+    .close-overlay {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        z-index: 2001;
+        border: none;
+        transition: all 0.2s;
+    }
+
+    .close-overlay:hover {
+        transform: rotate(90deg);
+        background: var(--brand-primary);
+        color: white;
+    }
+
+    .dark-mode .close-overlay {
+        background: #2c2f26;
+        color: white;
+    }
+
+    #privacyModal {
+        z-index: 99999 !important;
+    }
+
+    .modal-backdrop {
+        z-index: 99990 !important;
+    }
+
+    #privacyModal .modal-content {
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 2rem;
+    }
+
+    .dark-mode .modal-content {
+        background-color: #1a1b15 !important;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+</style>
+
+<div class="container py-4">
+    <div class="row g-4">
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div id="profile-sidebar" class="premium-card text-center p-4 sticky-top sidebar-wrapper"
+                style="top: 90px; z-index: 100;">
+                <div class="profile-avatar-container mb-3">
+                    {% if user.is_authenticated and user.perfil.foto_perfil %}
+                    <img alt="Avatar" class="profile-avatar shadow-lg"
+                        src="data:image/png;base64,{{ user.perfil.get_foto_base64 }}" />
+                    {% else %}
+                    <div class="profile-avatar d-flex align-items-center justify-content-center mx-auto bg-light fw-bold"
+                        style="font-size: 3rem; color: var(--brand-primary);">
+                        {{ user.username|slice:":1"|upper }}
+                    </div>
+                    {% endif %}
+                    <div class="verified-badge">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">verified</span>
+                    </div>
+                </div>
+
+                <h2 class="fw-black mb-1 h4">{{ user.get_full_name|default:user.username }}</h2>
+
+                <div class="sidebar-extra">
+                    <span class="badge bg-brand-soft rounded-pill px-3 py-2 small shadow-sm mb-3">
+                        {% if user.perfil.somatotipo %} {{ user.perfil.get_somatotipo_display }} {% else %} Optimización
+                        Activa {% endif %}
+                    </span>
+
+                    <div class="d-grid gap-2 mt-2">
+                        <button class="btn btn-premium d-flex align-items-center justify-content-center gap-2"
+                            onclick="window.location.href='?edit=1'">
+                            <span class="material-symbols-outlined">edit</span> Editar Perfil
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Persistent Section (Stays visible on scroll) -->
+                <div class="mt-4 pt-4 border-top">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="small fw-bold text-muted text-uppercase">Nivel de Usuario</span>
+                        <span class="small fw-black text-brand">ELITE</span>
+                    </div>
+                    <div class="progress rounded-pill shadow-sm"
+                        style="height: 10px; background-color: rgba(0,0,0,0.05);">
+                        <div class="progress-bar bg-brand progress-bar-striped progress-bar-animated"
+                            style="width: 85%; background-color: var(--brand-primary) !important;"></div>
+                    </div>
+                </div>
+
+                <!-- LOGROS (Now Persistent and limited to 4) -->
+                <div class="mt-4 text-start">
+                    <div class="d-flex align-items-center justify-content-between mb-2 px-1">
+                        <h6 class="fw-black mb-0 small text-uppercase text-muted" style="letter-spacing: 1px;">
+                            Logros
+                        </h6>
+                        <button class="btn btn-link p-0 text-brand text-decoration-none small fw-bold text-uppercase"
+                            style="font-size: 0.65rem;">Detalles</button>
+                    </div>
+                    <div class="d-flex justify-content-between gap-1">
+                        <!-- 7 Días -->
+                        <div class="d-flex flex-column align-items-center gap-1">
+                            <div class="rounded-circle bg-warning bg-opacity-10 d-flex align-items-center justify-content-center text-warning border border-warning border-opacity-25"
+                                style="width: 42px; height: 42px;">
+                                <span class="material-symbols-outlined fs-5"
+                                    style="font-variation-settings: 'FILL' 1;">stars</span>
+                            </div>
+                            <span class="text-muted fw-bold text-uppercase opacity-75" style="font-size: 0.5rem;">7
+                                Días</span>
+                        </div>
+                        <!-- Vegan Pro -->
+                        <div class="d-flex flex-column align-items-center gap-1">
+                            <div class="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center text-success border border-success border-opacity-25"
+                                style="width: 42px; height: 42px;">
+                                <span class="material-symbols-outlined fs-5"
+                                    style="font-variation-settings: 'FILL' 1;">eco</span>
+                            </div>
+                            <span class="text-muted fw-bold text-uppercase opacity-75"
+                                style="font-size: 0.5rem;">Vegan</span>
+                        </div>
+                        <!-- Hidratado -->
+                        <div class="d-flex flex-column align-items-center gap-1">
+                            <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center text-primary border border-primary border-opacity-25"
+                                style="width: 42px; height: 42px;">
+                                <span class="material-symbols-outlined fs-5"
+                                    style="font-variation-settings: 'FILL' 1;">water_full</span>
+                            </div>
+                            <span class="text-muted fw-bold text-uppercase opacity-75"
+                                style="font-size: 0.5rem;">Agua</span>
+                        </div>
+                        <!-- Fuego -->
+                        <div class="d-flex flex-column align-items-center gap-1">
+                            <div class="rounded-circle bg-opacity-10 d-flex align-items-center justify-content-center text-danger border border-danger border-opacity-25"
+                                style="background-color: rgba(253, 126, 20, 0.1); color: #fd7e14; border-color: rgba(253, 126, 20, 0.25) !important; width: 42px; height: 42px;">
+                                <span class="material-symbols-outlined fs-5"
+                                    style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+                            </div>
+                            <span class="text-muted fw-bold text-uppercase opacity-75"
+                                style="font-size: 0.5rem;">Racha</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-6">
+
+            <!-- Analytics Dashboard -->
+            <div class="mb-4">
+                <h5 class="fw-black mb-3 d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-brand">analytics</span> Biometría General
+                </h5>
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <div class="metric-card">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="small fw-bold text-muted">ALTURA</span>
+                                <span class="material-symbols-outlined text-brand">height</span>
+                            </div>
+                            <h3 class="fw-black mb-0">{{ altura_cm|floatformat:0|default:"—" }}<small
+                                    class="fs-6 fw-normal ms-1">cm</small></h3>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="metric-card">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="small fw-bold">PESO</span>
+                                <span class="material-symbols-outlined text-brand">monitor_weight</span>
+                            </div>
+                            <h3 class="fw-black mb-0">{{ peso_actual|floatformat:1|default:"—" }}<small
+                                    class="fs-6 fw-normal ms-1">kg</small></h3>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="metric-card">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="small fw-bold text-muted">IMC</span>
+                                <span class="material-symbols-outlined text-brand">calculate</span>
+                            </div>
+                            <h3 class="fw-black mb-1">{{ imc|default:"—" }}</h3>
+                            <div class="d-flex justify-content-between align-items-end">
+                                <span class="x-small fw-black text-brand"> {% if imc %} {% if imc < 18.5 %} BAJO PESO {%
+                                        elif imc < 25 %} NORMAL {% elif imc < 30 %} SOBREPESO {% else %} OBESIDAD {%
+                                        endif %} {% else %} SIN DATOS {% endif %} </span>
+                                        <span class="x-small text-muted" id="muscle-mass-display"
+                                            title="Masa Muscular Estimada"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="metric-card">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="small fw-bold text-muted">GRASA</span>
+                                <span class="material-symbols-outlined text-brand">percent</span>
+                            </div>
+                            <h3 class="fw-black mb-2">{{ user.perfil.porcentaje_grasa|default:"—" }}%</h3>
+                            <div class="progress" style="height: 4px;">
+                                <div class="progress-bar bg-brand"
+                                    style="width: {{ user.perfil.porcentaje_grasa|default:0 }}%; background-color: var(--brand-primary) !important;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Diet Plan -->
+            <div class="premium-card p-4 mb-4">
+                <h5 class="fw-black mb-4 d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-brand">restaurant_menu</span> Estrategia Actual
+                </h5>
+                <div class="mb-4 bg-light rounded-4 p-3 dark-mode-bg-dark">
+                    <label class="small fw-bold text-muted mb-3 d-block ps-1">ENFOQUE NUTRICIONAL</label>
+                    <div class="nav nav-pills nav-fill nav-custom">
+                        <li class="nav-item">
+                            <button
+                                class="nav-link {% if user.perfil.objetivo == 'GANAR' %}active{% endif %}">Músculo</button>
+                        </li>
+                        <li class="nav-item">
+                            <button
+                                class="nav-link {% if user.perfil.objetivo == 'PERDER' %}active{% endif %}">Perder</button>
+                        </li>
+                        <li class="nav-item">
+                            <button
+                                class="nav-link {% if user.perfil.objetivo == 'MANTENER' %}active{% endif %}">Mantener</button>
+                        </li>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="bg-brand-soft p-3 rounded-4 h-100">
+                            <label class="small fw-bold opacity-75 d-block mb-1">RÉGIMEN</label>
+                            <span class="fw-black">{{ user.perfil.get_tipo_dieta_display|default:"—" }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="bg-brand-soft p-3 rounded-4 h-100">
+                            <label class="small fw-bold opacity-75 d-block mb-1">ACTIVIDAD</label>
+                            <span class="fw-black">{{ user.perfil.get_nivel_actividad_display|default:"—" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health Section -->
+            <div class="premium-card p-4 mb-4">
+                <h5 class="fw-black mb-4 d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-warning">health_and_safety</span> Salud y Bienestar
+                </h5>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted mb-2 d-block">ALERGIAS / RESTRICCIONES</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for a in user.perfil.alergias.all %}
+                            <span
+                                class="badge bg-white text-dark border-warning border px-3 py-2 rounded-pill small shadow-sm">{{
+                                a.nombre }}</span>
+                            {% empty %}
+                            <span class="text-muted small fst-italic">Sin restricciones registradas</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted mb-2 d-block">NOTAS MÉDICAS</label>
+                        <div class="bg-white p-3 rounded-4 border border-warning border-opacity-25 dark-mode-bg-dark"
+                            style="background-color: var(--bg-content);">
+                            {% for c in user.perfil.condiciones_medicas.all %}
+                            <p class="small fw-bold mb-1 text-dark dark-mode-text-white">• {{ c.nombre }}</p>
+                            {% empty %}
+                            <p class="small text-muted mb-0">No se reportan condiciones especiales.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings & Subscription -->
+        <div class="col-lg-3">
+            <div class="premium-card mb-4">
+                <div class="p-4 border-bottom">
+                    <h5 class="fw-black mb-0 d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined text-brand">settings</span> Ajustes
+                    </h5>
+                </div>
+                <div class="list-group list-group-flush p-2">
+                    <div class="list-group-item border-0 d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-success bg-opacity-10 p-2 rounded-circle text-brand">
+                                <span class="material-symbols-outlined">notifications</span>
+                            </div>
+                            <span class="fw-bold small">Notificaciones</span>
+                        </div>
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" id="notify-toggle" checked
+                                onchange="handleNotify(this)">
+                        </div>
+                    </div>
+
+                    <div class="list-group-item border-0 d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-success bg-opacity-10 p-2 rounded-circle text-brand">
+                                <span class="material-symbols-outlined">dark_mode</span>
+                            </div>
+                            <span class="fw-bold small">Modo oscuro</span>
+                        </div>
+                        <div class="form-check form-switch mb-0">
+                            <input id="perfil-dark-mode-toggle" class="form-check-input" type="checkbox" {% if
+                                user.perfil.modo_oscuro %}checked {% endif %} onclick="toggleTheme()"
+                                aria-label="Alternar modo oscuro">
+                        </div>
+                    </div>
+
+                    <a href="javascript:void(0)"
+                        onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('privacyModal')).show()"
+                        class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-success bg-opacity-10 p-2 rounded-circle text-brand">
+                                <span class="material-symbols-outlined">shield</span>
+                            </div>
+                            <span class="fw-bold small">Privacidad</span>
+                        </div>
+                        <span class="material-symbols-outlined text-muted">chevron_right</span>
+                    </a>
+
+                    <a href="{% url 'base:cerrar_sesion' %}"
+                        class="list-group-item list-group-item-action border-0 d-flex align-items-center gap-3 text-danger">
+                        <div class="bg-danger bg-opacity-10 p-2 rounded-circle">
+                            <span class="material-symbols-outlined">logout</span>
+                        </div>
+                        <span class="fw-bold small">Cerrar Sesión</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Subscription -->
+            <div class="sub-card">
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div>
+                        <small class="text-uppercase fw-black opacity-50 d-block mb-1"
+                            style="letter-spacing: 1px; color: #ffd700">STATUS</small>
+                        <h5 class="fw-black mb-0" style="color: #ffd700">NutriPro Elite</h5>
+                    </div>
+                    <span class="material-symbols-outlined text-brand"
+                        style="font-size: 2.5rem; color: #ffd700">workspace_premium</span>
+                </div>
+                <div
+                    class="bg-white bg-opacity-10 rounded-4 p-3 d-flex justify-content-between align-items-center border border-white border-opacity-10">
+                    <span class="small fw-bold text-white">{{ user.perfil.suscripcion_dias_restantes|default:"12" }}
+                        días</span>
+                    <a href="#" class="btn btn-sm btn-light rounded-pill px-3 fw-bold"
+                        style="font-size: 11px;">RENOVAR</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PROFILE EDIT OVERLAY -->
+<div class="profile-edit-overlay {% if request.GET.edit %}show{% endif %}" id="editOverlay">
+    <a href="{% url 'base:perfil' %}" class="close-overlay text-decoration-none">
+        <span class="material-symbols-outlined">close</span>
+    </a>
+
+    <div class="overlay-container">
+        <div class="p-4 p-md-5">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <h4 class="fw-black mb-0 d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-brand" style="font-size: 2.5rem;">manage_accounts</span>
+                    Configuración de Perfil
+                </h4>
+                <span class="badge bg-brand-soft text-brand rounded-pill px-3 py-2">MODO AVANZADO</span>
+            </div>
+            <p class="text-muted small mb-4">Actualiza tus parámetros biométricos y preferencias para optimizar tus
+                planes.</p>
+
+            <form method="post" action="{% url 'base:perfil' %}">
+                {% csrf_token %}
+
+                <!-- SECCIÓN 1: IDENTIDAD -->
+                <div class="form-section-title d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">badge</span>
+                    IDENTIDAD Y CONTACTO
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted mb-2 d-flex align-items-center gap-2 ps-1">
+                            <span class="material-symbols-outlined fs-6">person</span> NOMBRE
+                        </label>
+                        {{ form.first_name }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted mb-2 d-flex align-items-center gap-2 ps-1">
+                            <span class="material-symbols-outlined fs-6">person</span> APELLIDO
+                        </label>
+                        {{ form.last_name }}
+                    </div>
+                    <div class="col-12">
+                        <label class="small fw-bold text-muted mb-2 d-flex align-items-center gap-2 ps-1">
+                            <span class="material-symbols-outlined fs-6">mail</span> CORREO ELECTRÓNICO
+                        </label>
+                        {{ form.email }}
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 2: BIOMETRÍA -->
+                <div class="form-section-title d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">analytics</span>
+                    BIOMETRÍA Y CÁLCULOS
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted mb-2 d-flex align-items-center gap-2 ps-1">
+                            <span class="material-symbols-outlined fs-6">location_on</span> CIUDAD / PAÍS
+                        </label>
+                        {{ form.localidad }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted mb-2 d-flex align-items-center gap-2 ps-1">
+                            <span class="material-symbols-outlined fs-6">calendar_month</span> FECHA NACIMIENTO
+                        </label>
+                        {{ form.fecha_nacimiento }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small fw-bold text-muted mb-2 ps-1">ALTURA (CM)</label>
+                        {{ form.altura }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small fw-bold text-muted mb-2 ps-1">% GRASA</label>
+                        {{ form.porcentaje_grasa }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small fw-bold text-muted mb-2 ps-1">SOMATOTIPO</label>
+                        {{ form.somatotipo }}
+                    </div>
+                    <div class="col-12">
+                        <label class="small fw-bold text-muted mb-2 d-flex align-items-center gap-2 ps-1">
+                            <span class="material-symbols-outlined fs-6">wc</span> GÉNERO
+                        </label>
+                        {{ form.genero }}
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 3: OBJETIVOS -->
+                <div class="form-section-title d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">star</span>
+                    ESTRATEGIA Y HÁBITOS
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted mb-2 ps-1">OBJETIVO PRINCIPAL</label>
+                        {{ form.objetivo }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted mb-2 ps-1">NIVEL DE ACTIVIDAD</label>
+                        {{ form.nivel_actividad }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted mb-2 ps-1">TIPO DE DIETA</label>
+                        {{ form.tipo_dieta }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small fw-bold text-muted mb-2 ps-1">FRECUENCIA COMIDAS</label>
+                        {{ form.frecuencia_comidas }}
+                    </div>
+                    <div class="col-12">
+                        <label class="small fw-bold text-muted mb-2 d-flex align-items-center gap-2 ps-1">
+                            <span class="material-symbols-outlined fs-6">bedtime</span> HORARIO DE SUEÑO
+                        </label>
+                        {{ form.horario_sueno }}
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 4: RESTRICCIONES -->
+                <div class="form-section-title d-flex align-items-center gap-2 text-warning">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">health_and_safety</span>
+                    SALUD Y RESTRICCIONES
+                </div>
+
+                <div class="mb-4">
+                    <label class="small fw-bold text-muted mb-3 d-block">MIS ALERGIAS</label>
+                    <div class="checkbox-grid">
+                        {{ form.alergias }}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="small fw-bold text-muted mb-3 d-block">INTOLERANCIAS</label>
+                    <div class="checkbox-grid">
+                        {{ form.intolerancias }}
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <label class="small fw-bold text-muted mb-3 d-block">MIS GUSTOS / FAVORITOS</label>
+                    <div class="checkbox-grid">
+                        {{ form.gustos }}
+                    </div>
+                </div>
+
+                <div class="mt-5 d-flex gap-3 justify-content-end sticky-bottom py-3 border-top dark-mode-bg-dark"
+                    style="z-index: 10; background-color: inherit;">
+                    <a href="{% url 'base:perfil' %}"
+                        class="btn btn-outline-secondary rounded-pill px-4 fw-bold">Descartar</a>
+                    <button type="submit" class="btn btn-premium px-5 shadow-lg">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Sticky Sidebar Logic
+        const sidebar = document.getElementById('profile-sidebar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 80) {
+                sidebar.style.boxShadow = "0 20px 40px rgba(0,0,0,0.1)";
+            } else {
+                sidebar.style.boxShadow = "0 10px 30px rgba(0,0,0,0.05)";
+            }
+        });
+
+        // Move Edit Overlay to Body to avoid stacking context issues
+        const editOverlay = document.getElementById('editOverlay');
+        if (editOverlay) {
+            document.body.appendChild(editOverlay);
+        }
+
+        // Muscle Mass Calculation
+        const peso = parseFloat("{{ peso_actual|default:0 }}");
+        const grasa = parseFloat("{{ user.perfil.porcentaje_grasa|default:0 }}");
+
+        if (peso > 0 && grasa > 0) {
+            const leanMass = peso * (1 - (grasa / 100));
+            const muscleMass = leanMass * 0.45;
+            const el = document.getElementById('muscle-mass-display');
+            if (el) el.innerText = muscleMass.toFixed(1) + " kg Músculo";
+        }
+
+        /* Scroll lock logic removed to avoid 'fixed' background feel */
+        /*
+        const overlay = document.getElementById('editOverlay');
+        if (overlay && overlay.classList.contains('show')) {
+            document.body.classList.add('overlay-active');
+        }
+        */
+
+        // Close overlay on ESC key
+        document.addEventListener('keydown', function (event) {
+            if (event.key === "Escape") {
+                const overlay = document.getElementById('editOverlay');
+                if (overlay && overlay.classList.contains('show')) {
+                    window.location.href = "{% url 'base:perfil' %}";
+                }
+            }
+        });
+    });
+
+    function handleNotify(el) {
+        const status = el.checked ? "activadas" : "desactivadas";
+        showToast("Notificaciones " + status, "success");
+    }
+</script>
+
+{% endblock %}

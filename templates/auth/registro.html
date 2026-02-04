@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Registro - Nunut</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: var(--spacing-lg);
+            background: var(--background-color);
+        }
+
+        .auth-header {
+            margin-bottom: var(--spacing-xl);
+            text-align: center;
+        }
+
+        .auth-header h1 {
+            font-size: 2rem;
+            color: var(--primary-dark);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #E2E8F0;
+            border-radius: var(--border-radius-md);
+            background: #FFFFFF;
+            font-size: 1rem;
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(143, 209, 79, 0.1);
+        }
+
+        .auth-footer {
+            margin-top: var(--spacing-lg);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .auth-footer a {
+            color: var(--primary-dark);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .error-list {
+            background: #FEE2E2;
+            color: #991B1B;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            list-style: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-container fade-in">
+        <div class="auth-content-box">
+            <div class="auth-header">
+                <h1>Crear Cuenta</h1>
+                <p>Empieza tu viaje nutricional</p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                {% if form.errors %}
+                <ul class="error-list">
+                    {% for field in form %}
+                    {% for error in field.errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% for field in form %}
+                <div class="form-group">
+                    {{ field }}
+                    {% if field.help_text %}
+                    <small style="color: #94A3B8; font-size: 0.8rem; padding-left: 4px;">{{ field.help_text }}</small>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <button type="submit" class="btn btn-primary"
+                    style="margin-top: var(--spacing-md);">Registrarse</button>
+            </form>
+
+            <div class="auth-footer">
+                <p>¿Ya tienes cuenta? <a href="{% url 'base:iniciar_sesion' %}">Inicia Sesión</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

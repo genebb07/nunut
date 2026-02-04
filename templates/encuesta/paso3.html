@@ -1,0 +1,219 @@
+{% load static %}
+
+<style>
+    /* ESTRUCTURA MAESTRA (Idéntica a Paso 2) */
+    .card-onboarding {
+        border: none !important;
+        border-radius: 35px !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+        max-width: 420px;
+        width: 100%;
+        height: 550px;
+        background-color: var(--bg-content) !important;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .onboarding-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem 1.5rem;
+        scrollbar-width: none;
+    }
+
+    .onboarding-body::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* FOOTER FIJO (Igual al Paso 2) */
+    .onboarding-footer {
+        padding: 1.5rem 2rem;
+        background-color: var(--bg-content);
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    /* BOTÓN NUNUT (Igual al Paso 2) */
+    .btn-nunut {
+        background-color: #85c81a !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 20px !important;
+        padding: 16px !important;
+        font-weight: 800 !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none !important;
+    }
+
+    .btn-nunut:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(133, 200, 26, 0.3) !important;
+        color: white !important;
+    }
+
+    /* Estilos del contenido */
+    .search-container {
+        background: rgba(0, 0, 0, 0.04);
+        border-radius: 20px;
+        padding: 2px 15px;
+        display: flex;
+        align-items: center;
+        border: 2px solid transparent;
+        transition: all 0.3s;
+    }
+
+    .dark-mode .search-container {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .search-container:focus-within {
+        border-color: #85c81a;
+        background: transparent;
+    }
+
+    .allergy-chip-active {
+        background-color: #85c81a;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 99px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .allergy-suggestion {
+        border: 1.5px solid rgba(0, 0, 0, 0.1);
+        padding: 8px 16px;
+        border-radius: 99px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .dark-mode .allergy-suggestion {
+        border-color: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+    }
+</style>
+
+<div class="card card-onboarding">
+    <div class="px-4 pt-4 pb-2">
+        <div class="d-flex align-items-center mb-3">
+            <button hx-get="{% url 'base:guardar_paso' 2 %}" hx-target="#onboarding-container" class="btn-back">
+                <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <h6 class="flex-grow-1 text-center mb-0 fw-bold text-muted pe-4">PASO 3 DE 4</h6>
+        </div>
+        <div class="progress" style="height: 6px; border-radius: 10px; background: rgba(0,0,0,0.05);">
+            <div class="progress-bar" style="width: 75%; background: #85c81a; transition: width 0.5s ease;"></div>
+        </div>
+    </div>
+
+    <form id="step-form" hx-post="{% url 'base:guardar_paso' 3 %}" hx-target="#onboarding-container"
+        class="onboarding-body">
+        {% csrf_token %}
+        <input type="hidden" name="alergias" id="input-alergias" value="">
+
+        {% if form.errors %}
+        <div class="alert alert-danger py-2 small" style="border-radius: 15px;">
+            <i class="fas fa-exclamation-circle me-1"></i> Por favor revisa los datos.
+        </div>
+        {% endif %}
+
+        <div class="px-2 py-2 mb-4 text-center">
+            <h2 class="fw-black mb-2" style="font-size: 1.6rem; letter-spacing: -1px;">¿Alguna restricción?</h2>
+            <p class="text-muted small">Evitaremos estos ingredientes en tu menú.</p>
+        </div>
+
+        <div class="search-container mb-4 shadow-sm">
+            <span class="material-symbols-outlined opacity-50">search</span>
+            <input type="text" id="search-allergy" class="form-control border-0 bg-transparent py-3 shadow-none"
+                placeholder="Busca alergias..." style="font-size: 14px;">
+        </div>
+
+        <div class="mb-4">
+            <h3 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 10px; letter-spacing: 1px;">
+                Seleccionadas</h3>
+            <div class="d-flex flex-wrap gap-2" id="selected-allergies">
+                <!-- Chips added via JS -->
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h3 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 10px; letter-spacing: 1px;">Sugerencias
+            </h3>
+            <div class="d-flex flex-wrap gap-2">
+                <div class="allergy-suggestion" onclick="toggleAllergy('Gluten')">Gluten</div>
+                <div class="allergy-suggestion" onclick="toggleAllergy('Lactosa')">Lactosa</div>
+                <div class="allergy-suggestion" onclick="toggleAllergy('Frutos Secos')">Frutos Secos</div>
+                <div class="allergy-suggestion" onclick="toggleAllergy('Mariscos')">Mariscos</div>
+                <div class="allergy-suggestion" onclick="toggleAllergy('Huevo')">Huevo</div>
+                <div class="allergy-suggestion" onclick="toggleAllergy('Soja')">Soja</div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn-nunut shadow-lg mb-2">
+                <span>Continuar</span>
+                <span class="material-symbols-outlined ms-2">arrow_forward</span>
+            </button>
+
+            <button type="button" hx-get="{% url 'base:guardar_paso' 4 %}" hx-target="#onboarding-container"
+                class="btn btn-link w-100 text-decoration-none text-muted fw-bold small">
+                Omitir este paso
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const selectedAllergies = new Set();
+    const inputAlergias = document.getElementById('input-alergias');
+    const container = document.getElementById('selected-allergies');
+    const searchInput = document.getElementById('search-allergy');
+
+    function toggleAllergy(name) {
+        if (selectedAllergies.has(name)) {
+            selectedAllergies.delete(name);
+        } else {
+            selectedAllergies.add(name);
+        }
+        updateUI();
+    }
+
+    function updateUI() {
+        container.innerHTML = '';
+        const allergies = Array.from(selectedAllergies);
+
+        allergies.forEach(allergy => {
+            const chip = document.createElement('div');
+            chip.className = 'allergy-chip-active';
+            chip.innerHTML = `${allergy} <span class="material-symbols-outlined" style="font-size: 16px; cursor: pointer;">close</span>`;
+            chip.onclick = () => toggleAllergy(allergy);
+            container.appendChild(chip);
+        });
+
+        inputAlergias.value = allergies.join(',');
+    }
+
+    // Handle search enter
+    searchInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const val = this.value.trim();
+            if (val) {
+                toggleAllergy(val);
+                this.value = '';
+            }
+        }
+    });
+</script>
