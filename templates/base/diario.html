@@ -1,163 +1,335 @@
-{% extends base_template %}
+{% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Mi Diario | nunut{% endblock %}
+{% block title %}Resumen Diario de Alto Rendimiento | nunut{% endblock %}
 
-{% block content %}
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet" />
+
 <style>
-    .log-item {
-        background: var(--bg-content);
-        border-radius: 20px;
-        padding: 1.25rem 1.5rem;
-        margin-bottom: 1.25rem;
-        border: 1px solid rgba(0, 0, 0, 0.05);
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-        transition: var(--transition-fluid);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    :root {
+        --primary-color: #85c81a;
+        --bg-light: #f7f8f6;
+        --card-radius: 30px;
+        --protein-color: #3b82f6;
+        --carbs-color: #f97316;
+        --fats-color: #eab308;
+        --water-color: #0ea5e9;
+        --fiber-color: #10b981;
     }
 
-    .log-item:hover {
-        transform: scale(1.01);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+    /* Diario specific reset to override base.html body background if needed */
+    #main-content {
+        font-family: 'Manrope', sans-serif !important;
     }
 
-    .dark-mode .log-item {
-        border-color: rgba(255, 255, 255, 0.05);
-        background-color: #1a1b15;
-    }
-
-    .log-time {
-        width: 80px;
+    .fw-black {
         font-weight: 800;
-        color: var(--text-muted);
-        font-size: 0.8rem;
-        text-transform: uppercase;
     }
 
-    .log-icon {
-        width: 52px;
-        height: 52px;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        transition: all 0.3s;
+    .text-xs {
+        font-size: 0.75rem;
     }
 
-    .bg-soft-green {
-        background-color: rgba(133, 200, 26, 0.1);
-        color: var(--primary);
+    /* Reemplazo de utilidades de Tailwind */
+    .w-20 {
+        width: 5rem;
     }
 
-    .bg-soft-blue {
-        background-color: rgba(56, 189, 248, 0.1);
-        color: #0ea5e9;
+    .h-20 {
+        height: 5rem;
     }
 
-    .bg-soft-orange {
-        background-color: rgba(249, 115, 22, 0.1);
+    .aspect-square {
+        aspect-ratio: 1 / 1;
+    }
+
+    .meal-card {
+        border-radius: var(--card-radius);
+        border: none;
+        background: white;
+    }
+
+    .btn-primary-custom {
+        background-color: var(--primary-color);
+        color: white;
+        border-radius: 50px;
+        font-weight: 800;
+        padding: 12px 24px;
+        border: none;
+        width: 100%;
+    }
+
+    .btn-primary-custom:hover {
+        background-color: #74b017;
+        color: white;
+    }
+
+    .calendar-day.active {
+        background-color: var(--primary-color);
+        color: white !important;
+        border-radius: 50%;
+        font-weight: 800;
+        box-shadow: 0 4px 12px rgba(133, 200, 26, 0.3);
+    }
+
+    .calorie-ring-container {
+        position: relative;
+        width: 180px;
+        height: 180px;
+        margin: 0 auto;
+    }
+
+    .calorie-ring svg {
+        transform: rotate(-90deg);
+    }
+
+    .calorie-ring-bg {
+        fill: none;
+        stroke: #e2e8f0;
+        stroke-width: 12;
+    }
+
+    .calorie-ring-progress {
+        fill: none;
+        stroke: var(--primary-color);
+        stroke-width: 12;
+        stroke-linecap: round;
+        stroke-dasharray: 440;
+        stroke-dashoffset: 198;
+        transition: stroke-dashoffset 1s ease-out;
+    }
+
+    .calorie-ring-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+
+    .macro-card {
+        background: white;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .macro-card:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .micro-progress {
+        height: 4px;
+        border-radius: 2px;
+        background-color: #f1f5f9;
+        overflow: hidden;
+    }
+
+    /* Colores de fondo personalizados */
+    .bg-blue-50 {
+        background-color: #eff6ff;
+    }
+
+    .bg-orange-50 {
+        background-color: #fff7ed;
+    }
+
+    .bg-yellow-50 {
+        background-color: #fefce8;
+    }
+
+    .bg-emerald-50 {
+        background-color: #ecfdf5;
+    }
+
+    .text-blue-500 {
+        color: #3b82f6;
+    }
+
+    .text-orange-500 {
         color: #f97316;
     }
 
-    .summary-card {
-        background: var(--bg-content);
-        border: 1px solid rgba(0, 0, 0, 0.05);
-        border-radius: 1.5rem;
-        padding: 1.5rem;
-        text-align: center;
+    .text-yellow-500 {
+        color: #eab308;
+    }
+
+    .text-emerald-500 {
+        color: #10b981;
     }
 </style>
+{% endblock %}
 
-<header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-5 mt-2">
-    <div>
-        <h1 class="h3 fw-900 mb-1" style="font-weight: 900;">Tu Diario Personal</h1>
-        <p class="text-muted small mb-0 fw-bold">Seguimiento diario de nutrición y bienestar.</p>
-    </div>
-    <div class="bg-white dark-mode-bg-dark border rounded-pill px-4 py-2 fw-black shadow-sm d-inline-flex align-items-center"
-        style="font-size: 0.9rem;">
-        <span class="material-symbols-outlined me-2 text-primary" style="font-size: 1.2rem;">calendar_month</span>
-        Hoy, {% now "j M" %}
-    </div>
-</header>
+{% block container_class %}container py-5{% endblock %}
 
-<!-- Resumen del día -->
-<div class="row g-3 mb-5">
-    <div class="col-6 col-md-3">
-        <div class="summary-card">
-            <p class="text-xs-bold text-muted mb-2">Proteínas</p>
-            <p class="h4 fw-black mb-0">65g</p>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="summary-card">
-            <p class="text-xs-bold text-muted mb-2">Carbos</p>
-            <p class="h4 fw-black mb-0">120g</p>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="summary-card">
-            <p class="text-xs-bold text-muted mb-2">Grasas</p>
-            <p class="h4 fw-black mb-0">42g</p>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="summary-card border-primary border-opacity-50">
-            <p class="text-xs-bold text-primary mb-2">Calorías</p>
-            <p class="h4 fw-black mb-0 text-primary">1,118</p>
-        </div>
-    </div>
-</div>
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <section class="card meal-card p-4 shadow-sm mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <button class="btn btn-light rounded-circle p-2 d-flex align-items-center">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <h2 class="h5 mb-0 fw-black">Agosto 2024</h2>
+                <button class="btn btn-light rounded-circle p-2 d-flex align-items-center">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+            </div>
+            <div class="row text-center g-1">
+                <div class="col">
+                    <div class="text-xs fw-bold text-secondary mb-2">DOM</div><button
+                        class="btn w-100 aspect-square d-flex align-items-center justify-content-center">4</button>
+                </div>
+                <div class="col">
+                    <div class="text-xs fw-bold text-secondary mb-2">LUN</div><button
+                        class="btn w-100 aspect-square d-flex align-items-center justify-content-center calendar-day active">5</button>
+                </div>
+                <div class="col">
+                    <div class="text-xs fw-bold text-secondary mb-2">MAR</div><button
+                        class="btn w-100 aspect-square d-flex align-items-center justify-content-center">6</button>
+                </div>
+                <div class="col">
+                    <div class="text-xs fw-bold text-secondary mb-2">MIÉ</div><button
+                        class="btn w-100 aspect-square d-flex align-items-center justify-content-center">7</button>
+                </div>
+                <div class="col">
+                    <div class="text-xs fw-bold text-secondary mb-2">JUE</div><button
+                        class="btn w-100 aspect-square d-flex align-items-center justify-content-center">8</button>
+                </div>
+                <div class="col">
+                    <div class="text-xs fw-bold text-secondary mb-2">VIE</div><button
+                        class="btn w-100 aspect-square d-flex align-items-center justify-content-center">9</button>
+                </div>
+                <div class="col">
+                    <div class="text-xs fw-bold text-secondary mb-2">SÁB</div><button
+                        class="btn w-100 aspect-square d-flex align-items-center justify-content-center">10</button>
+                </div>
+            </div>
+        </section>
 
-<!-- Lista de registros -->
-<div class="log-list">
-    <div class="log-item">
-        <div class="log-time">08:30 AM</div>
-        <div class="log-icon bg-soft-green"><span class="material-symbols-outlined">coffee</span></div>
-        <div class="flex-grow-1">
-            <h6 class="fw-black mb-0">Desayuno Completo</h6>
-            <p class="small text-muted mb-0 fw-bold">Avena, Huevos, Café</p>
-        </div>
-        <div class="text-end">
-            <p class="fw-black mb-0">420</p>
-            <p class="x-small text-muted mb-0 fw-bold">kcal</p>
-        </div>
+        <section>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="h4 mb-0 fw-black">Comidas de Hoy</h2>
+                <button class="btn btn-link text-decoration-none p-0 d-flex align-items-center gap-1"
+                    style="color: var(--primary-color);">
+                    <span class="material-symbols-outlined fs-5">add_circle</span>
+                    <span class="fw-bold">Añadir Comida</span>
+                </button>
+            </div>
+
+            <div class="d-flex flex-column gap-3">
+                <div class="meal-card p-3 shadow-sm d-flex align-items-center gap-3 border">
+                    <div class="w-20 h-20 rounded-4 overflow-hidden flex-shrink-0">
+                        <img alt="Tostada" class="w-100 h-100 object-fit-cover"
+                            src="https://images.unsplash.com/photo-1525351484163-7529414344d8?w=200&h=200&fit=crop" />
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between">
+                            <h3 class="h6 mb-1 fw-black">Tostada de Aguacate</h3>
+                            <span class="text-xs text-secondary fw-bold">08:30 AM</span>
+                        </div>
+                        <p class="text-xs text-secondary mb-0">420 kcal • 15g Proteína • 35g Carbos</p>
+                    </div>
+                    <span class="material-symbols-outlined" style="color: var(--primary-color);">check_circle</span>
+                </div>
+
+                <div class="meal-card p-3 shadow-sm d-flex align-items-center gap-3 border">
+                    <div class="w-20 h-20 rounded-4 overflow-hidden flex-shrink-0">
+                        <img alt="Bowl" class="w-100 h-100 object-fit-cover"
+                            src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200&h=200&fit=crop" />
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between">
+                            <h3 class="h6 mb-1 fw-black">Quinoa Power Bowl</h3>
+                            <span class="text-xs text-secondary fw-bold">01:00 PM</span>
+                        </div>
+                        <p class="text-xs text-secondary mb-0">580 kcal • 32g Proteína • 45g Carbos</p>
+                    </div>
+                    <span class="material-symbols-outlined text-muted">radio_button_unchecked</span>
+                </div>
+            </div>
+        </section>
     </div>
 
-    <div class="log-item">
-        <div class="log-time">11:15 AM</div>
-        <div class="log-icon bg-soft-blue"><span class="material-symbols-outlined">water_drop</span></div>
-        <div class="flex-grow-1">
-            <h6 class="fw-black mb-0">Hidratación</h6>
-            <p class="small text-muted mb-0 fw-bold">500ml agua mineral</p>
-        </div>
-        <div class="text-end">
-            <p class="fw-black mb-0 text-primary">0</p>
-            <p class="x-small text-muted mb-0 fw-bold">kcal</p>
-        </div>
-    </div>
+    <div class="col-lg-4">
+        <section class="card meal-card p-4 shadow mb-4 border-0">
+            <h2 class="h5 fw-black mb-4 text-center">Resumen Diario</h2>
+            <div class="calorie-ring-container mb-4">
+                <div class="calorie-ring">
+                    <svg height="180" width="180">
+                        <circle class="calorie-ring-bg" cx="90" cy="90" r="70"></circle>
+                        <circle class="calorie-ring-progress" cx="90" cy="90" r="70" stroke-opacity="0.9"></circle>
+                    </svg>
+                    <div class="calorie-ring-content">
+                        <span class="d-block h2 fw-black mb-0">1,210</span>
+                        <span class="text-xs text-secondary fw-bold text-uppercase">Consumidas</span>
+                        <hr class="my-1 text-secondary opacity-25" />
+                        <span class="text-sm fw-black" style="color: var(--primary-color);">Faltan 990</span>
+                    </div>
+                </div>
+            </div>
 
-    <div class="log-item">
-        <div class="log-time">02:20 PM</div>
-        <div class="log-icon bg-soft-orange"><span class="material-symbols-outlined">restaurant</span></div>
-        <div class="flex-grow-1">
-            <h6 class="fw-black mb-0">Almuerzo Ejecutivo</h6>
-            <p class="small text-muted mb-0 fw-bold">Pechuga, Arroz integral, Ensalada</p>
-        </div>
-        <div class="text-end">
-            <p class="fw-black mb-0">698</p>
-            <p class="x-small text-muted mb-0 fw-bold">kcal</p>
-        </div>
-    </div>
-</div>
+            <div class="d-flex flex-column gap-2 mb-4">
+                <div class="macro-card p-3">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="p-2 rounded-circle bg-blue-50 d-flex">
+                                <span class="material-symbols-outlined text-blue-500 fs-5">fitness_center</span>
+                            </div>
+                            <span class="text-xs fw-bold text-secondary">Proteína</span>
+                        </div>
+                        <span class="text-sm fw-black">59g / 150g</span>
+                    </div>
+                    <div class="micro-progress">
+                        <div class="h-100" style="width: 39%; background-color: var(--protein-color);"></div>
+                    </div>
+                </div>
 
-<!-- Botón flotante para añadir -->
-<div class="text-center mt-5 mb-5">
-    <button class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-lg d-inline-flex align-items-center gap-2">
-        <span class="material-symbols-outlined">add_circle</span>
-        Añadir Registro
-    </button>
+                <div class="macro-card p-3">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="p-2 rounded-circle bg-orange-50 d-flex">
+                                <span class="material-symbols-outlined text-orange-500 fs-5">energy_savings_leaf</span>
+                            </div>
+                            <span class="text-xs fw-bold text-secondary">Carbos</span>
+                        </div>
+                        <span class="text-sm fw-black">90g / 220g</span>
+                    </div>
+                    <div class="micro-progress">
+                        <div class="h-100" style="width: 41%; background-color: var(--carbs-color);"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-2">
+                <div class="col-6">
+                    <div class="bg-blue-50 p-3 rounded-4 text-center border border-info-subtle">
+                        <span class="material-symbols-outlined text-info mb-1">water_drop</span>
+                        <div class="text-xs text-secondary fw-bold">Agua</div>
+                        <div class="fw-black text-sm text-primary">1.5 / 3L</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="bg-emerald-50 p-3 rounded-4 text-center border border-success-subtle">
+                        <span class="material-symbols-outlined text-success mb-1">grain</span>
+                        <div class="text-xs text-secondary fw-bold">Fibra</div>
+                        <div class="fw-black text-sm text-success">18g / 30g</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card meal-card p-4 shadow-sm border-0">
+            <div class="mb-4">
+                <h2 class="h5 fw-black mb-2">Crea tu Plan</h2>
+                <p class="text-sm text-secondary">Ajusta tus objetivos para maximizar tu rendimiento físico.</p>
+            </div>
+            <button class="btn btn-primary-custom d-flex align-items-center justify-content-center gap-2">
+                <span class="material-symbols-outlined">add_circle</span>
+                Crear Dieta Personalizada
+            </button>
+        </section>
+    </div>
 </div>
 {% endblock %}
