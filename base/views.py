@@ -903,3 +903,54 @@ def admin_registro(request):
         'base_template': get_base_template(request),
         'form': form
     })
+@login_required
+def crear_receta(request):
+    if request.method == 'POST':
+        try:
+            from .models import Receta
+            
+            # Extract basic data
+            titulo = request.POST.get('titulo')
+            dieta = request.POST.get('dieta')
+            tiempo = request.POST.get('tiempo')
+            img_url = request.POST.get('imagen_url')
+            desc = request.POST.get('descripcion')
+            
+            # Extract macros (default to 0 if empty)
+            calorias = int(request.POST.get('calorias') or 0)
+            proteinas = int(request.POST.get('proteinas') or 0)
+            carbos = int(request.POST.get('carbos') or 0)
+            grasas = int(request.POST.get('grasas') or 0)
+
+            # Process Ingredients
+            nombres = request.POST.getlist('ingredientes_nombres')
+            cantidades = request.POST.getlist('ingredientes_cantidades')
+            
+            ingredientes_txt = ""
+            if nombres and len(nombres) > 0:
+                ingredientes_txt = "\n\nINGREDIENTES:\n"
+                for n, c in zip(nombres, cantidades):
+                     if n.strip():
+                        ingredientes_txt += f"- {n.strip()} ({c.strip()})\n"
+            
+            final_desc = desc + ingredientes_txt
+
+            Receta.objects.create(
+                perfil_creador=request.user.perfil,
+                titulo=titulo,
+                tipo_dieta=dieta,
+                tiempo=tiempo,
+                imagen_url=img_url if img_url else None,
+                descripcion=final_desc,
+                calorias=calorias,
+                proteinas=proteinas,
+                carbos=carbos,
+                grasas=grasas,
+                categoria="personalizada"
+            )
+            
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+    
+    return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)

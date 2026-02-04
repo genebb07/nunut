@@ -282,18 +282,21 @@ class RegistroSueno(models.Model):
 class Receta(models.Model):
     titulo = models.CharField(max_length=200)
     descripcion = models.TextField(blank=True)
-    imagen_url = models.URLField(max_length=500)
+    imagen_url = models.URLField(max_length=500, blank=True, null=True)
     calorias = models.IntegerField()
     tiempo = models.CharField(max_length=50) # '25 min'
     rating = models.DecimalField(max_digits=3, decimal_places=1, default=4.5)
     
-    # Macros
-    proteinas = models.CharField(max_length=50)
-    carbos = models.CharField(max_length=50)
-    grasas = models.CharField(max_length=50)
+    # Macros como números para facilitar cálculos
+    proteinas = models.IntegerField(default=0)
+    carbos = models.IntegerField(default=0)
+    grasas = models.IntegerField(default=0)
     
     tipo_dieta = models.CharField(max_length=10, choices=Perfil.OPCIONES_DIETA, default='OMNI')
     categoria = models.CharField(max_length=50, default='explorar') # explorar, desayuno...
+    
+    # Usuario que creó la receta (si es nulo, es una receta del sistema)
+    perfil_creador = models.ForeignKey(Perfil, on_delete=models.SET_NULL, null=True, blank=True, related_name='recetas_propias')
 
     def __str__(self): return self.titulo
 

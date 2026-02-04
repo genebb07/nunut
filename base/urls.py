@@ -23,6 +23,7 @@ urlpatterns = [
     path('toggle_dark_mode/', views.toggle_dark_mode, name='toggle_dark_mode'),
     path('api/toggle_favorito/<int:receta_id>/', views.toggle_favorito, name='toggle_favorito'),
     path('api/toggle_guardado/<int:articulo_id>/', views.toggle_guardado, name='toggle_guardado'),
+    path('api/crear_receta/', views.crear_receta, name='crear_receta'),
     path('cerrar_sesion/', views.cerrar_sesion, name='cerrar_sesion'),
     path('gestion-nunut/dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('gestion-nunut/registro/', views.admin_registro, name='admin_registro'),
