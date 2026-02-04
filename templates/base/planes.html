@@ -271,7 +271,7 @@
     .recipe-creator-container {
         width: 100%;
         max-width: 600px;
-        height: 90vh;
+        height: 70vh;
         background: var(--bg-content);
         border-radius: 2rem;
         overflow: hidden;
@@ -279,6 +279,26 @@
         flex-direction: column;
         transform: translateY(50px);
         transition: all 0.4s;
+    }
+
+    .recipe-creator-container main {
+        flex-grow: 1;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary-color) transparent;
+    }
+
+    .recipe-creator-container main::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .recipe-creator-container main::-webkit-scrollbar-thumb {
+        background-color: var(--primary-color);
+        border-radius: 10px;
+    }
+
+    .overlay-active {
+        overflow: hidden !important;
     }
 
     .recipe-creator-overlay.show .recipe-creator-container {
@@ -391,11 +411,11 @@
                     <h3 class="h6 fw-bold line-clamp-2 mb-1" style="min-height: 2.4em;">{{ receta.titulo }}</h3>
                     <div class="d-flex flex-wrap gap-1 mb-3">
                         <span class="macro-pill"
-                            style="background: var(--macro-protein); color: var(--macro-protein-text);">P: {{ receta.proteinas }}</span>
+                            style="background: var(--macro-protein); color: var(--macro-protein-text);">P: {{receta.proteinas }}</span>
                         <span class="macro-pill"
-                            style="background: var(--macro-carbs); color: var(--macro-carbs-text);">C: {{ receta.carbos }}</span>
+                            style="background: var(--macro-carbs); color: var(--macro-carbs-text);">C: {{ receta.carbos}}</span>
                         <span class="macro-pill"
-                            style="background: var(--macro-fats); color: var(--macro-fats-text);">G: {{ receta.grasas }}</span>
+                            style="background: var(--macro-fats); color: var(--macro-fats-text);">G: {{ receta.grasas}}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center pt-2 border-top">
                         <div class="d-flex align-items-center gap-1 text-muted" style="font-size: 11px;">
