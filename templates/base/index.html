@@ -90,9 +90,34 @@
         letter-spacing: 0.05em;
     }
 
-    /* Override para que el header de index.html no se vea duplicado si usamos el de base.html 
-       pero el usuario pidió no modificar la interfaz, así que mantendremos el de index.html 
-       si es necesario o adaptaremos. */
+    /* Guest Mode Styles */
+    .blur-preview {
+        filter: blur(8px);
+        user-select: none;
+        pointer-events: none;
+        opacity: 0.6;
+    }
+
+    .lock-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(4px);
+        z-index: 10;
+        border-radius: 1.5rem;
+    }
+
+    body.dark-mode .lock-overlay {
+        background: rgba(0, 0, 0, 0.4);
+    }
+
+    .position-relative {
+        position: relative !important;
+    }
 </style>
 {% endblock %}
 
@@ -113,8 +138,13 @@
             {% endif %}
         </div>
         <div>
+            {% if es_invitado %}
+            <h2 class="text-xs-bold text-muted mb-0">Modo Invitado</h2>
+            <p class="h3 fw-900 mb-0" style="font-weight: 900;">Vista Previa</p>
+            {% else %}
             <h2 class="text-xs-bold text-muted mb-0">¡Hola de nuevo, {{ user.first_name|default:user.username }}!</h2>
             <p class="h3 fw-900 mb-0" style="font-weight: 900;">Dashboard Nutricional</p>
+            {% endif %}
         </div>
     </div>
     <div class="d-none d-md-flex align-items-center gap-3 card-custom px-4 py-2 border-0 shadow-sm">
@@ -129,102 +159,126 @@
 <div class="row g-4">
     <main class="col-lg-8">
         {% if informe %}
-        <section class="card-custom hero-card p-4 p-md-5 mb-4">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <p class="text-xs-bold text-white-50 mb-1">Calorías Restantes</p>
-                    <h3 class="display-3 fw-900 mb-4" style="font-weight: 900;">{{ informe.plan.calorias_dia }} <small
-                            class="fs-4 fw-normal opacity-75">kcal</small></h3>
+        <section class="card-custom hero-card p-4 p-md-5 mb-4 position-relative">
+            {% if es_invitado %}
+            <div class="lock-overlay">
+                <span class="material-symbols-outlined fs-2 text-white mb-2">lock</span>
+                <span class="badge bg-white text-dark rounded-pill fw-bold border-0 px-3 py-2">ANÁLISIS DE
+                    CALORÍAS</span>
+            </div>
+            <div class="blur-preview">
+                {% endif %}
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <p class="text-xs-bold text-white-50 mb-1">Calorías Restantes</p>
+                        <h3 class="display-3 fw-900 mb-4" style="font-weight: 900;">{{ informe.plan.calorias_dia }}
+                            <small class="fs-4 fw-normal opacity-75">kcal</small>
+                        </h3>
 
-                    <div class="mb-2 d-flex justify-content-between text-xs-bold opacity-75">
-                        <span>Consumido: 0 kcal</span>
-                        <span>Objetivo: {{ informe.plan.calorias_dia }} kcal</span>
+                        <div class="mb-2 d-flex justify-content-between text-xs-bold opacity-75">
+                            <span>Consumido: 0 kcal</span>
+                            <span>Objetivo: {{ informe.plan.calorias_dia }} kcal</span>
+                        </div>
+                        <div class="progress"
+                            style="height: 12px; border-radius: 10px; background: rgba(255,255,255,0.2);">
+                            <div class="progress-bar bg-white shadow-sm" style="width: 0%; border-radius: 10px;"></div>
+                        </div>
                     </div>
-                    <div class="progress" style="height: 12px; border-radius: 10px; background: rgba(255,255,255,0.2);">
-                        <div class="progress-bar bg-white shadow-sm" style="width: 0%; border-radius: 10px;"></div>
-                    </div>
-                </div>
-                <div class="col-md-4 d-flex justify-content-center mt-4 mt-md-0">
-                    <div class="position-relative" style="width: 170px; height: 170px;">
-                        <svg class="svg-chart w-100 h-100">
-                            <circle cx="85" cy="85" r="75" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="12">
-                            </circle>
-                            <circle cx="85" cy="85" r="75" fill="none" stroke="white" stroke-width="12"
-                                stroke-dasharray="471" stroke-dashoffset="471" stroke-linecap="round"></circle>
-                        </svg>
-                        <div class="position-absolute top-50 start-50 translate-middle glass-inner d-flex flex-column align-items-center justify-content-center"
-                            style="width: 130px; height: 130px;">
-                            <span class="h2 fw-900 mb-0">0%</span>
-                            <span class="text-xs-bold" style="font-size: 0.6rem;">Meta Diaria</span>
+                    <div class="col-md-4 d-flex justify-content-center mt-4 mt-md-0">
+                        <div class="position-relative" style="width: 170px; height: 170px;">
+                            <svg class="svg-chart w-100 h-100">
+                                <circle cx="85" cy="85" r="75" fill="none" stroke="rgba(255,255,255,0.2)"
+                                    stroke-width="12">
+                                </circle>
+                                <circle cx="85" cy="85" r="75" fill="none" stroke="white" stroke-width="12"
+                                    stroke-dasharray="471" stroke-dashoffset="471" stroke-linecap="round"></circle>
+                            </svg>
+                            <div class="position-absolute top-50 start-50 translate-middle glass-inner d-flex flex-column align-items-center justify-content-center"
+                                style="width: 130px; height: 130px;">
+                                <span class="h2 fw-900 mb-0">0%</span>
+                                <span class="text-xs-bold" style="font-size: 0.6rem;">Meta Diaria</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+                {% if es_invitado %}
+            </div>{% endif %}
         </section>
 
         <h3 class="h5 fw-900 mb-4">Distribución de Macros</h3>
-        <div class="row row-cols-2 row-cols-lg-4 g-3 mb-5">
-            <div class="col">
-                <div class="card-custom p-4">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="icon-box bg-primary-subtle text-primary">
-                            <span class="material-symbols-outlined">fitness_center</span>
+        <div class="position-relative">
+            {% if es_invitado %}
+            <div class="lock-overlay" style="z-index: 20;">
+                <span class="material-symbols-outlined fs-1 text-primary mb-2">lock</span>
+                <span class="badge bg-dark text-white rounded-pill fw-bold border-0 px-3 py-2">MACRONUTRIENTES</span>
+            </div>
+            <div class="blur-preview">
+                {% endif %}
+                <div class="row row-cols-2 row-cols-lg-4 g-3 mb-5">
+                    <div class="col">
+                        <div class="card-custom p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="icon-box bg-primary-subtle text-primary">
+                                    <span class="material-symbols-outlined">fitness_center</span>
+                                </div>
+                                <span class="text-xs-bold text-muted">{{ informe.porcentajes.prot_pct }}%</span>
+                            </div>
+                            <h4 class="h3 fw-900 mb-0">{{ informe.plan.proteinas_g }}g</h4>
+                            <p class="text-muted small fw-bold">Proteína</p>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-primary" style="width: 0%;"></div>
+                            </div>
                         </div>
-                        <span class="text-xs-bold text-muted">{{ informe.porcentajes.prot_pct }}%</span>
                     </div>
-                    <h4 class="h3 fw-900 mb-0">{{ informe.plan.proteinas_g }}g</h4>
-                    <p class="text-muted small fw-bold">Proteína</p>
-                    <div class="progress" style="height: 6px;">
-                        <div class="progress-bar bg-primary" style="width: 0%;"></div>
+                    <div class="col">
+                        <div class="card-custom p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="icon-box bg-warning-subtle text-warning">
+                                    <span class="material-symbols-outlined">bakery_dining</span>
+                                </div>
+                                <span class="text-xs-bold text-muted">{{ informe.porcentajes.carbs_pct }}%</span>
+                            </div>
+                            <h4 class="h3 fw-900 mb-0">{{ informe.plan.carbohidratos_g }}g</h4>
+                            <p class="text-muted small fw-bold">Carbos</p>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-warning" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card-custom p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="icon-box bg-danger-subtle text-danger">
+                                    <span class="material-symbols-outlined">oil_barrel</span>
+                                </div>
+                                <span class="text-xs-bold text-muted">{{ informe.porcentajes.grasa_pct }}%</span>
+                            </div>
+                            <h4 class="h3 fw-900 mb-0">{{ informe.plan.grasas_g }}g</h4>
+                            <p class="text-muted small fw-bold">Grasas</p>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-danger" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card-custom p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="icon-box bg-success-subtle" style="color: var(--primary);">
+                                    <span class="material-symbols-outlined">eco</span>
+                                </div>
+                                <span class="text-xs-bold text-muted">OBJ</span>
+                            </div>
+                            <h4 class="h3 fw-900 mb-0">{{ user.perfil.get_objetivo_display|default:"Salud" }}</h4>
+                            <p class="text-muted small fw-bold">Meta</p>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-success"
+                                    style="width: 100%; background-color: var(--primary) !important;"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col">
-                <div class="card-custom p-4">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="icon-box bg-warning-subtle text-warning">
-                            <span class="material-symbols-outlined">bakery_dining</span>
-                        </div>
-                        <span class="text-xs-bold text-muted">{{ informe.porcentajes.carbs_pct }}%</span>
-                    </div>
-                    <h4 class="h3 fw-900 mb-0">{{ informe.plan.carbohidratos_g }}g</h4>
-                    <p class="text-muted small fw-bold">Carbos</p>
-                    <div class="progress" style="height: 6px;">
-                        <div class="progress-bar bg-warning" style="width: 0%;"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="card-custom p-4">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="icon-box bg-danger-subtle text-danger">
-                            <span class="material-symbols-outlined">oil_barrel</span>
-                        </div>
-                        <span class="text-xs-bold text-muted">{{ informe.porcentajes.grasa_pct }}%</span>
-                    </div>
-                    <h4 class="h3 fw-900 mb-0">{{ informe.plan.grasas_g }}g</h4>
-                    <p class="text-muted small fw-bold">Grasas</p>
-                    <div class="progress" style="height: 6px;">
-                        <div class="progress-bar bg-danger" style="width: 0%;"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="card-custom p-4">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="icon-box bg-success-subtle" style="color: var(--primary);">
-                            <span class="material-symbols-outlined">eco</span>
-                        </div>
-                        <span class="text-xs-bold text-muted">OBJ</span>
-                    </div>
-                    <h4 class="h3 fw-900 mb-0">{{ user.perfil.get_objetivo_display|default:"Salud" }}</h4>
-                    <p class="text-muted small fw-bold">Meta</p>
-                    <div class="progress" style="height: 6px;">
-                        <div class="progress-bar bg-success"
-                            style="width: 100%; background-color: var(--primary) !important;"></div>
-                    </div>
-                </div>
-            </div>
+                {% if es_invitado %}
+            </div>{% endif %}
         </div>
         {% else %}
         <div class="card-custom p-5 text-center mb-4">
@@ -240,7 +294,9 @@
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="h5 fw-900 mb-0">Comidas Sugeridas</h3>
-            <a href="#" class="fw-bold text-decoration-none small" style="color: var(--primary);">Ver plan completo</a>
+            <a href="{% url 'base:planes' %}" hx-get="{% url 'base:planes' %}" hx-target="#main-content"
+                hx-select="#main-content" hx-swap="outerHTML" hx-push-url="true"
+                class="fw-bold text-decoration-none small" style="color: var(--primary);">Ver plan completo</a>
         </div>
         <div class="row g-3">
             <div class="col-6 col-md-3">
@@ -264,68 +320,129 @@
     </main>
 
     <aside class="col-lg-4">
-        <div class="card-custom p-4 mb-4 border-start border-4 border-primary">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div class="d-flex align-items-center gap-2">
-                    <span class="material-symbols-outlined text-primary fs-2">water_drop</span>
-                    <h4 class="fw-900 h5 mb-0">Hidratación</h4>
-                </div>
-                <span class="badge bg-primary-subtle text-primary rounded-pill text-xs-bold">50% Meta</span>
-            </div>
-            <div class="row g-2 water-grid mb-4">
-                <div class="col-auto bg-primary"></div>
-                <div class="col-auto bg-primary"></div>
-                <div class="col-auto bg-primary"></div>
-                <div class="col-auto bg-light border"></div>
-                <div class="col-auto bg-light border"></div>
-                <div class="col-auto bg-light border"></div>
-            </div>
-            <div class="text-center">
-                <h4 class="h2 fw-900 mb-0">1.5 <small class="text-muted h6">/ 3 Lts</small></h4>
-                <p class="text-xs-bold text-muted">Faltan 6 vasos hoy</p>
-            </div>
-        </div>
-
-        <div class="card-custom p-4 mb-4 border-start border-4 border-success"
-            style="border-color: var(--primary) !important;">
-            <div class="d-flex align-items-center gap-2 mb-4">
-                <span class="material-symbols-outlined fs-2" style="color: var(--primary);">directions_walk</span>
-                <h4 class="fw-900 h5 mb-0">Pasos Diarios</h4>
-            </div>
-            <div class="d-flex align-items-center gap-4">
-                <div class="position-relative" style="width: 90px; height: 90px;">
-                    <svg class="svg-chart w-100 h-100">
-                        <circle cx="45" cy="45" r="40" fill="none" stroke="#eee" stroke-width="8"></circle>
-                        <circle cx="45" cy="45" r="40" fill="none" stroke="#85c81a" stroke-width="8"
-                            stroke-dasharray="251" stroke-dashoffset="62" stroke-linecap="round"></circle>
-                    </svg>
-                    <span class="position-absolute top-50 start-50 translate-middle fw-900">75%</span>
+        <!-- SECCIÓN DE RECOMENDACIONES IA -->
+        <div class="card-custom p-4 mb-4 border-0 shadow-sm"
+            style="background: linear-gradient(135deg, #1a1c18 0%, #2c3421 100%);">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="glass-inner d-flex align-items-center justify-content-center"
+                    style="width: 45px; height: 45px; background: rgba(133, 200, 26, 0.2);">
+                    <span class="material-symbols-outlined text-primary">psychology</span>
                 </div>
                 <div>
-                    <h4 class="h2 fw-900 mb-0">7,542</h4>
-                    <p class="small text-muted mb-1">Objetivo: 10,000</p>
-                    <span class="small fw-bold" style="color: var(--primary);">↑ +12% vs ayer</span>
+                    <h4 class="fw-900 h6 mb-0 text-white">Coach IA nunut</h4>
+                    <span class="text-xs-bold text-primary" style="font-size: 0.6rem;">Análisis en tiempo real</span>
+                </div>
+            </div>
+
+            <div id="ia-recommendation-container" class="position-relative">
+                <p class="small text-white opacity-75 mb-3 italic" id="ia-message">
+                    {% if user.username == 'invitado' %}
+                    "¡Bienvenido! Regístrate para que pueda analizar tu perfil y darte consejos personalizados para
+                    optimizar tu salud."
+                    {% elif not user.perfil.onboarding_completado %}
+                    "Veo que aún no terminas tu perfil. Complétalo para darte mi primer análisis biométrico."
+                    {% else %}
+                    "Tu racha de 15 días es impresionante. Mantén este ritmo y verás cambios significativos en tu
+                    energía basal esta semana."
+                    {% endif %}
+                </p>
+
+                <div class="d-flex gap-2 mb-2">
+                    <span class="badge rounded-pill bg-white bg-opacity-10 text-white-50 x-small fw-bold"
+                        style="font-size: 0.6rem;">#Motivación</span>
+                    <span class="badge rounded-pill bg-white bg-opacity-10 text-white-50 x-small fw-bold"
+                        style="font-size: 0.6rem;">#TipSalud</span>
                 </div>
             </div>
         </div>
 
-        <div class="card-custom p-4 border-dashed"
+        <div class="card-custom p-4 mb-4 border-start border-4 border-primary position-relative">
+            {% if es_invitado %}
+            <div class="lock-overlay">
+                <span class="material-symbols-outlined fs-2 text-primary">lock</span>
+            </div>
+            <div class="blur-preview">
+                {% endif %}
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined text-primary fs-2">water_drop</span>
+                        <h4 class="fw-900 h5 mb-0">Hidratación</h4>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary rounded-pill text-xs-bold">50% Meta</span>
+                </div>
+                <div class="row g-2 water-grid mb-4">
+                    <div class="col-auto bg-primary"></div>
+                    <div class="col-auto bg-primary"></div>
+                    <div class="col-auto bg-primary"></div>
+                    <div class="col-auto bg-light border"></div>
+                    <div class="col-auto bg-light border"></div>
+                    <div class="col-auto bg-light border"></div>
+                </div>
+                <div class="text-center">
+                    <h4 class="h2 fw-900 mb-0">1.5 <small class="text-muted h6">/ 3 Lts</small></h4>
+                    <p class="text-xs-bold text-muted">Faltan 6 vasos hoy</p>
+                </div>
+                {% if es_invitado %}
+            </div>{% endif %}
+        </div>
+
+        <div class="card-custom p-4 mb-4 border-start border-4 border-success position-relative"
+            style="border-color: var(--primary) !important;">
+            {% if es_invitado %}
+            <div class="lock-overlay">
+                <span class="material-symbols-outlined fs-2 text-primary">lock</span>
+            </div>
+            <div class="blur-preview">
+                {% endif %}
+                <div class="d-flex align-items-center gap-2 mb-4">
+                    <span class="material-symbols-outlined fs-2" style="color: var(--primary);">directions_walk</span>
+                    <h4 class="fw-900 h5 mb-0">Pasos Diarios</h4>
+                </div>
+                <div class="d-flex align-items-center gap-4">
+                    <div class="position-relative" style="width: 90px; height: 90px;">
+                        <svg class="svg-chart w-100 h-100">
+                            <circle cx="45" cy="45" r="40" fill="none" stroke="#eee" stroke-width="8"></circle>
+                            <circle cx="45" cy="45" r="40" fill="none" stroke="#85c81a" stroke-width="8"
+                                stroke-dasharray="251" stroke-dashoffset="62" stroke-linecap="round"></circle>
+                        </svg>
+                        <span class="position-absolute top-50 start-50 translate-middle fw-900">75%</span>
+                    </div>
+                    <div>
+                        <h4 class="h2 fw-900 mb-0">7,542</h4>
+                        <p class="small text-muted mb-1">Objetivo: 10,000</p>
+                        <span class="small fw-bold" style="color: var(--primary);">↑ +12% vs ayer</span>
+                    </div>
+                </div>
+                {% if es_invitado %}
+            </div>{% endif %}
+        </div>
+
+        <div class="card-custom p-4 border-dashed position-relative"
             style="background: linear-gradient(145deg, var(--bg-light-elite), white); border-color: rgba(133, 200, 26, 0.2);">
-            <h4 class="fw-900 h5 mb-4 text-brand">Análisis Semanal</h4>
-            <div class="d-flex justify-content-between mb-3 border-bottom pb-2"
-                style="border-color: rgba(0,0,0,0.05) !important;">
-                <span class="text-muted small fw-medium">Consumo promedio</span>
-                <span class="fw-bold">2,150 kcal</span>
+            {% if es_invitado %}
+            <div class="lock-overlay">
+                <span class="material-symbols-outlined fs-2 text-primary">lock</span>
+                <a href="{% url 'base:registro' %}" class="btn btn-sm btn-dark rounded-pill mt-2">Crear Cuenta</a>
             </div>
-            <div class="d-flex justify-content-between mb-4 border-bottom pb-2"
-                style="border-color: rgba(0,0,0,0.05) !important;">
-                <span class="text-muted small fw-medium">Sueño promedio</span>
-                <span class="fw-bold">7h 45m</span>
-            </div>
-            <button class="btn btn-outline-success w-100 py-3 text-xs-bold rounded-4"
-                style="border-color: var(--primary-elite); color: var(--primary-dark-elite);">
-                Descargar Informe PDF
-            </button>
+            <div class="blur-preview">
+                {% endif %}
+                <h4 class="fw-900 h5 mb-4 text-brand">Análisis Semanal</h4>
+                <div class="d-flex justify-content-between mb-3 border-bottom pb-2"
+                    style="border-color: rgba(0,0,0,0.05) !important;">
+                    <span class="text-muted small fw-medium">Consumo promedio</span>
+                    <span class="fw-bold">2,150 kcal</span>
+                </div>
+                <div class="d-flex justify-content-between mb-4 border-bottom pb-2"
+                    style="border-color: rgba(0,0,0,0.05) !important;">
+                    <span class="text-muted small fw-medium">Sueño promedio</span>
+                    <span class="fw-bold">7h 45m</span>
+                </div>
+                <button class="btn btn-outline-success w-100 py-3 text-xs-bold rounded-4"
+                    style="border-color: var(--primary-elite); color: var(--primary-dark-elite);">
+                    Descargar Informe PDF
+                </button>
+                {% if es_invitado %}
+            </div>{% endif %}
         </div>
     </aside>
 </div>
