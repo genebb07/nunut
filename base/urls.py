@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import gemini_views
 
 app_name = 'base'
 
@@ -27,4 +28,9 @@ urlpatterns = [
     path('cerrar_sesion/', views.cerrar_sesion, name='cerrar_sesion'),
     path('gestion-nunut/dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('gestion-nunut/registro/', views.admin_registro, name='admin_registro'),
+    path('api/borrar_receta/<int:receta_id>/', views.borrar_receta, name='borrar_receta'),
+    path('editar_receta/<int:receta_id>/', views.editar_receta, name='editar_receta'),
+    path('api/actualizar_agua/', views.actualizar_agua, name='actualizar_agua'),
+    path('api/generar_receta_ia/', gemini_views.generar_receta_ia, name='generar_receta_ia'),
+    path('api/generar_plan_ia/', gemini_views.generar_plan_ia, name='generar_plan_ia'),
 ]

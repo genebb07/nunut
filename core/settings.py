@@ -73,6 +73,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'base.context_processors.racha_context',
             ],
         },
     },
@@ -170,3 +171,5 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'ppyop.dope@gmail.com'  # <--- TU CORREO REAL
 EMAIL_HOST_PASSWORD = 'tnoh hdyw stbh pjwo'  # <--- TU CONTRASEÑA DE APLICACIÓN
 DEFAULT_FROM_EMAIL = 'Nunut <ppyop.dope@gmail.com>'
+
+GEMINI_API_KEY = 'AIzaSyADWeF-zRcei2kAygr-rHopo1l65eBwKTM'

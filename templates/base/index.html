@@ -1,7 +1,7 @@
 {% extends base_template %}
 {% load static %}
 
-{% block title %}Dashboard Nutricional Elite | nunut{% endblock %}
+{% block title %}Inicio | nunut{% endblock %}
 
 {% block extra_head %}
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
@@ -31,6 +31,7 @@
         border-radius: 1.5rem;
         box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
         overflow: hidden;
+        box-sizing: border-box;
     }
 
     body.dark-mode .card-custom {
@@ -118,6 +119,43 @@
     .position-relative {
         position: relative !important;
     }
+
+    /* Glass Icons */
+    .water-glass {
+        color: #e2e8f0;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .water-glass.active {
+        color: #3abff8;
+        transform: scale(1.2) translateY(-2px);
+        filter: drop-shadow(0 4px 8px rgba(58, 191, 248, 0.3));
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .btn-water {
+        border: 2px solid #3abff8;
+        color: #3abff8;
+        background: transparent;
+        width: 36px;
+        height: 36px;
+        transition: all 0.2s;
+    }
+
+    .btn-water:hover {
+        background: #3abff8;
+        color: white;
+        transform: scale(1.1);
+    }
+
+    .dark-mode .water-glass {
+        color: #2c2f26;
+    }
+
+    .dark-mode .water-glass.active {
+        color: #3abff8;
+    }
 </style>
 {% endblock %}
 
@@ -147,11 +185,12 @@
             {% endif %}
         </div>
     </div>
-    <div class="d-none d-md-flex align-items-center gap-3 card-custom px-4 py-2 border-0 shadow-sm">
+    <div class="d-none d-md-flex align-items-center gap-3 card-custom px-4 py-2 shadow-sm"
+        style="border: 1px solid rgba(0, 0, 0, 0.08); box-sizing: border-box;">
         <span class="material-symbols-outlined fs-2" style="color: var(--primary);">local_fire_department</span>
         <div>
             <p class="text-xs-bold text-muted mb-0">Racha Actual</p>
-            <span class="fw-bold fs-5">15 Días Seguidos</span>
+            <span class="fw-bold fs-5" id="streak-counter">{{ mensaje_racha|default:"¡Comienza hoy!" }}</span>
         </div>
     </div>
 </div>
@@ -299,88 +338,153 @@
                 class="fw-bold text-decoration-none small" style="color: var(--primary);">Ver plan completo</a>
         </div>
         <div class="row g-3">
+            {% for receta in recetas_sugeridas %}
             <div class="col-6 col-md-3">
-                <div class="card-custom h-100">
-                    <div class="meal-img"
-                        style="background-image: url('https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=300');">
+                <div class="card-custom h-100 position-relative overflow-hidden shadow-sm"
+                    style="transition: transform 0.3s ease;">
+                    <div class="meal-img position-relative"
+                        style="background-image: url('{% if receta.imagen_url %}{{ receta.imagen_url }}{% else %}https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=300{% endif %}'); height: 120px; background-size: cover; background-position: center;">
+
+                        <button
+                            class="favorite-btn position-absolute {% if receta.id in favoritas_ids %}active{% endif %}"
+                            style="top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 50%; border: none; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; z-index: 5;"
+                            onclick="toggleFavorite({{ receta.id }}, this)">
+                            <span
+                                class="material-symbols-outlined fs-6 {% if receta.id in favoritas_ids %}text-primary{% else %}text-muted{% endif %}">favorite</span>
+                        </button>
+
+                        <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-50">
+                            <span class="text-white fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">{{
+                                receta.get_tipo_dieta_display|upper }}</span>
+                        </div>
                     </div>
                     <div class="p-3">
-                        <p class="fw-bold mb-1 text-truncate">Bowl de Salmón</p>
+                        <p class="fw-bold mb-1 text-truncate" style="font-size: 0.9rem;">{{ receta.titulo }}</p>
                         <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted small fw-bold">420 kcal</span>
-                            <button class="btn btn-success btn-sm rounded-3 p-1 d-flex"
-                                style="background-color: var(--primary); border-color: var(--primary);">
-                                <span class="material-symbols-outlined fs-6">add</span>
-                            </button>
+                            <span class="text-muted small fw-bold">{{ receta.calorias }} kcal</span>
+                            <a href="{% url 'base:planes' %}?receta={{ receta.id }}"
+                                class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center"
+                                style="width: 25px; height: 25px; background-color: var(--primary); border: none;">
+                                <span class="material-symbols-outlined"
+                                    style="font-size: 14px; color: white;">arrow_forward</span>
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
     </main>
 
     <aside class="col-lg-4">
-        <!-- SECCIÓN DE RECOMENDACIONES IA -->
-        <div class="card-custom p-4 mb-4 border-0 shadow-sm"
-            style="background: linear-gradient(135deg, #1a1c18 0%, #2c3421 100%);">
-            <div class="d-flex align-items-center gap-3 mb-3">
-                <div class="glass-inner d-flex align-items-center justify-content-center"
-                    style="width: 45px; height: 45px; background: rgba(133, 200, 26, 0.2);">
-                    <span class="material-symbols-outlined text-primary">psychology</span>
+        <!-- SECCIÓN DE RECOMENDACIONES IA PREMIUM -->
+        <div class="card-custom p-4 mb-4 border-0 shadow-lg position-relative overflow-hidden"
+            style="background: linear-gradient(135deg, #12140d 0%, #1e2615 100%);">
+            <!-- Glass Background Decor -->
+            <div class="position-absolute"
+                style="top: -20px; right: -20px; width: 100px; height: 100px; background: var(--primary); filter: blur(60px); opacity: 0.3;">
+            </div>
+
+            <div class="d-flex align-items-center gap-3 mb-3 position-relative" style="z-index: 2;">
+                <div class="d-flex align-items-center justify-content-center"
+                    style="width: 48px; height: 48px; border-radius: 12px; background: rgba(133, 200, 26, 0.15);">
+                    <span class="material-symbols-outlined text-primary fs-3">psychology</span>
                 </div>
                 <div>
-                    <h4 class="fw-900 h6 mb-0 text-white">Coach IA nunut</h4>
-                    <span class="text-xs-bold text-primary" style="font-size: 0.6rem;">Análisis en tiempo real</span>
+                    <h4 class="fw-800 h6 mb-0 text-white" style="letter-spacing: 0.5px;">Coach IA nunut</h4>
+                    <span class="text-xs-bold text-primary" style="font-size: 0.6rem; opacity: 0.8;">Análisis
+                        Activo</span>
                 </div>
             </div>
 
-            <div id="ia-recommendation-container" class="position-relative">
-                <p class="small text-white opacity-75 mb-3 italic" id="ia-message">
-                    {% if user.username == 'invitado' %}
-                    "¡Bienvenido! Regístrate para que pueda analizar tu perfil y darte consejos personalizados para
-                    optimizar tu salud."
-                    {% elif not user.perfil.onboarding_completado %}
-                    "Veo que aún no terminas tu perfil. Complétalo para darte mi primer análisis biométrico."
-                    {% else %}
-                    "Tu racha de 15 días es impresionante. Mantén este ritmo y verás cambios significativos en tu
-                    energía basal esta semana."
-                    {% endif %}
+            <div id="ia-recommendation-container" class="position-relative mb-3" style="z-index: 2;">
+                <p class="small text-white opacity-90 mb-0 ps-2 italic lh-base" id="ia-message"
+                    style="font-size: 0.85rem; font-weight: 500; border-left: 2px solid var(--primary);">
+                    {{ recomendacion_ia }}
                 </p>
+            </div>
 
-                <div class="d-flex gap-2 mb-2">
-                    <span class="badge rounded-pill bg-white bg-opacity-10 text-white-50 x-small fw-bold"
-                        style="font-size: 0.6rem;">#Motivación</span>
-                    <span class="badge rounded-pill bg-white bg-opacity-10 text-white-50 x-small fw-bold"
-                        style="font-size: 0.6rem;">#TipSalud</span>
-                </div>
+            <div class="d-flex gap-2 mb-0" style="z-index: 2; position: relative;">
+                <span
+                    class="badge rounded-pill bg-primary bg-opacity-20 text-white x-small fw-bold border border-white border-opacity-10"
+                    style="font-size: 0.6rem; padding: 4px 10px; letter-spacing: 0.5px;">#INTELIGENCIA-VITAL</span>
+                <span
+                    class="badge rounded-pill bg-primary bg-opacity-40 text-white x-small fw-bold border border-primary border-opacity-10"
+                    style="font-size: 0.6rem; padding: 4px 10px; letter-spacing: 0.5px;">#NUNUT-ELITE</span>
             </div>
         </div>
 
-        <div class="card-custom p-4 mb-4 border-start border-4 border-primary position-relative">
+        <style>
+            @keyframes pulse-soft {
+                0% {
+                    transform: scale(0.95);
+                    opacity: 0.2;
+                }
+
+                50% {
+                    transform: scale(1.05);
+                    opacity: 0.4;
+                }
+
+                100% {
+                    transform: scale(0.95);
+                    opacity: 0.2;
+                }
+            }
+
+            .animate-pulse {
+                animation: pulse-soft 2s infinite ease-in-out;
+            }
+        </style>
+
+        <div class="card-custom p-4 mb-4 border-start border-4 border-info position-relative overflow-hidden"
+            style="border-color: #3abff8 !important; background: linear-gradient(145deg, var(--bg-content), rgba(58, 191, 248, 0.05));">
             {% if es_invitado %}
             <div class="lock-overlay">
-                <span class="material-symbols-outlined fs-2 text-primary">lock</span>
+                <span class="material-symbols-outlined fs-2 text-info">lock</span>
             </div>
             <div class="blur-preview">
                 {% endif %}
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div class="d-flex align-items-center gap-2">
-                        <span class="material-symbols-outlined text-primary fs-2">water_drop</span>
+                        <div class="bg-info bg-opacity-10 p-2 rounded-circle">
+                            <span class="material-symbols-outlined text-info fs-3">water_drop</span>
+                        </div>
                         <h4 class="fw-900 h5 mb-0">Hidratación</h4>
                     </div>
-                    <span class="badge bg-primary-subtle text-primary rounded-pill text-xs-bold">50% Meta</span>
+                    <span class="badge bg-info bg-opacity-20 text-white rounded-pill text-xs-bold px-3 py-2"
+                        id="water-percentage">
+                        {{ registro_agua.porcentaje|default:"0" }} % Meta
+                    </span>
                 </div>
-                <div class="row g-2 water-grid mb-4">
-                    <div class="col-auto bg-primary"></div>
-                    <div class="col-auto bg-primary"></div>
-                    <div class="col-auto bg-primary"></div>
-                    <div class="col-auto bg-light border"></div>
-                    <div class="col-auto bg-light border"></div>
-                    <div class="col-auto bg-light border"></div>
+
+                <div class="d-flex align-items-center justify-content-center gap-4 mb-4">
+                    <button class="btn btn-water rounded-circle d-flex align-items-center justify-content-center p-0"
+                        onclick="updateWater(-1)">
+                        <span class="material-symbols-outlined fs-5">remove</span>
+                    </button>
+
+                    <div class="d-flex flex-wrap justify-content-center gap-2" id="water-glasses-container"
+                        style="max-width: 180px;">
+                        <!-- JS generará los vasos -->
+                    </div>
+
+                    <button class="btn btn-water rounded-circle d-flex align-items-center justify-content-center p-0"
+                        onclick="updateWater(1)">
+                        <span class="material-symbols-outlined fs-5">add</span>
+                    </button>
                 </div>
+
                 <div class="text-center">
-                    <h4 class="h2 fw-900 mb-0">1.5 <small class="text-muted h6">/ 3 Lts</small></h4>
-                    <p class="text-xs-bold text-muted">Faltan 6 vasos hoy</p>
+                    <h4 class="h2 fw-900 mb-0">
+                        <span id="water-liters">{{ registro_agua.litros|default:"0.0"|floatformat:1 }}</span>
+                        <small class="text-muted h6">/ <span id="meta-liters-display">{{
+                                registro_agua.meta_litros|default:"2.0" }}</span> Lts</small>
+                    </h4>
+                    <p class="text-xs-bold text-muted mb-0" id="water-status">
+                        Vasos: <span id="current-vasos-display">{{ registro_agua.cantidad_vasos|default:"0" }}</span> /
+                        <span id="meta-vasos-display">{{ registro_agua.meta_vasos|default:"8" }}</span>
+                    </p>
                 </div>
                 {% if es_invitado %}
             </div>{% endif %}
@@ -444,6 +548,102 @@
                 {% if es_invitado %}
             </div>{% endif %}
         </div>
+        <script>
+            function toggleFavorite(recetaId, btn) {
+                const icon = btn.querySelector('.material-symbols-outlined');
+                fetch(`/api/toggle_favorito/${recetaId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            if (data.is_favorite) {
+                                btn.classList.add('active');
+                                icon.classList.remove('text-muted');
+                                icon.classList.add('text-primary');
+                                showToast('Añadido a favoritos', 'success');
+                            } else {
+                                btn.classList.remove('active');
+                                icon.classList.remove('text-primary');
+                                icon.classList.add('text-muted');
+                                showToast('Eliminado de favoritos', 'info');
+                            }
+                        } else {
+                            showToast('Debes iniciar sesión para guardar favoritos', 'warning');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        showToast('Error al procesar favoritos', 'error');
+                    });
+            }
+        </script>
+
+        <script>
+            let currentWater = parseInt("{{ registro_agua.cantidad_vasos|default:0 }}");
+            let metaWater = parseInt("{{ registro_agua.meta_vasos|default:8 }}");
+
+            function renderGlasses() {
+                const container = document.getElementById('water-glasses-container');
+                if (!container) return;
+
+                container.innerHTML = '';
+                for (let i = 1; i <= metaWater; i++) {
+                    const glass = document.createElement('span');
+                    glass.className = `material-symbols-outlined water-glass ${i <= currentWater ? 'active' : ''}`;
+                    glass.innerText = 'local_drink';
+                    container.appendChild(glass);
+                }
+            }
+
+            function updateWater(cambio) {
+                {% if es_invitado %}
+                showToast('Regístrate para guardar tu hidratación', 'info');
+                return;
+                {% endif %}
+
+                const nuevoValor = Math.max(0, currentWater + cambio);
+                if (nuevoValor === currentWater && cambio !== 0) return;
+
+                fetch('/api/actualizar_agua/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cambio: cambio })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            currentWater = data.cantidad_vasos;
+                            metaWater = data.meta_vasos; // Actualizar meta por si cambió el peso
+                            document.getElementById('water-liters').innerText = data.litros.toFixed(1);
+                            document.getElementById('meta-liters-display').innerText = (data.meta_vasos * 0.25).toFixed(1);
+                            document.getElementById('water-percentage').innerText = data.porcentaje + '% Meta';
+                            document.getElementById('current-vasos-display').innerText = data.cantidad_vasos;
+                            document.getElementById('meta-vasos-display').innerText = data.meta_vasos;
+                            renderGlasses();
+
+                            if (cambio > 0) {
+                                showToast('¡Vaso registrado! 💧', 'success');
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        showToast('Error al actualizar agua', 'error');
+                    });
+            }
+
+            // Inicializar al cargar y al swappear con HTMX
+            document.addEventListener('DOMContentLoaded', renderGlasses);
+            document.addEventListener('htmx:afterSwap', renderGlasses);
+        </script>
     </aside>
 </div>
 {% endblock %}

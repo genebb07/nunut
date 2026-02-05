@@ -1,7 +1,7 @@
 {% extends base_template %}
 {% load static %}
 
-{% block title %}Perfil{% endblock %}
+{% block title %}Perfil | nunut {% endblock %}
 
 {% block extra_body %}
 <!-- Privacy Modal -->
@@ -42,7 +42,7 @@
 {% block content %}
 <!-- Botón Regresar -->
 <div class="mb-4 d-flex align-items-center">
-    <a href="{% url 'base:index' %}" hx-get="{% url 'base:index' %}" hx-target="#main-content" hx-push-url="true"
+    <a href="{% url 'base:index' %}"
         class="btn btn-light rounded-pill px-4 d-inline-flex align-items-center gap-2 shadow-sm border fw-bold text-muted hover-brand">
         <span class="material-symbols-outlined">arrow_back</span>
         Regresar al Dashboard
@@ -452,6 +452,94 @@
         color: white;
     }
 
+    /* BF Mode Cards */
+    .bf-mode-card {
+        background: white;
+        border-color: var(--brand-soft);
+        color: var(--text-muted);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .dark-mode .bf-mode-card {
+        background: #25271d;
+        border-color: #313426;
+    }
+
+    .bf-mode-card.active {
+        background: var(--brand-soft);
+        border-color: var(--brand-primary);
+        color: var(--brand-primary);
+        box-shadow: 0 10px 20px rgba(133, 200, 26, 0.1);
+        transform: scale(1.05);
+    }
+
+    .dark-mode .bf-mode-card.active {
+        background: rgba(133, 200, 26, 0.1);
+    }
+
+    /* Styled Checkbox Grid (Django UL support) */
+    .styled-checkbox-grid ul {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 12px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .styled-checkbox-grid li {
+        position: relative;
+    }
+
+    .styled-checkbox-grid input[type="checkbox"] {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+    }
+
+    .styled-checkbox-grid label {
+        display: block;
+        padding: 12px 10px;
+        background: #f8f9fa;
+        border: 2px solid #eee;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        text-align: center;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dark-mode .styled-checkbox-grid label {
+        background: #25271d;
+        border-color: #313426;
+    }
+
+    .styled-checkbox-grid input[type="checkbox"]:checked+label {
+        background: var(--brand-primary);
+        color: white;
+        border-color: var(--brand-primary);
+        box-shadow: 0 5px 15px rgba(133, 200, 26, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .styled-checkbox-grid label:hover {
+        border-color: var(--brand-soft);
+        background: #fff;
+    }
+
+    .dark-mode .styled-checkbox-grid label:hover {
+        background: #2c2f26;
+    }
+
     #privacyModal {
         z-index: 99999 !important;
     }
@@ -498,8 +586,7 @@
 
                 <div class="sidebar-extra">
                     <span class="badge bg-brand-soft rounded-pill px-3 py-2 small shadow-sm mb-3">
-                        {% if user.perfil.somatotipo %} {{ user.perfil.get_somatotipo_display }} {% else %} Optimización
-                        Activa {% endif %}
+                        {% if user.perfil.somatotipo %} {{ user.perfil.get_somatotipo_display }} {% else %} Optimización Activa {% endif %}
                     </span>
 
                     <div class="d-grid gap-2 mt-2">
@@ -616,8 +703,7 @@
                             <h3 class="fw-black mb-1">{{ imc|default:"—" }}</h3>
                             <div class="d-flex justify-content-between align-items-end">
                                 <span class="x-small fw-black text-brand"> {% if imc %} {% if imc < 18.5 %} BAJO PESO {% elif imc < 25 %} NORMAL {% elif imc < 30 %} SOBREPESO {% else %} OBESIDAD {% endif %} {% else %} SIN DATOS {% endif %} </span>
-                                        <span class="x-small text-muted" id="muscle-mass-display"
-                                            title="Masa Muscular Estimada"></span>
+                                <span class="x-small text-muted" id="muscle-mass-display" title="Masa Muscular Estimada"></span>
                             </div>
                         </div>
                     </div>
@@ -688,7 +774,8 @@
                         <div class="d-flex flex-wrap gap-2">
                             {% for a in user.perfil.alergias.all %}
                             <span
-                                class="badge bg-white text-dark border-warning border px-3 py-2 rounded-pill small shadow-sm">{{ a.nombre }}</span>
+                                class="badge bg-white text-dark border-warning border px-3 py-2 rounded-pill small shadow-sm">{{
+                                a.nombre }}</span>
                             {% empty %}
                             <span class="text-muted small fst-italic">Sin restricciones registradas</span>
                             {% endfor %}
@@ -739,8 +826,7 @@
                             <span class="fw-bold small">Modo oscuro</span>
                         </div>
                         <div class="form-check form-switch mb-0">
-                            <input id="perfil-dark-mode-toggle" class="form-check-input" type="checkbox" {% if user.perfil.modo_oscuro %}checked {% endif %} onclick="toggleTheme()"
-                                aria-label="Alternar modo oscuro">
+                            <input id="perfil-dark-mode-toggle" class="form-check-input" type="checkbox" {% if user.perfil.modo_oscuro %}checked {% endif %} onclick="toggleTheme()" aria-label="Alternar modo oscuro">
                         </div>
                     </div>
 
@@ -807,8 +893,37 @@
             <p class="text-muted small mb-4">Actualiza tus parámetros biométricos y preferencias para optimizar tus
                 planes.</p>
 
-            <form method="post" action="{% url 'base:perfil' %}">
+            <form method="post" action="{% url 'base:perfil' %}" enctype="multipart/form-data">
                 {% csrf_token %}
+
+                <!-- SECCIÓN 0: IMAGEN DE PERFIL -->
+                <div class="form-section-title d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">photo_camera</span>
+                    IMAGEN DE PERFIL
+                </div>
+                <div class="row align-items-center mb-4">
+                    <div class="col-auto">
+                        <div class="profile-avatar-container p-1" style="width: 80px; height: 80px;">
+                            {% if user.perfil.foto_perfil %}
+                            <img id="preview-image" src="data:image/png;base64,{{ user.perfil.get_foto_base64 }}"
+                                class="rounded-circle w-100 h-100" style="object-fit: cover;">
+                            {% else %}
+                            <div id="preview-placeholder"
+                                class="rounded-circle w-100 h-100 d-flex align-items-center justify-content-center bg-light text-brand fw-bold">
+                                {{ user.username.0|upper }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col">
+                        <label for="{{ form.foto_perfil_file.id_for_label }}"
+                            class="btn btn-sm btn-outline-brand rounded-pill px-4 fw-bold cursor-pointer">
+                            <span class="material-symbols-outlined align-middle fs-6">upload</span> Cambiar Foto
+                        </label>
+                        <div style="display:none">{{ form.foto_perfil_file }}</div>
+                        <p class="x-small text-muted mt-2 mb-0">Formatos: JPG, PNG. Máx 2MB.</p>
+                    </div>
+                </div>
 
                 <!-- SECCIÓN 1: IDENTIDAD -->
                 <div class="form-section-title d-flex align-items-center gap-2">
@@ -855,18 +970,82 @@
                         {{ form.fecha_nacimiento }}
                     </div>
                     <div class="col-md-4">
-                        <label class="small fw-bold text-muted mb-2 ps-1">ALTURA (CM)</label>
+                        <label class="small fw-bold text-muted mb-2 ps-1">ALTURA (cm)</label>
                         {{ form.altura }}
-                    </div>
-                    <div class="col-md-4">
-                        <label class="small fw-bold text-muted mb-2 ps-1">% GRASA</label>
-                        {{ form.porcentaje_grasa }}
                     </div>
                     <div class="col-md-4">
                         <label class="small fw-bold text-muted mb-2 ps-1">SOMATOTIPO</label>
                         {{ form.somatotipo }}
                     </div>
-                    <div class="col-12">
+
+                    <div class="col-12 mt-4">
+                        <div class="premium-card p-4"
+                            style="background: rgba(133, 200, 26, 0.03); border: 2px solid var(--brand-soft); box-shadow: none;">
+                            <h6 class="fw-black mb-3 d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined text-brand">calculate</span> % GRASA CORPORAL
+                            </h6>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <div id="card_bf_manual"
+                                        class="bf-mode-card active p-3 rounded-4 cursor-pointer text-center border-2 border"
+                                        onclick="switchBFMode('manual')">
+                                        <span class="material-symbols-outlined fs-2 mb-1">edit_note</span>
+                                        <div class="fw-bold small">INGRESO MANUAL</div>
+                                        <div class="x-small opacity-75">Bioimpedancia / Calipers</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div id="card_bf_calc"
+                                        class="bf-mode-card p-3 rounded-4 cursor-pointer text-center border-2 border"
+                                        onclick="switchBFMode('calc')">
+                                        <span class="material-symbols-outlined fs-2 mb-1">straighten</span>
+                                        <div class="fw-bold small">FÓRMULA MARINA</div>
+                                        <div class="x-small opacity-75">EE.UU. (Cinta métrica)</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Manual Entry -->
+                            <div id="section_bf_manual" class="animate-fade">
+                                <div class="col-md-5 mx-auto">
+                                    <label class="small fw-bold text-muted mb-2 d-block text-center ps-1">VALOR %
+                                        GRASA</label>
+                                    {{ form.porcentaje_grasa }}
+                                </div>
+                            </div>
+
+                            <!-- Navy Calculator -->
+                            <div id="section_bf_calc" class="d-none animate-fade">
+                                <div class="bg-white dark-mode-bg-dark rounded-4 p-3 mb-3 border border-brand-soft">
+                                    <p class="x-small mb-0 text-muted">
+                                        <span class="material-symbols-outlined fs-6 align-middle text-brand">info</span>
+                                        Este método utiliza mediciones de circunferencias. Asegúrate de tomar las
+                                        medidas de forma precisa sobre la piel.
+                                    </p>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="small fw-bold text-muted mb-1 ps-1 text-uppercase">Cintura
+                                            (cm)</label>
+                                        {{ form.medida_cintura }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="small fw-bold text-muted mb-1 ps-1 text-uppercase">Cuello
+                                            (cm)</label>
+                                        {{ form.medida_cuello }}
+                                    </div>
+                                    <div class="col-md-4 {% if user.perfil.genero != 'M' %}d-none{% endif %}"
+                                        id="cadera_field">
+                                        <label class="small fw-bold text-muted mb-1 ps-1 text-uppercase">Cadera
+                                            (cm)</label>
+                                        {{ form.medida_cadera }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 mt-2">
                         <label class="small fw-bold text-muted mb-2 d-flex align-items-center gap-2 ps-1">
                             <span class="material-symbols-outlined fs-6">wc</span> GÉNERO
                         </label>
@@ -910,25 +1089,42 @@
                     SALUD Y RESTRICCIONES
                 </div>
 
-                <div class="mb-4">
-                    <label class="small fw-bold text-muted mb-3 d-block">MIS ALERGIAS</label>
-                    <div class="checkbox-grid">
+                <div class="mb-5">
+                    <label class="small fw-bold text-muted mb-3 d-block d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined text-warning fs-5">warning</span> MIS ALERGIAS
+                    </label>
+                    <div class="styled-checkbox-grid">
                         {{ form.alergias }}
                     </div>
                 </div>
 
-                <div class="mb-4">
-                    <label class="small fw-bold text-muted mb-3 d-block">INTOLERANCIAS</label>
-                    <div class="checkbox-grid">
+                <div class="mb-5">
+                    <label class="small fw-bold text-muted mb-3 d-block d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined text-warning fs-5">no_food</span> INTOLERANCIAS
+                    </label>
+                    <div class="styled-checkbox-grid">
                         {{ form.intolerancias }}
                     </div>
                 </div>
 
                 <div class="mb-5">
-                    <label class="small fw-bold text-muted mb-3 d-block">MIS GUSTOS / FAVORITOS</label>
-                    <div class="checkbox-grid">
+                    <label class="small fw-bold text-muted mb-3 d-block d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined text-brand fs-5">favorite</span> MIS GUSTOS / FAVORITOS
+                    </label>
+                    <div class="styled-checkbox-grid">
                         {{ form.gustos }}
                     </div>
+                </div>
+
+                <!-- SECCIÓN 5: NOTAS MÉDICAS -->
+                <div class="form-section-title d-flex align-items-center gap-2 text-primary">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">description</span>
+                    NOTAS MÉDICAS ADICIONALES
+                </div>
+                <div class="mb-5">
+                    <p class="x-small text-muted mb-3 ps-1">Describe condiciones específicas, lesiones o recomendaciones
+                        de tu médico tratante.</p>
+                    {{ form.notas_medicas }}
                 </div>
 
                 <div class="mt-5 d-flex gap-3 justify-content-end sticky-bottom py-3 border-top dark-mode-bg-dark"
@@ -972,6 +1168,51 @@
             if (el) el.innerText = muscleMass.toFixed(1) + " kg Músculo";
         }
 
+        // Body Fat Mode Toggle - OBSOLETE (Replaced by switchBFMode)
+        /*
+        const bfManualBtn = document.getElementById('bf_manual');
+        ...
+        */
+
+        // Image Preview logic
+        const imageInput = document.querySelector('input[type="file"]');
+        if (imageInput) {
+            imageInput.addEventListener('change', function () {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const previewImg = document.getElementById('preview-image');
+                        const previewPlaceholder = document.getElementById('preview-placeholder');
+                        if (previewImg) {
+                            previewImg.src = e.target.result;
+                        } else if (previewPlaceholder) {
+                            // Create img element if placeholder exists
+                            const img = document.createElement('img');
+                            img.id = 'preview-image';
+                            img.src = e.target.result;
+                            img.className = 'rounded-circle w-100 h-100';
+                            img.style.objectFit = 'cover';
+                            previewPlaceholder.parentNode.replaceChild(img, previewPlaceholder);
+                        }
+                    }
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+
+        // Gender change logic for cadera field
+        const generoSelect = document.querySelector('select[name="genero"]');
+        const caderaField = document.getElementById('cadera_field');
+        if (generoSelect && caderaField) {
+            generoSelect.addEventListener('change', function () {
+                if (this.value === 'M') {
+                    caderaField.classList.remove('d-none');
+                } else {
+                    caderaField.classList.add('d-none');
+                }
+            });
+        }
+
         /* Scroll lock logic removed to avoid 'fixed' background feel */
         /*
         const overlay = document.getElementById('editOverlay');
@@ -995,6 +1236,58 @@
         const status = el.checked ? "activadas" : "desactivadas";
         showToast("Notificaciones " + status, "success");
     }
+
+    function switchBFMode(mode) {
+        const sectionManual = document.getElementById('section_bf_manual');
+        const sectionCalc = document.getElementById('section_bf_calc');
+        const cardManual = document.getElementById('card_bf_manual');
+        const cardCalc = document.getElementById('card_bf_calc');
+
+        if (mode === 'manual') {
+            sectionManual.classList.remove('d-none');
+            sectionCalc.classList.add('d-none');
+            cardManual.classList.add('active');
+            cardCalc.classList.remove('active');
+        } else {
+            sectionManual.classList.add('d-none');
+            sectionCalc.classList.remove('d-none');
+            cardManual.classList.remove('active');
+            cardCalc.classList.add('active');
+        }
+    }
 </script>
+
+<style>
+    .btn-outline-brand {
+        color: var(--brand-primary);
+        border-color: var(--brand-primary);
+        background: transparent;
+    }
+
+    .btn-outline-brand:hover {
+        background-color: var(--brand-primary);
+        color: white;
+    }
+
+    .animate-fade {
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(5px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+</style>
 
 {% endblock %}

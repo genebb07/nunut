@@ -281,6 +281,18 @@
         transition: all 0.4s;
     }
 
+    .recipe-creator-container form {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .recipe-creator-container header {
+        flex-shrink: 0;
+    }
+
     .recipe-creator-container main {
         flex-grow: 1;
         overflow-y: auto;
@@ -346,6 +358,7 @@
     .line-clamp-2 {
         display: -webkit-box;
         -webkit-line-clamp: 2;
+        line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
@@ -372,6 +385,14 @@
         <button class="active" data-tab="explorar">Explorar</button>
         <button data-tab="mis-recetas">Mis Recetas</button>
         <button data-tab="favoritos">Favoritos</button>
+        <div class="vr mx-2 opacity-25"></div>
+
+        <button id="btnAutoPlan" onclick="generateAutoPlan()"
+            class="btn btn-sm text-primary rounded-pill px-3 fw-bold d-flex align-items-center gap-2 shadow-sm"
+            style="background: linear-gradient(135deg, #eef7e2 0%, #ffffff 100%); border: 1px solid var(--primary-light); white-space: nowrap;">
+            <span class="material-symbols-outlined fs-6">smart_toy</span>
+            Generar Plan Diario
+        </button>
     </nav>
 
     <div class="d-flex gap-2 overflow-x-auto pb-3 mb-3" id="recipe-filters">
@@ -386,37 +407,79 @@
         <button class="filter-btn btn btn-sm bg-white border rounded-pill px-3 fw-bold text-secondary dark-mode-bg-dark"
             data-filter="vegana" onclick="filterRecipes(this)">🌿
             Vegana</button>
+        <button class="filter-btn btn btn-sm bg-white border rounded-pill px-3 fw-bold text-secondary dark-mode-bg-dark"
+            data-filter="vegetariana" onclick="filterRecipes(this)">🥚
+            Vegetariana</button>
+        <button class="filter-btn btn btn-sm bg-white border rounded-pill px-3 fw-bold text-secondary dark-mode-bg-dark"
+            data-filter="omnivora" onclick="filterRecipes(this)">🥩
+            Omnívora</button>
+        <button class="filter-btn btn btn-sm bg-white border rounded-pill px-3 fw-bold text-secondary dark-mode-bg-dark"
+            data-filter="paleo" onclick="filterRecipes(this)">🦴
+            Paleo</button>
+        <button class="filter-btn btn btn-sm bg-white border rounded-pill px-3 fw-bold text-secondary dark-mode-bg-dark"
+            data-filter="alta-proteina" onclick="filterRecipes(this)">💪
+            Alta Proteína</button>
+        <button class="filter-btn btn btn-sm bg-white border rounded-pill px-3 fw-bold text-secondary dark-mode-bg-dark"
+            data-filter="snacks" onclick="filterRecipes(this)">🍿
+            Snacks</button>
+        <button class="filter-btn btn btn-sm bg-white border rounded-pill px-3 fw-bold text-secondary dark-mode-bg-dark"
+            data-filter="mediterranea" onclick="filterRecipes(this)">🫒
+            Mediterránea</button>
     </div>
 
     <div class="row row-cols-2 row-cols-lg-4 g-3 g-md-4" id="recipe-grid">
-        <div id="no-results-msg" class="col-12 text-center py-5" style="display: none;">
+        <div id="no-results-msg" class="col-12 text-center py-5 d-none">
             <span class="material-symbols-outlined fs-1 text-muted opacity-50 mb-2">search_off</span>
             <p class="text-muted fw-bold">No se encontraron recetas con este filtro.</p>
         </div>
         {% for receta in recetas %}
         <div class="col filter-item" data-category="{{ receta.categoria|lower }}" data-type="{{ receta.tipo_dieta }}"
-            data-favorite="{% if receta.id in favoritas_ids %}true{% else %}false{% endif %}"
-            data-userrecipe="{% if receta.perfil_creador and receta.perfil_creador == request.user.perfil %}true{% else %}false{% endif %}">
-            <div class="recipe-card"
-                onclick="showRecipeDetail('{{ receta.titulo|escapejs }}', {{ receta.calorias }}, '{{ receta.tiempo|escapejs }}', '{{ receta.rating }}', '{% if receta.imagen_url %}{{ receta.imagen_url|escapejs }}{% else %}https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=500&h=300&fit=crop{% endif %}', {{ receta.proteinas }}, {{ receta.carbos }}, {{ receta.grasas }}, '{{ receta.descripcion|escapejs }}')">
+            data-favorite="{% if user.is_authenticated and receta.id in favoritas_ids %}true{% else %}false{% endif %}"
+            data-userrecipe="{% if user.is_authenticated and user.perfil and receta.perfil_creador == user.perfil %}true{% else %}false{% endif %}">
+            <div class="recipe-card" onclick="openRecipeDetail(this)" data-title="{{ receta.titulo|escape }}"
+                data-kcal="{{ receta.calorias|default:0 }}" data-time="{{ receta.tiempo|escape }}"
+                data-rating="{{ receta.rating|default:0 }}"
+                data-img="{% if receta.imagen_url %}{{ receta.imagen_url|escape }}{% else %}https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=500&h=300&fit=crop{% endif %}"
+                data-prot="{{ receta.proteinas|default:0 }}" data-carbs="{{ receta.carbos|default:0 }}"
+                data-fats="{{ receta.grasas|default:0 }}" data-desc="{{ receta.descripcion|striptags|escape }}">
                 <div class="img-container">
+                    {% if user.is_authenticated and user.perfil and receta.perfil_creador == user.perfil %}
+                    <div class="position-absolute top-0 start-0 p-2 d-flex gap-2" style="z-index: 10;">
+                        <!-- Edit -->
+                        <button onclick="event.stopPropagation(); openEditOverlay({{ receta.id }});"
+                            class="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                            style="width: 32px; height: 32px; color: var(--text-muted);" title="Editar">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">edit</span>
+                        </button>
+
+                        <!-- Delete -->
+                        <button onclick="event.stopPropagation(); deleteRecipe({{ receta.id }}, this);"
+                            class="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center shadow-sm text-danger"
+                            style="width: 32px; height: 32px;" title="Borrar">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">delete</span>
+                        </button>
+                    </div>
+                    {% endif %}
                     <button class="favorite-btn {% if receta.id in favoritas_ids %}active{% endif %}"
                         onclick="event.stopPropagation(); toggleFavorite({{ receta.id }}, this)">
                         <span class="material-symbols-outlined fill-icon">favorite</span>
                     </button>
                     <img src="{% if receta.imagen_url %}{{ receta.imagen_url }}{% else %}https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=500&h=300&fit=crop{% endif %}"
                         class="recipe-img" alt="{{ receta.titulo }}">
-                    <span class="badge-recipe bg-brand text-white" style="background-color: var(--primary-color);">{{ receta.tipo_dieta }}</span>
+                    <span class="badge-recipe bg-brand text-white" style="background-color: var(--primary-color);">{{
+                        receta.tipo_dieta }}</span>
                 </div>
                 <div class="p-3">
                     <h3 class="h6 fw-bold line-clamp-2 mb-1" style="min-height: 2.4em;">{{ receta.titulo }}</h3>
                     <div class="d-flex flex-wrap gap-1 mb-3">
                         <span class="macro-pill"
-                            style="background: var(--macro-protein); color: var(--macro-protein-text);">P: {{receta.proteinas }}</span>
+                            style="background: var(--macro-protein); color: var(--macro-protein-text);">P:
+                            {{receta.proteinas }}</span>
                         <span class="macro-pill"
                             style="background: var(--macro-carbs); color: var(--macro-carbs-text);">C: {{ receta.carbos}}</span>
                         <span class="macro-pill"
-                            style="background: var(--macro-fats); color: var(--macro-fats-text);">G: {{receta.grasas}}</span>
+                            style="background: var(--macro-fats); color: var(--macro-fats-text);">G:
+                            {{receta.grasas}}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center pt-2 border-top">
                         <div class="d-flex align-items-center gap-1 text-muted" style="font-size: 11px;">
@@ -552,14 +615,20 @@
             <form id="recipeCreatorForm" hx-post="{% url 'base:crear_receta' %}" hx-swap="none"
                 hx-on::after-request="if(event.detail.successful) { showToast('Receta creada con éxito', 'success'); document.getElementById('closeCreator').click(); window.location.reload(); }">
                 <header class="sticky-top p-3 d-flex align-items-center"
-                    style="background: var(--bg-content); border-bottom: 1px solid rgba(0,0,0,0.05); z-index: 100;">
+                    style="background: var(--bg-content); border-bottom: 1px solid rgba(0,0,0,0.05); z-index: 100; flex-shrink: 0;">
                     <div id="closeCreator" class="d-flex align-items-center justify-content-center"
                         style="width: 48px; cursor: pointer;">
                         <span class="material-symbols-outlined">arrow_back</span>
                     </div>
-                    <h2 class="h6 m-0 fw-bold flex-grow-1 text-center" style="margin-right: 48px !important;">Creador de
-                        Recetas
-                    </h2>
+                    <h2 class="h6 m-0 fw-bold flex-grow-1 text-center">Creador de Recetas</h2>
+
+                    <button type="button"
+                        class="btn btn-sm btn-light text-primary rounded-pill d-flex align-items-center gap-2 px-3 shadow-sm"
+                        id="btnGenerateAI" onclick="generateRecipeAI(this)"
+                        style="background: linear-gradient(135deg, #eef7e2 0%, #ffffff 100%); border: 1px solid var(--primary-light);">
+                        <span class="material-symbols-outlined fs-6">auto_awesome</span>
+                        <span class="d-none d-sm-inline fw-bold" style="font-size: 0.8rem;">Generar con IA</span>
+                    </button>
                 </header>
 
                 <main class="p-4">
@@ -692,8 +761,171 @@
         </div>
     </div>
 
+    <!-- EDIT RECIPE OVERLAY -->
+    <div class="recipe-creator-overlay" id="editRecipeOverlay">
+        <div class="recipe-creator-container">
+            <!-- Header -->
+            <form id="editRecipeForm" onsubmit="submitEditForm(event)">
+                <header class="sticky-top p-3 d-flex align-items-center"
+                    style="background: var(--bg-content); border-bottom: 1px solid rgba(0,0,0,0.05); z-index: 100;">
+                    <div id="closeEdit" class="d-flex align-items-center justify-content-center"
+                        style="width: 48px; cursor: pointer;">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                    </div>
+                    <h2 class="h6 m-0 fw-bold flex-grow-1 text-center" style="margin-right: 48px !important;">Editar
+                        Receta
+                    </h2>
+                </header>
+
+                <main class="p-4">
+                    <!-- Hidden ID -->
+                    <input type="hidden" id="edit_receta_id" name="receta_id">
+
+                    <!-- Info section -->
+                    <section class="mb-4">
+                        <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">Información
+                            General
+                        </h3>
+
+                        <div class="mb-3">
+                            <label class="small fw-bold mb-2 opacity-75">Título de la receta</label>
+                            <input type="text" id="edit_titulo" name="titulo" class="form-control creator-input"
+                                required>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label class="small fw-bold mb-2 opacity-75">Categoría</label>
+                                <select id="edit_dieta" name="dieta" class="form-select creator-input" required>
+                                    <option value="OMNI">🥩 Omnívorora</option>
+                                    <option value="KETO">🥑 Keto</option>
+                                    <option value="VEGA">🌿 Vegana</option>
+                                    <option value="VEGE">🥚 Vegetariana</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="small fw-bold mb-2 opacity-75">Tiempo</label>
+                                <div class="input-group">
+                                    <input type="text" id="edit_tiempo" name="tiempo"
+                                        class="form-control creator-input border-end-0" required>
+                                    <span class="input-group-text creator-input border-start-0 bg-transparent">
+                                        <span class="material-symbols-outlined fs-6 opacity-50">schedule</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Macros Section -->
+                    <section class="mb-4">
+                        <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">Nutrición
+                            (por ración)</h3>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="x-small fw-bold mb-1 opacity-75">Calorías</label>
+                                <input type="number" id="edit_calorias" name="calorias"
+                                    class="form-control creator-input" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="x-small fw-bold mb-1 opacity-75">Proteína (g)</label>
+                                <input type="number" id="edit_proteinas" name="proteinas"
+                                    class="form-control creator-input" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="x-small fw-bold mb-1 opacity-75">Carbos (g)</label>
+                                <input type="number" id="edit_carbos" name="carbos" class="form-control creator-input"
+                                    required>
+                            </div>
+                            <div class="col-6">
+                                <label class="x-small fw-bold mb-1 opacity-75">Grasas (g)</label>
+                                <input type="number" id="edit_grasas" name="grasas" class="form-control creator-input"
+                                    required>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Photo section -->
+                    <section class="mb-4">
+                        <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">Imagen</h3>
+                        <div class="mb-3">
+                            <label class="small fw-bold mb-2 opacity-75">URL de la imagen (Opcional)</label>
+                            <input type="url" id="edit_imagen_url" name="imagen_url" class="form-control creator-input">
+                        </div>
+                    </section>
+
+                    <!-- Ingredients -->
+                    <section class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="h6 fw-bold m-0 text-uppercase opacity-75" style="letter-spacing: 1px;">
+                                Ingredientes
+                            </h3>
+                        </div>
+
+                        <div id="editIngredientsContainer" class="d-flex flex-column gap-2">
+                            <!-- Populated by JS -->
+                        </div>
+
+                        <button type="button" id="addIngredientBtnEdit"
+                            class="btn w-100 py-2 mt-2 d-flex align-items-center justify-content-center gap-2 small fw-bold"
+                            style="background: var(--primary-light); color: var(--primary-color); border: 1px dashed var(--primary-color); border-radius: 12px;">
+                            <span class="material-symbols-outlined fs-6">add</span> Añadir ingrediente
+                        </button>
+                    </section>
+
+                    <!-- Steps -->
+                    <section class="mb-4">
+                        <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">Preparación
+                        </h3>
+                        <div class="rounded-3 border overflow-hidden" style="border-color: rgba(0,0,0,0.05);">
+                            <textarea id="edit_descripcion" name="descripcion"
+                                class="form-control border-0 creator-input rounded-0" rows="6"
+                                style="height: auto; background: transparent !important;"></textarea>
+                        </div>
+                    </section>
+
+                    <div class="pt-2">
+                        <button type="submit"
+                            class="btn-creator-save d-flex align-items-center justify-content-center gap-2">
+                            <span class="material-symbols-outlined">save</span>
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </main>
+            </form>
+        </div>
+    </div>
+
     <script>
         const offcanvas = new bootstrap.Offcanvas(document.getElementById('recipeDetailOffcanvas'));
+
+
+        // Delete Recipe Logic
+        function deleteRecipe(id, btn) {
+            if (!confirm('¿Estás seguro de que quieres borrar esta receta?')) return;
+
+            fetch(`/api/borrar_receta/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove the card from DOM
+                        const col = btn.closest('.col');
+                        col.remove();
+                        showToast('Receta eliminada', 'success');
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Error de conexión');
+                });
+        }
 
         // Toggle favorite via AJAX
         function toggleFavorite(recetaId, btn) {
@@ -755,83 +987,6 @@
                 overlay.classList.remove('show');
                 document.body.classList.remove('overlay-active');
             }
-        });
-
-        // Combined Tab and Filter Logic
-        function applyFilters() {
-            const activeTab = document.querySelector('#recipe-tabs button.active')?.dataset.tab || 'explorar';
-            const activeFilter = document.querySelector('.filter-btn.active')?.dataset.filter || 'todo';
-            const cards = document.querySelectorAll('.filter-item');
-            let visibleCount = 0;
-
-            cards.forEach(card => {
-                const cardCategory = card.dataset.category ? card.dataset.category.toLowerCase() : '';
-                const cardType = card.dataset.type ? card.dataset.type.toString() : '';
-                const isFavorite = card.dataset.favorite === 'true';
-                const isUserRecipe = card.dataset.userrecipe === 'true';
-
-                // Tab filtering
-                let showByTab = false;
-                if (activeTab === 'explorar') {
-                    showByTab = true;
-                } else if (activeTab === 'mis-recetas') {
-                    showByTab = isUserRecipe;
-                } else if (activeTab === 'favoritos') {
-                    showByTab = isFavorite;
-                }
-
-                // Category filtering
-                let showByFilter = false;
-                if (activeFilter === 'todo') {
-                    showByFilter = true;
-                } else if (activeFilter === 'tendencia') {
-                    showByFilter = cardCategory === 'tendencia' || cardCategory === 'smart';
-                } else if (activeFilter === 'keto') {
-                    showByFilter = cardCategory === 'keto' || cardType === 'KETO';
-                } else if (activeFilter === 'vegana') {
-                    showByFilter = cardCategory === 'vegana' || cardType === 'VEGA' || cardType === 'VEGE';
-                } else {
-                    showByFilter = cardCategory === activeFilter;
-                }
-
-                // Show only if both conditions are met
-                if (showByTab && showByFilter) {
-                    card.style.display = 'block';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            // Toggle no results message
-            const noResMsg = document.getElementById('no-results-msg');
-            if (noResMsg) {
-                noResMsg.style.display = visibleCount === 0 ? 'block' : 'none';
-            }
-        }
-
-        // Tab switching
-        document.querySelectorAll('#recipe-tabs button').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('#recipe-tabs button').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                applyFilters();
-            });
-        });
-
-        // Filter button switching
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.filter-btn').forEach(b => {
-                    b.classList.remove('active');
-                    b.style.backgroundColor = '';
-                    b.style.color = '';
-                });
-                btn.classList.add('active');
-                btn.style.backgroundColor = 'var(--primary-color)';
-                btn.style.color = 'white';
-                applyFilters();
-            });
         });
 
         // Recipe Detail Sidebar Logic
@@ -982,6 +1137,347 @@
                     }
                 }
             });
+        }
+    </script>
+    <script>
+        // EDIT OVERLAY LOGIC
+        const editOverlay = document.getElementById('editRecipeOverlay');
+        const closeEditBtn = document.getElementById('closeEdit');
+
+        if (editOverlay) {
+            // Close on background click
+            editOverlay.addEventListener('click', (e) => {
+                if (e.target === editOverlay) closeEditOverlay();
+            });
+            // Close on ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && editOverlay.classList.contains('show')) {
+                    closeEditOverlay();
+                }
+            });
+        }
+
+        if (closeEditBtn) {
+            closeEditBtn.addEventListener('click', closeEditOverlay);
+        }
+
+        function closeEditOverlay() {
+            if (editOverlay) {
+                editOverlay.classList.remove('show');
+                document.body.classList.remove('overlay-active');
+            }
+        }
+
+        function openEditOverlay(recetaId) {
+            // Show Spinner or Loading state if desired
+
+            fetch(`/editar_receta/${recetaId}/`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const r = data.receta;
+
+                        // Populate basic fields
+                        document.getElementById('edit_receta_id').value = r.id;
+                        document.getElementById('edit_titulo').value = r.titulo;
+                        document.getElementById('edit_dieta').value = r.tipo_dieta;
+                        document.getElementById('edit_tiempo').value = r.tiempo;
+                        document.getElementById('edit_calorias').value = r.calorias;
+                        document.getElementById('edit_proteinas').value = r.proteinas;
+                        document.getElementById('edit_carbos').value = r.carbos;
+                        document.getElementById('edit_grasas').value = r.grasas;
+                        document.getElementById('edit_imagen_url').value = r.imagen_url || '';
+                        document.getElementById('edit_descripcion').value = r.descripcion;
+
+                        // Populate Ingredients
+                        const container = document.getElementById('editIngredientsContainer');
+                        container.innerHTML = ''; // Clear
+
+                        if (r.ingredientes && r.ingredientes.length > 0) {
+                            r.ingredientes.forEach(ing => {
+                                addIngredientRowEdit(ing.nombre, ing.cantidad);
+                            });
+                        } else {
+                            // Add one empty row
+                            addIngredientRowEdit('', '');
+                        }
+
+                        // Show Overlay
+                        editOverlay.classList.add('show');
+                        document.body.classList.add('overlay-active');
+                    } else {
+                        alert('Error al cargar la receta: ' + data.error);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Error de conexión');
+                });
+        }
+
+        function addIngredientRowEdit(nombre, cantidad) {
+            const container = document.getElementById('editIngredientsContainer');
+            const row = document.createElement('div');
+            row.className = 'ingredient-row d-flex gap-2';
+            row.innerHTML = `
+                <input type="text" name="ingredientes_nombres" class="form-control creator-input flex-grow-1 py-2" value="${nombre}" placeholder="Ej. Nuevo ingrediente">
+                <input type="text" name="ingredientes_cantidades" class="form-control creator-input text-center py-2" value="${cantidad}" placeholder="Cant." style="width: 80px;">
+                <button type="button" class="btn btn-light text-danger d-flex align-items-center justify-content-center delete-ingredient-edit"
+                    style="width: 44px; border-radius: 12px; background: var(--bg-page); border: 1px solid rgba(0,0,0,0.05);">
+                    <span class="material-symbols-outlined">delete</span>
+                </button>
+            `;
+            container.appendChild(row);
+        }
+
+        // Add Button Listener for Edit Form
+        document.getElementById('addIngredientBtnEdit')?.addEventListener('click', () => {
+            addIngredientRowEdit('', '');
+        });
+
+        // Delete Ingredient Listener for Edit Form (Delegation)
+        document.getElementById('editIngredientsContainer')?.addEventListener('click', (e) => {
+            if (e.target.closest('.delete-ingredient-edit')) {
+                e.target.closest('.ingredient-row').remove();
+            }
+        });
+
+        function submitEditForm(event) {
+            event.preventDefault();
+            const form = event.target;
+            const recetaId = document.getElementById('edit_receta_id').value;
+            const formData = new FormData(form);
+
+            fetch(`/editar_receta/${recetaId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Receta actualizada exitosamente', 'success');
+                        closeEditOverlay();
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Error al guardar cambios.');
+                });
+        }
+    </script>
+    <script>
+        // Combined Tab and Filter Logic
+        function applyFilters() {
+            const activeTab = document.querySelector('#recipe-tabs button.active')?.dataset.tab || 'explorar';
+            const activeFilter = document.querySelector('.filter-btn.active')?.dataset.filter || 'todo';
+            const cards = document.querySelectorAll('.filter-item');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const cardCategory = card.dataset.category ? card.dataset.category.toLowerCase() : '';
+                const cardType = card.dataset.type ? card.dataset.type.toString() : '';
+                const isFavorite = card.dataset.favorite === 'true';
+                const isUserRecipe = card.dataset.userrecipe === 'true';
+
+                // Tab filtering
+                let showByTab = false;
+                if (activeTab === 'explorar') {
+                    showByTab = true;
+                } else if (activeTab === 'mis-recetas') {
+                    showByTab = isUserRecipe;
+                } else if (activeTab === 'favoritos') {
+                    showByTab = isFavorite;
+                }
+
+                // Category filtering
+                let showByFilter = false;
+                if (activeFilter === 'todo') {
+                    showByFilter = true;
+                } else if (activeFilter === 'tendencia') {
+                    showByFilter = cardCategory === 'tendencia' || cardCategory === 'smart';
+                } else if (activeFilter === 'keto') {
+                    showByFilter = cardCategory === 'keto' || cardType === 'KETO';
+                } else if (activeFilter === 'vegana') {
+                    showByFilter = cardCategory === 'vegana' || cardType === 'VEGA' || cardType === 'VEGE';
+                } else {
+                    showByFilter = cardCategory === activeFilter;
+                }
+
+                // Show only if both conditions are met
+                if (showByTab && showByFilter) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Toggle no results message
+            const noResMsg = document.getElementById('no-results-msg');
+            if (noResMsg) {
+                noResMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+            }
+        }
+
+        // Add this for backward compatibility with onclick="filterRecipes(this)" if not removed
+        function filterRecipes(btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.remove('active');
+                b.style.backgroundColor = '';
+                b.style.color = '';
+            });
+            btn.classList.add('active');
+            btn.style.backgroundColor = 'var(--primary-color)';
+            btn.style.color = 'white';
+            applyFilters();
+        }
+
+        function openRecipeDetail(card) {
+            const d = card.dataset;
+            showRecipeDetail(
+                d.title,
+                d.kcal,
+                d.time,
+                d.rating,
+                d.img,
+                d.prot,
+                d.carbs,
+                d.fats,
+                d.desc
+            );
+        }
+    </script>
+    <script>
+        function generateRecipeAI(btn) {
+            // Loading state
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = `
+                <span class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></span>
+                <span class="fw-bold text-primary" style="font-size: 0.8rem;">Creando...</span>
+            `;
+            btn.disabled = true;
+
+            fetch('/api/generar_receta_ia/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const r = data.receta;
+                        const form = document.getElementById('recipeCreatorForm');
+
+                        // Populate fields
+                        form.querySelector('[name="titulo"]').value = r.titulo || '';
+                        form.querySelector('[name="tiempo"]').value = r.tiempo || '';
+                        form.querySelector('[name="calorias"]').value = r.calorias || 0;
+                        form.querySelector('[name="proteinas"]').value = r.proteinas || 0;
+                        form.querySelector('[name="carbos"]').value = r.carbos || 0;
+                        form.querySelector('[name="grasas"]').value = r.grasas || 0;
+                        form.querySelector('[name="imagen_url"]').value = r.imagen_url || '';
+                        form.querySelector('[name="descripcion"]').value = r.descripcion || '';
+
+                        // Match diet type if possible (heuristic)
+                        // Gemini might return "Keto", "Vegana", etc.
+                        // We try to match with option text or value
+                        const dietSelect = form.querySelector('[name="dieta"]');
+                        const dietText = (r.tipo_dieta || '').toUpperCase();
+                        // Simple logic: if includes KETO select KETO, etc.
+                        // Actually Gemini prompt didn't ask for code, but title/description might imply.
+                        // Ideally we ask Gemini for the code, but let's just leave default or try to guess.
+                        // For now, let's leave as is or default OMNI.
+
+                        // Populate Ingredients
+                        const container = document.getElementById('ingredientsContainer');
+                        container.innerHTML = ''; // Clear
+
+                        if (r.ingredientes && r.ingredientes.length > 0) {
+                            r.ingredientes.forEach(ing => {
+                                // Create row logic (duplicated from addIngredientBtn event)
+                                const row = document.createElement('div');
+                                row.className = 'ingredient-row d-flex gap-2';
+                                row.innerHTML = `
+                            <input type="text" name="ingredientes_nombres" class="form-control creator-input flex-grow-1 py-2" value="${ing.nombre}" placeholder="Ej. Nuevo ingrediente">
+                            <input type="text" name="ingredientes_cantidades" class="form-control creator-input text-center py-2" value="${ing.cantidad}" placeholder="Cant." style="width: 80px;">
+                            <button type="button" class="btn btn-light text-danger d-flex align-items-center justify-content-center delete-ingredient"
+                                style="width: 44px; border-radius: 12px; background: var(--bg-page); border: 1px solid rgba(0,0,0,0.05);">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
+                           `;
+                                container.appendChild(row);
+                            });
+                        } else {
+                            // Add one empty row
+                            const r = document.createElement('div'); r.className = 'ingredient-row d-flex gap-2';
+                            r.innerHTML = `<input type="text" name="ingredientes_nombres" class="form-control creator-input flex-grow-1 py-2"><input type="text" name="ingredientes_cantidades" class="form-control creator-input text-center py-2" ><button type="button" class="btn btn-light text-danger delete-ingredient"><span class="material-symbols-outlined">delete</span></button>`;
+                            container.appendChild(r);
+                        }
+
+                        showToast('¡Receta generada con éxito!', 'success');
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Ocurrió un error al contactar al chef IA.');
+                })
+                .finally(() => {
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
+                });
+        }
+    </script>
+    <script>
+        function generateAutoPlan() {
+            const btn = document.getElementById('btnAutoPlan');
+            const originalContent = btn.innerHTML;
+
+            if (!confirm('¿Quieres generar un plan diario (Desayuno, Almuerzo, Cena) basado en tu perfil? Esto creará 3 nuevas recetas.')) return;
+
+            btn.innerHTML = `
+                <span class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></span>
+                <span class="ms-2">Generando...</span>
+            `;
+            btn.disabled = true;
+
+            fetch('/api/generar_plan_ia/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(`¡Plan generado! ${data.count} recetas creadas.`, 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Error de conexión con el chef IA.');
+                })
+                .finally(() => {
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
+                });
         }
     </script>
     {% endblock %}

@@ -20,6 +20,89 @@ from datetime import date, timedelta, datetime
 def get_base_template(request):
     return 'partial.html' if request.headers.get('HX-Request') else 'base.html'
 
+def obtener_mensaje_racha(dias):
+    """Retorna un mensaje motivador basado en los días de racha"""
+    if dias == 0:
+        return "¡Comienza hoy! 🌱"
+    if dias == 1:
+        return "¡Primer día! Nuevo comienzo 🌱"
+    
+    mensajes_cortos = [
+        "¡Estás en racha! 🔥",
+        "¡No te detengas! 💪",
+        "¡Excelente constancia! ✨",
+        "¡Vas por buen camino! 🚀",
+        "¡Sigue así, campeón! 👑"
+    ]
+    
+    if dias >= 30:
+        return f"¡{dias} DÍAS! ¡ERES LEYENDA! 👑"
+    if dias >= 21:
+        return f"¡{dias} Días! ¡Hábito de acero! 💎"
+    if dias >= 14:
+        return f"¡{dias} Días! ¡Imparable! 🚀"
+    if dias >= 7:
+        return f"¡Una semana completa! 🎉"
+        
+    return f"{dias} Días: {random.choice(mensajes_cortos)}"
+
+def obtener_recomendacion_ia(perfil, racha_dias):
+    """Genera un mensaje cálido y motivador del Coach IA nunut"""
+    if not perfil or perfil.rol == 'GUEST':
+        return "¡Hola! Soy nunut, tu coach personal. Regístrate para que pueda acompañarte en este viaje hacia tu mejor versión. Juntos haremos de tu salud una prioridad. ✨"
+    
+    nombre = perfil.usuario.first_name or perfil.usuario.username
+    
+    # Obtener hidratación de hoy
+    from .models import RegistroAgua
+    agua_hoy, _ = RegistroAgua.objects.get_or_create(perfil=perfil, fecha=date.today())
+    
+    if not perfil.onboarding_completado:
+        return f"¡Qué alegría tenerte aquí, {nombre}! 🌱 Soy nunut, tu coach IA. Me encantaría conocerte mejor para sugerirte los mejores alimentos según tu cuerpo. ¿Terminamos tu perfil? ✨"
+
+    # Intentar obtener recomendación Premium vía Gemini
+    try:
+        from .ai_service import generar_recomendacion_premium
+        recomendacion_gemini = generar_recomendacion_premium(perfil, racha_dias, agua_hoy)
+        if recomendacion_gemini:
+            return recomendacion_gemini
+    except Exception as e:
+        print(f"Error cargando Gemini: {e}")
+
+    # Fallback: Lógica Reglas-Base (Cálida)
+    # Lógica de Racha
+    if racha_dias == 1:
+        msg_racha = "Hoy es el comienzo de algo grande. 🌱 Cada paso cuenta, y me hace muy feliz verte dar el primero hoy."
+    elif racha_dias >= 7:
+        msg_racha = f"Llevas {racha_dias} días con una constancia admirable. 🔥 Tu cuerpo ya está empezando a agradecer este nuevo ritmo."
+    else:
+        msg_racha = f"¡{racha_dias} días seguidos! 🔥 Mantener la constancia es la llave que abre todas las puertas de tu bienestar."
+
+    # Lógica basada en objetivo
+    objetivo_msg = ""
+    if perfil.objetivo == 'PERDER':
+        objetivo_msg = "He notado que estás enfocado en sentirte más ligero. Recuerda que no se trata de comer menos, sino de nutrirte mejor. 🥗"
+    elif perfil.objetivo == 'GANAR':
+        objetivo_msg = "Para esos músculos, la proteína y el descanso son tus mejores amigos hoy. ¡Vamos por esa meta! 💪"
+    else:
+        objetivo_msg = "Mantener el equilibrio es un arte, y lo estás haciendo genial. ¡Sigue nutriendo tu energía vital! ✨"
+
+    # Lógica de Hidratación
+    hidratacion_msg = ""
+    if agua_hoy.porcentaje < 40:
+        hidratacion_msg = "He notado que has tomado poca agua hoy. Intenta beber un vaso ahora para oxigenar tus células. 💧"
+    elif agua_hoy.porcentaje >= 100:
+        hidratacion_msg = "¡Excelente nivel de hidratación hoy! Estás cuidando tu metabolismo al máximo. 💧🚀"
+
+    mensajes = [
+        f"¡Hola {nombre}! {msg_racha} {objetivo_msg} {hidratacion_msg}",
+        f"¿Cómo te sientes hoy, {nombre}? {hidratacion_msg} {msg_racha}",
+        f"Tu energía me dice que hoy será un día excelente. ☀️ {objetivo_msg} {hidratacion_msg}",
+        f"El agua es combustible vital. {hidratacion_msg} {msg_racha}"
+    ]
+    
+    return random.choice(mensajes)
+
 @login_required
 def index(request):
     es_invitado = False
@@ -28,6 +111,8 @@ def index(request):
 
     perfil = getattr(request.user, 'perfil', None)
     perfil_completo = False
+    racha_dias = 0
+    
     if perfil:
         perfil_completo = all([
             perfil.fecha_nacimiento, 
@@ -37,10 +122,67 @@ def index(request):
             perfil.nivel_actividad,
             perfil.objetivo
         ])
+        
+        # Registrar el acceso de hoy si no es invitado
+        if not es_invitado:
+            from .models import LoginStreak
+            LoginStreak.objects.get_or_create(perfil=perfil, fecha=date.today())
+            racha_dias = LoginStreak.calcular_racha(perfil)
     
+    # Obtener Recetas Sugeridas basadas en el perfil y gustos
+    from .models import Receta, RecetaFavorita
+    recetas_sugeridas = []
+    if perfil and perfil.onboarding_completado:
+        # 1. Filtrar por tipo de dieta y objetivo (base)
+        diet_filter = perfil.tipo_dieta
+        base_recetas = list(Receta.objects.filter(tipo_dieta=diet_filter).order_by('?'))
+        
+        # 2. Refinar por GUSTOS y tendencias del usuario
+        user_gustos = list(perfil.gustos.values_list('nombre', flat=True))
+        
+        # Scoring logic
+        scored_recetas = []
+        for r in base_recetas:
+            score = 0
+            # Tendencia por rating
+            score += float(r.rating) * 2
+            
+            # Match con gustos (palabras clave)
+            for gusto in user_gustos:
+                if gusto.lower() in r.titulo.lower() or gusto.lower() in r.descripcion.lower():
+                    score += 15 # Peso alto para gustos explícitos
+            
+            scored_recetas.append((r, score))
+        
+        # Ordenar por score y tomar las top 4
+        scored_recetas.sort(key=lambda x: x[1], reverse=True)
+        recetas_sugeridas = [x[0] for x in scored_recetas[:4]]
+        
+        # Si no hay suficientes, rellenar con cualquiera
+        if len(recetas_sugeridas) < 4:
+            ids_excluidos = [r.id for r in recetas_sugeridas]
+            recetas_extra = list(Receta.objects.exclude(id__in=ids_excluidos).order_by('?')[:4-len(recetas_sugeridas)])
+            recetas_sugeridas.extend(recetas_extra)
+    else:
+        # Sugerencias por defecto para invitados o nuevos
+        recetas_sugeridas = list(Receta.objects.all().order_by('?')[:4])
+
+    # IDs de favoritos para marcar el corazón
+    favoritas_ids = []
+    if request.user.is_authenticated and hasattr(request.user, 'perfil'):
+        favoritas_ids = list(RecetaFavorita.objects.filter(perfil=request.user.perfil).values_list('receta_id', flat=True))
+
     # Mostrar mensaje si el perfil está incompleto SOLO si no es invitado
     if not perfil_completo and not es_invitado:
         messages.info(request, "📋 Completa tu perfil para obtener recomendaciones nutricionales personalizadas y seguimiento preciso de tus objetivos.")
+    
+    # Hidratación
+    registro_agua = None
+    if perfil and not es_invitado:
+        from .models import RegistroAgua
+        registro_agua, creado = RegistroAgua.objects.get_or_create(perfil=perfil, fecha=date.today())
+        # Actualizar meta según peso actual
+        registro_agua.actualizar_meta()
     
     # Logic to generate informe
     informe = None
@@ -68,7 +210,13 @@ def index(request):
         'base_template': get_base_template(request),
         'perfil_completo': perfil_completo,
         'es_invitado': es_invitado,
-        'informe': informe
+        'informe': informe,
+        'racha_dias': racha_dias,
+        'mensaje_racha': obtener_mensaje_racha(racha_dias),
+        'recomendacion_ia': obtener_recomendacion_ia(perfil, racha_dias),
+        'recetas_sugeridas': recetas_sugeridas,
+        'favoritas_ids': favoritas_ids,
+        'registro_agua': registro_agua,
     })
 
 def panel(request):
@@ -82,7 +230,7 @@ def seed_db():
             descripcion="Filete de salmón fresco con hierbas y cítricos, ideal para cenas ligeras.",
             imagen_url="https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=500&h=300&fit=crop",
             calorias=350, tiempo="25 min", rating=4.8,
-            proteinas="34g", carbos="5g", grasas="22g",
+            proteinas=34, carbos=5, grasas=22,
             tipo_dieta="KETO", categoria="explorar"
         )
         Receta.objects.create(
@@ -90,7 +238,7 @@ def seed_db():
             descripcion="Un bowl energético lleno de fibra y proteínas vegetales.",
             imagen_url="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&h=300&fit=crop",
             calorias=420, tiempo="15 min", rating=4.9,
-            proteinas="12g", carbos="65g", grasas="14g",
+            proteinas=12, carbos=65, grasas=14,
             tipo_dieta="VEGE", categoria="explorar"
         )
         Receta.objects.create(
@@ -98,7 +246,7 @@ def seed_db():
             descripcion="Clásico desayuno saludable con pan integral y aguacate cremoso.",
             imagen_url="https://images.unsplash.com/photo-1525351484163-7529414344d8?w=500&h=300&fit=crop",
             calorias=280, tiempo="10 min", rating=4.7,
-            proteinas="8g", carbos="30g", grasas="21g",
+            proteinas=8, carbos=30, grasas=21,
             tipo_dieta="VEGA", categoria="desayuno"
         )
 
@@ -134,104 +282,79 @@ def planes(request):
 
     # 2. API 1: Spoonacular (Data rica en macros)
     api_key = "40fcdd780cb940a5a6c55c79f3bf4857"
-    url_spoon = "https://api.spoonacular.com/recipes/complexSearch"
-    params_spoon = {
-        'apiKey': api_key,
-        'query': query_term,
-        'number': 20, # Aumentado para tener más variedad
-        'addRecipeInformation': 'true',
-        'addRecipeNutrition': 'true'
-    }
-
-    # 3. API 2: TheMealDB (Respaldo gratuito, sin macros precisos)
-    url_mealdb = f"https://www.themealdb.com/api/json/v1/1/search.php?s={query_term}"
-
-    # Only make API calls if searching or if local DB is empty
-    should_fetch_api = q or len(recetas) < 3
+    
+    # Siempre buscar recetas si hay menos de 20
+    should_fetch_api = q or len(recetas) < 20
     
     if should_fetch_api:
         try:
-            # --- FETCH SPOONACULAR ---
-            response = requests.get(url_spoon, params=params_spoon, timeout=3)
-            if response.status_code == 200:
-                data = response.json()
-                for item in data.get('results', []):
-                    # Extraer macros reales
-                    nutrients = {n['name']: n for n in item.get('nutrition', {}).get('nutrients', [])}
-                    cal = int(nutrients.get('Calories', {}).get('amount', 0))
-                    
-                    if not any(r.titulo.lower() == item['title'].lower() for r in recetas):
-                        # Traducir título
-                        titulo_es = item['title']
-                        try:
-                            titulo_es = translator.translate(item['title'])
-                        except: pass
+            # Solo buscar lo necesario
+            search_list = [query_term]
+            if not q and len(recetas) < 10:
+                search_list.append("healthy")
 
-                        # Mapeo Categorías para Filtros
-                        cat_smart = 'tendencia' # Default
-                        # Prioridad de mapeo para filtros frontend
-                        if item.get('vegan'): cat_smart = 'vegana'
-                        elif item.get('ketogenic'): cat_smart = 'keto'
-                        elif item.get('vegetarian'): cat_smart = 'vegana' # Simplificación para filtro
-
-                        recetas.append(Receta(
-                            id=item['id'] + 100000,
-                            titulo=titulo_es,
-                            descripcion=f"Sugerencia inteligente basada en tus gustos.",
-                            imagen_url=item['image'],
-                            calorias=cal,
-                            tiempo=f"{item.get('readyInMinutes')} min",
-                            rating=4.5,
-                            proteinas=f"{int(nutrients.get('Protein', {}).get('amount', 0))}g",
-                            carbos=f"{int(nutrients.get('Carbohydrates', {}).get('amount', 0))}g",
-                            grasas=f"{int(nutrients.get('Fat', {}).get('amount', 0))}g",
-                            tipo_dieta='KETO' if item.get('ketogenic') else 'VEGA' if item.get('vegan') else 'OMNI',
-                            categoria=cat_smart
-                        ))
-
-            # --- FETCH THEMEALDB ---
-            if len(recetas) < 15:  # Aumentado el umbral
-                resp_db = requests.get(url_mealdb, timeout=3)
-                if resp_db.status_code == 200:
-                    data_db = resp_db.json()
-                    if data_db.get('meals'):
-                        import random
-                        for meal in data_db['meals'][:15]: # Aumentado de 5 a 15
-                             if not any(r.titulo.lower() == meal['strMeal'].lower() for r in recetas):
-                                es_carne = any(x in meal['strMeal'].lower() for x in ['beef', 'chicken', 'pork', 'lamb'])
-                                prot = random.randint(25, 45) if es_carne else random.randint(5, 15)
-                                cal_est = random.randint(300, 700)
+            for search_query in search_list:
+                if len(recetas) >= 15: break
+                
+                url = f"https://api.spoonacular.com/recipes/complexSearch?apiKey={api_key}&query={search_query}&addRecipeInformation=true&number=10&addRecipeNutrition=true"
+                try:
+                    response = requests.get(url, timeout=3)
+                    if response.status_code == 200:
+                        data = response.json()
+                        for item in data.get('results', []):
+                            if not any(r.titulo.lower() == item['title'].lower() for r in recetas):
+                                # Macros
+                                nuts = {n['name']: n for n in item.get('nutrition', {}).get('nutrients', [])}
+                                cal = int(nuts.get('Calories', {}).get('amount', 400))
+                                prot = int(nuts.get('Protein', {}).get('amount', 20))
                                 
-                                # Traducir título
-                                titulo_es = meal['strMeal']
-                                try:
-                                    titulo_es = translator.translate(meal['strMeal'])
-                                except: pass
-
-                                # Mapeo de Categoría
-                                str_cat = meal.get('strCategory', '').lower()
-                                cat_meal = 'tendencia'
-                                if str_cat in ['vegan', 'vegetarian']: cat_meal = 'vegana'
-                                if 'keto' in str_cat or 'beef' in str_cat: cat_meal = 'keto' 
+                                # Simplified logic
+                                cat = 'explorar'
+                                if 'breakfast' in item.get('dishTypes', []): cat = 'desayuno'
                                 
+                                tipo_dieta = 'OMNI'
+                                if item.get('ketogenic'): tipo_dieta = 'KETO'
+                                elif item.get('vegan'): tipo_dieta = 'VEGA'
+                                elif item.get('vegetarian'): tipo_dieta = 'VEGE'
+
                                 recetas.append(Receta(
-                                    id=int(meal['idMeal']) + 500000,
-                                    titulo=titulo_es,
-                                    descripcion=f"Clásico internacional de la categoría {meal.get('strCategory')}.",
-                                    imagen_url=meal['strMealThumb'],
-                                    calorias=cal_est,
-                                    tiempo=f"{random.randint(15, 45)} min", 
-                                    rating=round(random.uniform(4.0, 5.0), 1),
-                                    proteinas=f"{prot}g",
-                                    carbos=f"{random.randint(20, 60)}g",
-                                    grasas=f"{random.randint(10, 30)}g",
-                                    tipo_dieta='OMNI', 
-                                    categoria=cat_meal
+                                    id=item['id'] + 100000,
+                                    titulo=item['title'],
+                                    descripcion=f"Receta de {search_query} para tu plan saludable.",
+                                    imagen_url=item['image'],
+                                    calorias=cal,
+                                    tiempo=f"{item.get('readyInMinutes', 30)} min",
+                                    rating=round(4.0 + (item.get('aggregateLikes', 0) / 1000), 1),
+                                    proteinas=prot,
+                                    carbos=random.randint(20, 50),
+                                    grasas=random.randint(10, 30),
+                                    tipo_dieta=tipo_dieta,
+                                    categoria=cat
                                 ))
+                except: continue
 
+            # --- FALLBACK THEMEALDB SI SIGUE VACÍO ---
+            if len(recetas) < 8:
+                url_db = "https://www.themealdb.com/api/json/v1/1/search.php?s=chicken"
+                try:
+                    resp = requests.get(url_db, timeout=2)
+                    if resp.status_code == 200:
+                        meals = resp.json().get('meals', [])
+                        for m in (meals[:8] if meals else []):
+                            if not any(r.titulo.lower() == m['strMeal'].lower() for r in recetas):
+                                recetas.append(Receta(
+                                    id=int(m['idMeal']) + 500000,
+                                    titulo=m['strMeal'],
+                                    descripcion="Deliciosa opción internacional.",
+                                    imagen_url=m['strMealThumb'],
+                                    calorias=random.randint(400, 600),
+                                    tiempo="30 min", rating=4.6,
+                                    proteinas=30, carbos=20, grasas=10,
+                                    tipo_dieta='OMNI', categoria='explorar'
+                                 ))
+                except: pass
         except Exception as e:
-            print(f"Error APIs: {e}")
-            pass
+            print(f"Error General API: {e}")
 
     # Favoritos
     favoritas_ids = []
@@ -248,9 +371,9 @@ def planes(request):
             calorias=485,
             tiempo="15 min",
             rating=5.0,
-            proteinas="32g",
-            carbos="14g",
-            grasas="22g",
+            proteinas=32,
+            carbos=14,
+            grasas=22,
             tipo_dieta='KETO',
             categoria='tendencia'
         ))
@@ -720,7 +843,7 @@ from .forms import EditarPerfilForm
 @login_required
 def perfil(request):
     if request.method == 'POST':
-        form = EditarPerfilForm(request.POST, instance=request.user.perfil, user=request.user)
+        form = EditarPerfilForm(request.POST, request.FILES, instance=request.user.perfil, user=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, '¡Perfil actualizado exitosamente!')
@@ -1005,3 +1128,138 @@ def crear_receta(request):
             return JsonResponse({'success': False, 'error': str(e)}, status=400)
     
     return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+
+@login_required
+def borrar_receta(request, receta_id):
+    if request.method == 'POST':
+        from .models import Receta
+        try:
+            receta = Receta.objects.get(id=receta_id)
+            if receta.perfil_creador == request.user.perfil:
+                receta.delete()
+                return JsonResponse({'success': True})
+            else:
+                return JsonResponse({'success': False, 'error': 'No tienes permiso para borrar esta receta.'}, status=403)
+        except Receta.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Receta no encontrada.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+
+@login_required
+def editar_receta(request, receta_id):
+    from .models import Receta
+    try:
+        receta = Receta.objects.get(id=receta_id)
+    except Receta.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Receta no encontrada'}, status=404)
+    
+    # Verificar permisos
+    if receta.perfil_creador != request.user.perfil:
+         return JsonResponse({'success': False, 'error': 'No tienes permiso.'}, status=403)
+
+    if request.method == 'POST':
+        try:
+            # Extract basic data
+            receta.titulo = request.POST.get('titulo')
+            # Check for diet type validity if needed, or trust form
+            receta.tipo_dieta = request.POST.get('dieta')
+            receta.tiempo = request.POST.get('tiempo')
+            img_url = request.POST.get('imagen_url')
+            
+            # Preserve original description part if we want, or just overwrite.
+            # Here we assume the form sends the "description" part separate from ingredients again
+            desc_text = request.POST.get('descripcion', '')
+            
+            # Extract macros
+            receta.calorias = int(request.POST.get('calorias') or 0)
+            receta.proteinas = int(request.POST.get('proteinas') or 0)
+            receta.carbos = int(request.POST.get('carbos') or 0)
+            receta.grasas = int(request.POST.get('grasas') or 0)
+
+            if img_url:
+                receta.imagen_url = img_url
+
+            # Process Ingredients
+            nombres = request.POST.getlist('ingredientes_nombres')
+            cantidades = request.POST.getlist('ingredientes_cantidades')
+            
+            ingredientes_txt = ""
+            if nombres and len(nombres) > 0:
+                ingredientes_txt = "\n\nINGREDIENTES:\n"
+                for n, c in zip(nombres, cantidades):
+                     if n.strip():
+                        ingredientes_txt += f"- {n.strip()} ({c.strip()})\n"
+            
+            receta.descripcion = desc_text + ingredientes_txt
+            receta.save()
+            
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+    
+    # GET: Return JSON for population
+    ingredientes_pre = []
+    desc_clean = receta.descripcion
+    
+    if "INGREDIENTES:" in receta.descripcion:
+        parts = receta.descripcion.split("INGREDIENTES:")
+        desc_clean = parts[0].strip()
+        ing_part = parts[1].strip()
+        for line in ing_part.split('\n'):
+            line = line.strip()
+            if line.startswith('-'):
+                try:
+                    content = line[1:].strip() 
+                    # Last parenthesis is quantity
+                    if '(' in content and content.endswith(')'):
+                        name_part = content.rpartition('(')[0].strip()
+                        cant_part = content.rpartition('(')[2].replace(')', '').strip()
+                        if name_part:
+                            ingredientes_pre.append({'nombre': name_part, 'cantidad': cant_part})
+                    else:
+                        # Fallback if format is weird
+                        ingredientes_pre.append({'nombre': content, 'cantidad': ''})
+                except: pass
+
+    data = {
+        'id': receta.id,
+        'titulo': receta.titulo,
+        'tipo_dieta': receta.tipo_dieta,
+        'tiempo': receta.tiempo,
+        'imagen_url': receta.imagen_url,
+        'descripcion': desc_clean,
+        'calorias': receta.calorias,
+        'proteinas': receta.proteinas,
+        'carbos': receta.carbos,
+        'grasas': receta.grasas,
+        'ingredientes': ingredientes_pre
+    }
+    
+    return JsonResponse({'success': True, 'receta': data})
+
+@login_required
+def actualizar_agua(request):
+    if request.method == 'POST':
+        import json
+        try:
+            data = json.loads(request.body)
+            cambio = int(data.get('cambio', 0))
+            
+            from .models import RegistroAgua
+            registro, _ = RegistroAgua.objects.get_or_create(perfil=request.user.perfil, fecha=date.today())
+            
+            registro.actualizar_meta() # Asegurar meta fresca
+            registro.cantidad_vasos = max(0, registro.cantidad_vasos + cambio)
+            registro.save()
+            
+            return JsonResponse({
+                'status': 'success',
+                'cantidad_vasos': registro.cantidad_vasos,
+                'litros': float(registro.litros),
+                'porcentaje': registro.porcentaje,
+                'meta_vasos': registro.meta_vasos
+            })
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error'}, status=400)

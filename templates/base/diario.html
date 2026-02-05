@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Resumen Diario de Alto Rendimiento | nunut{% endblock %}
+{% block title %}Resumen Diario | nunut{% endblock %}
 
 {% block extra_head %}
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet" />
@@ -314,8 +314,8 @@
                             </div>
                             <span class="text-xs fw-bold text-secondary">Grasas</span>
                         </div>
-                        <span class="text-sm fw-black">{{ consumo.grasas|default:0 }}g / {{ plan.grasas_g|default:0
-                            }}g</span>
+                        <span class="text-sm fw-black">{{ consumo.grasas|default:0 }}g / {{
+                            plan.grasas_g|default:0}}g</span>
                     </div>
                     <div class="micro-progress">
                         <div class="h-100"
@@ -350,8 +350,8 @@
                     </div>
                 </div>
             </div>
+        </section>
     </div>
-    </section>
 
     <section class="card meal-card p-4 shadow-sm border-0">
         <div class="mb-4">

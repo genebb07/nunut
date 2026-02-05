@@ -212,15 +212,17 @@ class EditarPerfilForm(forms.ModelForm):
     first_name = forms.CharField(label="Nombre", max_length=30, required=True)
     last_name = forms.CharField(label="Apellido", max_length=30, required=True)
     email = forms.EmailField(label="Email", required=True)
+    foto_perfil_file = forms.ImageField(label="Foto de Perfil", required=False)
     
     class Meta:
         model = Perfil
         fields = [
             'localidad', 'fecha_nacimiento', 'genero', 
             'altura', 'porcentaje_grasa', 'somatotipo',
+            'medida_cintura', 'medida_cuello', 'medida_cadera',
             'tipo_dieta', 'objetivo', 'nivel_actividad',
             'frecuencia_comidas', 'horario_sueno',
-            'alergias', 'intolerancias', 'condiciones_medicas', 'gustos'
+            'alergias', 'intolerancias', 'condiciones_medicas', 'notas_medicas', 'gustos'
         ]
         labels = {
             'localidad': 'Ubicación',
@@ -228,6 +230,9 @@ class EditarPerfilForm(forms.ModelForm):
             'genero': 'Género',
             'altura': 'Altura (cm)',
             'porcentaje_grasa': '% Grasa Corporal',
+            'medida_cintura': 'Cintura (cm)',
+            'medida_cuello': 'Cuello (cm)',
+            'medida_cadera': 'Cadera (cm) *Solo Mujeres',
             'somatotipo': 'Somatotipo',
             'tipo_dieta': 'Tipo de Dieta',
             'objetivo': 'Objetivo Principal',
@@ -237,14 +242,19 @@ class EditarPerfilForm(forms.ModelForm):
             'alergias': 'Alergias',
             'intolerancias': 'Intolerancias',
             'condiciones_medicas': 'Condiciones Médicas',
+            'notas_medicas': 'Notas Adicionales / Especificaciones',
             'gustos': 'Mis Gustos'
         }
         widgets = {
-            'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}),
+            'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
             'localidad': forms.TextInput(attrs={'placeholder': 'Ciudad, País'}),
-            'altura': forms.NumberInput(attrs={'step': '0.01'}),
-            'porcentaje_grasa': forms.NumberInput(attrs={'step': '0.1'}),
+            'altura': forms.NumberInput(attrs={'step': '0.01', 'placeholder': 'Ej: 175'}),
+            'porcentaje_grasa': forms.NumberInput(attrs={'step': '0.1', 'placeholder': 'Ej: 20.5'}),
+            'medida_cintura': forms.NumberInput(attrs={'step': '0.1', 'placeholder': 'Punto más estrecho'}),
+            'medida_cuello': forms.NumberInput(attrs={'step': '0.1', 'placeholder': 'Debajo de la nuez'}),
+            'medida_cadera': forms.NumberInput(attrs={'step': '0.1', 'placeholder': 'Punto más ancho'}),
             'horario_sueno': forms.TextInput(attrs={'placeholder': 'Ej: 11pm - 7am'}),
+            'notas_medicas': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Ej: Dolores lumbares después de entrenar, presión arterial baja...'}),
             'alergias': forms.CheckboxSelectMultiple(),
             'intolerancias': forms.CheckboxSelectMultiple(),
             'condiciones_medicas': forms.CheckboxSelectMultiple(),
@@ -280,6 +290,16 @@ class EditarPerfilForm(forms.ModelForm):
             self.user.email = self.cleaned_data['email']
             if commit:
                 self.user.save()
+                
+                # Guardar foto de perfil si se subió una
+                if self.cleaned_data.get('foto_perfil_file'):
+                    perfil.foto_perfil = self.cleaned_data['foto_perfil_file'].read()
+
+                # Calcular grasa automática si hay medidas
+                grasa_auto = perfil.calcular_porcentaje_grasa_marina()
+                if grasa_auto is not None:
+                    perfil.porcentaje_grasa = grasa_auto
+                    
                 perfil.save()
                 self.save_m2m() # Importante para campos ManyToMany
         return perfil

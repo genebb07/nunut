@@ -77,13 +77,20 @@ class Perfil(models.Model):
     
     # Datos físicos
     altura = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Altura en cm")
-    porcentaje_grasa = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True, help_text="% de grasa")  
+    porcentaje_grasa = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True, help_text="% de grasa")
+    
+    # Medidas para Fórmula de la Marina de EE.UU.
+    medida_cintura = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Circunferencia cintura en cm")
+    medida_cuello = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Circunferencia cuello en cm")
+    medida_cadera = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Circunferencia cadera en cm (Mujeres)")
+    
     somatotipo = models.CharField(max_length=4, choices=OPCIONES_SOMATOTIPO, blank=True)
     
     # Salud y medicina
     alergias = models.ManyToManyField(Alergia, blank=True)
     intolerancias = models.ManyToManyField(Intolerancia, blank=True)
     condiciones_medicas = models.ManyToManyField(CondicionMedica, blank=True)
+    notas_medicas = models.TextField(blank=True, help_text="Notas médicas adicionales o especificaciones.")
     medicamentos = models.ManyToManyField(Medicamento, blank=True)
     
     # Nutrición y hábitos
@@ -114,6 +121,8 @@ class Perfil(models.Model):
     @property
     def edad(self):
         """Calcula la edad automáticamente basada en la fecha actual"""
+        if not self.fecha_nacimiento:
+            return 30 # Edad default o manejar como prefieras
         today = date.today()
         return today.year - self.fecha_nacimiento.year - (
             (today.month, today.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day)
@@ -141,6 +150,31 @@ class Perfil(models.Model):
     def obtener_peso_actual(self):
         ultimo_registro = self.historial_peso.first()
         return ultimo_registro.peso if ultimo_registro else 0
+
+    def calcular_porcentaje_grasa_marina(self):
+        """Calcula el % de grasa usando la fórmula de la Marina de EE.UU."""
+        import math
+        if not self.altura or not self.medida_cintura or not self.medida_cuello:
+            return None
+        
+        altura = float(self.altura)
+        cintura = float(self.medida_cintura)
+        cuello = float(self.medida_cuello)
+
+        try:
+            if self.genero == 'H':
+                # Fórmula Hombres
+                grasa = 495 / (1.0324 - 0.19077 * math.log10(cintura - cuello) + 0.15456 * math.log10(altura)) - 450
+            elif self.genero == 'M':
+                if not self.medida_cadera: return None
+                cadera = float(self.medida_cadera)
+                # Fórmula Mujeres
+                grasa = 495 / (1.29579 - 0.35004 * math.log10(cintura + cadera - cuello) + 0.22100 * math.log10(altura)) - 450
+            else:
+                return None
+            return round(grasa, 1)
+        except (ValueError, ZeroDivisionError):
+            return None
 
     def calcular_tmb(self):
         peso = self.obtener_peso_actual()
@@ -345,3 +379,74 @@ class ComidaDiaria(models.Model):
     imagen_url = models.URLField(blank=True, null=True)
     
     def __str__(self): return f"{self.nombre} ({self.calorias} kcal)"
+
+class LoginStreak(models.Model):
+    """Modelo para trackear la racha de días consecutivos de acceso del usuario"""
+    perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name='login_streaks')
+    fecha = models.DateField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-fecha']
+        unique_together = ('perfil', 'fecha')
+    
+    def __str__(self):
+        return f"{self.perfil.usuario.username} - {self.fecha}"
+    
+    @staticmethod
+    def calcular_racha(perfil):
+        """Calcula la racha actual de días consecutivos"""
+        from datetime import date, timedelta
+        
+        registros = LoginStreak.objects.filter(perfil=perfil).order_by('-fecha')
+        if not registros.exists():
+            return 0
+        
+        racha = 0
+        fecha_esperada = date.today()
+        
+        for registro in registros:
+            if registro.fecha == fecha_esperada:
+                racha += 1
+                fecha_esperada -= timedelta(days=1)
+            elif registro.fecha == fecha_esperada + timedelta(days=1):
+                # Si el último registro fue ayer, también cuenta
+                continue
+            else:
+                break
+        
+        return racha
+
+class RegistroAgua(models.Model):
+    perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name='registros_agua')
+    fecha = models.DateField(default=date.today)
+    cantidad_vasos = models.IntegerField(default=0)
+    meta_vasos = models.IntegerField(default=8) # 8 vasos = ~2 Litros
+
+    class Meta:
+        unique_together = ('perfil', 'fecha')
+        ordering = ['-fecha']
+
+    def __str__(self):
+        return f"{self.perfil.usuario.username} - {self.fecha}: {self.cantidad_vasos} vasos"
+    
+    @property
+    def litros(self):
+        # Asumiendo 250ml por vaso
+        return round(self.cantidad_vasos * 0.25, 2)
+    
+    @property
+    def meta_litros(self):
+        return round(self.meta_vasos * 0.25, 2)
+    
+    @property
+    def porcentaje(self):
+        if self.meta_vasos <= 0: return 0
+        return min(round((self.cantidad_vasos / self.meta_vasos) * 100), 100)
+
+    def actualizar_meta(self):
+        """Calcula la meta de vasos basada en el peso del perfil (35ml por kg)"""
+        peso = self.perfil.obtener_peso_actual()
+        if peso and peso > 0:
+            # 35ml por kg / 250ml por vaso = 0.14 vasos por kg
+            self.meta_vasos = max(8, round(float(peso) * 0.14))
+            self.save()

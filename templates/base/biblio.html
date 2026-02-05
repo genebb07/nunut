@@ -134,6 +134,12 @@
         color: white;
     }
 
+    /* Fix for "Ver Todo" link hover */
+    a[href="#section-explore"]:hover {
+        color: var(--primary-dark) !important;
+        text-decoration: underline !important;
+    }
+
     .btn-save-inline {
         position: absolute;
         top: 10px;
@@ -210,6 +216,26 @@
         height: 150px;
         /* Reduced height */
     }
+
+    /* Responsive text truncation for smaller screens */
+    @media (max-width: 768px) {
+        .article-title {
+            font-size: 0.85rem;
+            line-clamp: 2;
+            -webkit-line-clamp: 2;
+        }
+
+        .article-desc {
+            font-size: 0.7rem;
+            line-clamp: 2;
+            -webkit-line-clamp: 2;
+            max-height: 2.8em;
+        }
+
+        .img-container {
+            height: 120px;
+        }
+    }
 </style>
 
 <!-- 1. DYNAMIC HERO SECTION -->
@@ -223,13 +249,13 @@
 </div>
 
 <!-- 2. ÚLTIMAS NOVEDADES (TOP 4) -->
-<div class="section-header mt-5">
+<div class="section-header mt-5 d-flex justify-content-between align-items-center">
     <div>
         <h3 class="section-title">Últimas Novedades</h3>
         <p class="text-muted small mb-0">Lo más reciente en ciencia y bienestar.</p>
     </div>
-    <a href="#section-explore" class="fw-bold small-caps"
-        style="color: var(--primary-color); text-decoration: none;">Ver Todo</a>
+    <a href="#section-explore" class="fw-bolder text-decoration-none"
+        style="color: var(--primary); font-weight: 800;">Ver Todo</a>
 </div>
 
 <div id="grid-destacados" class="row g-4 mb-4">
@@ -396,13 +422,19 @@
         let currentSearch = '';
 
         const MOCK_DB = [
-            { title: "El Poder del Magnesio", description: "Descubre por qué este mineral es esencial para tu recuperación muscular y sueño profundo.", category: "Nutrición", urlToImage: "https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=500", url: "#", type: "article" },
-            { title: "¿Ayuno Intermitente?", description: "Guía basada en evidencia sobre los beneficios y contraindicaciones del ayuno 16/8.", category: "Ciencia", urlToImage: "https://images.unsplash.com/photo-1549488497-64906a2374c0?q=80&w=500", url: "#", type: "guide" },
-            { title: "Sueño y Grasa", description: "Dormir menos de 6 horas puede reducir tu capacidad de quemar grasa en un 55%.", category: "Tips", urlToImage: "https://images.unsplash.com/photo-1520206183501-b80df61043c2?q=80&w=500", url: "#", type: "fact" },
-            { title: "Proteína Vegetal", description: "Top 5 fuentes de proteína completa para dietas basadas en plantas.", category: "Nutrición", urlToImage: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=500", url: "#", type: "article" },
-            { title: "Mito del Colesterol", description: "Nuevos estudios revelan que el huevo no es el enemigo. Entiende el HDL vs LDL.", category: "Ciencia", urlToImage: "https://images.unsplash.com/photo-1506808823611-6b8a8b0c4456?q=80&w=500", url: "#", type: "article" },
-            { title: "Hidratación Real", description: "Beber agua no es suficiente. Necesitas electrolitos para una hidratación celular real.", category: "Tips", urlToImage: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?q=80&w=500", url: "#", type: "fact" },
-            { title: "Guía de Suplementos", description: "Creatina, Whey, Omega-3: ¿Cuáles valen realmente la pena según la ciencia?", category: "Ciencia", urlToImage: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=500", url: "#", type: "guide" }
+            { title: "Guía Maestro nunut (IA)", description: "Entiende cómo nuestra inteligencia avanzada utiliza tu biometría, racha y gustos para optimizar tu salud en tiempo real.", category: "Ciencia", urlToImage: "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=500", url: "#", type: "guide" },
+            { title: "El Poder del Magnesio", description: "Descubre por qué este mineral es esencial para tu recuperación muscular y sueño profundo.", category: "Nutrición", urlToImage: "https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=500", url: "https://www.healthline.com/nutrition/magnesium-benefits", type: "article" },
+            { title: "Ayuno Intermitente: Guía Completa", description: "Guía basada en evidencia sobre los beneficios y contraindicaciones del ayuno 16/8.", category: "Ciencia", urlToImage: "https://images.unsplash.com/photo-1549488497-64906a2374c0?q=80&w=500", url: "https://www.youtube.com/watch?v=LLVf3d0rqqY", type: "guide" },
+            { title: "Sueño y Pérdida de Grasa", description: "Dormir menos de 6 horas puede reducir tu capacidad de quemar grasa en un 55%.", category: "Tips", urlToImage: "https://images.unsplash.com/photo-1520206183501-b80df61043c2?q=80&w=500", url: "https://www.sleepfoundation.org/physical-health/weight-loss-and-sleep", type: "fact" },
+            { title: "Proteína Vegetal Completa", description: "Top 5 fuentes de proteína completa para dietas basadas en plantas.", category: "Nutrición", urlToImage: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=500", url: "https://www.youtube.com/watch?v=hJNF2_dCWkg", type: "article" },
+            { title: "Mito del Colesterol en Huevos", description: "Nuevos estudios revelan que el huevo no es el enemigo. Entiende el HDL vs LDL.", category: "Ciencia", urlToImage: "https://images.unsplash.com/photo-1506808823611-6b8a8b0c4456?q=80&w=500", url: "https://www.health.harvard.edu/heart-health/are-eggs-risky-for-heart-health", type: "article" },
+            { title: "Hidratación Celular Real", description: "Beber agua no es suficiente. Necesitas electrolitos para una hidratación celular real.", category: "Tips", urlToImage: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?q=80&w=500", url: "https://www.youtube.com/watch?v=j5K3EJhMNFQ", type: "fact" },
+            { title: "Guía de Suplementos Esenciales", description: "Creatina, Whey, Omega-3: ¿Cuáles valen realmente la pena según la ciencia?", category: "Ciencia", urlToImage: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=500", url: "https://examine.com/guides/supplement-guides/", type: "guide" },
+            { title: "Rutina HIIT para Principiantes", description: "15 minutos de entrenamiento de alta intensidad para quemar grasa rápidamente.", category: "Tips", urlToImage: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=500", url: "https://www.youtube.com/watch?v=ml6cT4AZdqI", type: "article" },
+            { title: "Dieta Mediterránea y Longevidad", description: "Cómo la dieta mediterránea puede añadir años de vida saludable.", category: "Nutrición", urlToImage: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?q=80&w=500", url: "https://www.mayoclinic.org/healthy-lifestyle/nutrition-and-healthy-eating/in-depth/mediterranean-diet/art-20047801", type: "article" },
+            { title: "Yoga para la Flexibilidad", description: "Rutina de yoga de 20 minutos para mejorar tu flexibilidad y reducir el estrés.", category: "Tips", urlToImage: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=500", url: "https://www.youtube.com/watch?v=v7AYKMP6rOE", type: "article" },
+            { title: "Macros para Ganar Músculo", description: "Cálculo preciso de proteínas, carbohidratos y grasas para hipertrofia muscular.", category: "Nutrición", urlToImage: "https://images.unsplash.com/photo-1532384748853-8f54a8f476e2?q=80&w=500", url: "https://www.bodybuilding.com/content/macronutrient-calculator.html", type: "guide" },
+            { title: "Beneficios del Omega-3", description: "Por qué los ácidos grasos omega-3 son cruciales para tu salud cerebral y cardiovascular.", category: "Ciencia", urlToImage: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?q=80&w=500", url: "https://ods.od.nih.gov/factsheets/Omega3FattyAcids-Consumer/", type: "article" }
         ];
 
         // --- INTERNAL FUNCTIONS ---
