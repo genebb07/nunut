@@ -584,30 +584,32 @@
         </script>
 
         <script>
-            let currentWater = parseInt("{{ registro_agua.cantidad_vasos|default:0 }}");
-            let metaWater = parseInt("{{ registro_agua.meta_vasos|default:8 }}");
+            // Usamos el objeto window para evitar errores de "already declared" con let/const
+            window.currentWater = parseInt("{{ registro_agua.cantidad_vasos|default:0 }}");
+            window.metaWater = parseInt("{{ registro_agua.meta_vasos|default:8 }}");
 
-            function renderGlasses() {
+            // Envolvemos todo en una función global para que no se duplique
+            window.renderGlasses = function() {
                 const container = document.getElementById('water-glasses-container');
                 if (!container) return;
 
                 container.innerHTML = '';
-                for (let i = 1; i <= metaWater; i++) {
+                for (let i = 1; i <= window.metaWater; i++) {
                     const glass = document.createElement('span');
-                    glass.className = `material-symbols-outlined water-glass ${i <= currentWater ? 'active' : ''}`;
+                    glass.className = `material-symbols-outlined water-glass ${i <= window.currentWater ? 'active' : ''}`;
                     glass.innerText = 'local_drink';
                     container.appendChild(glass);
                 }
-            }
+            };
 
-            function updateWater(cambio) {
+            window.updateWater = function(cambio) {
                 {% if es_invitado %}
                 showToast('Regístrate para guardar tu hidratación', 'info');
                 return;
                 {% endif %}
 
-                const nuevoValor = Math.max(0, currentWater + cambio);
-                if (nuevoValor === currentWater && cambio !== 0) return;
+                const nuevoValor = Math.max(0, window.currentWater + cambio);
+                if (nuevoValor === window.currentWater && cambio !== 0) return;
 
                 fetch('/api/actualizar_agua/', {
                     method: 'POST',
@@ -617,32 +619,35 @@
                     },
                     body: JSON.stringify({ cambio: cambio })
                 })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            currentWater = data.cantidad_vasos;
-                            metaWater = data.meta_vasos; // Actualizar meta por si cambió el peso
-                            document.getElementById('water-liters').innerText = data.litros.toFixed(1);
-                            document.getElementById('meta-liters-display').innerText = (data.meta_vasos * 0.25).toFixed(1);
-                            document.getElementById('water-percentage').innerText = data.porcentaje + '% Meta';
-                            document.getElementById('current-vasos-display').innerText = data.cantidad_vasos;
-                            document.getElementById('meta-vasos-display').innerText = data.meta_vasos;
-                            renderGlasses();
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        window.currentWater = data.cantidad_vasos;
+                        window.metaWater = data.meta_vasos;
+                        
+                        document.getElementById('water-liters').innerText = data.litros.toFixed(1);
+                        document.getElementById('meta-liters-display').innerText = (data.meta_vasos * 0.25).toFixed(1);
+                        document.getElementById('water-percentage').innerText = data.porcentaje + '% Meta';
+                        document.getElementById('current-vasos-display').innerText = data.cantidad_vasos;
+                        document.getElementById('meta-vasos-display').innerText = data.meta_vasos;
+                        
+                        window.renderGlasses();
 
-                            if (cambio > 0) {
-                                showToast('¡Vaso registrado! 💧', 'success');
-                            }
+                        if (cambio > 0) {
+                            showToast('¡Vaso registrado! 💧', 'success');
                         }
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        showToast('Error al actualizar agua', 'error');
-                    });
-            }
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showToast('Error al actualizar agua', 'error');
+                });
+            };
 
-            // Inicializar al cargar y al swappear con HTMX
-            document.addEventListener('DOMContentLoaded', renderGlasses);
-            document.addEventListener('htmx:afterSwap', renderGlasses);
+            // Ejecución inicial segura
+            if (document.readyState === 'complete') {
+                window.renderGlasses();
+            }
         </script>
     </aside>
 </div>
