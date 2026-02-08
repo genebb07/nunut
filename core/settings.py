@@ -172,4 +172,12 @@ EMAIL_HOST_USER = 'ppyop.dope@gmail.com'  # <--- TU CORREO REAL
 EMAIL_HOST_PASSWORD = 'tnoh hdyw stbh pjwo'  # <--- TU CONTRASEÑA DE APLICACIÓN
 DEFAULT_FROM_EMAIL = 'Nunut <ppyop.dope@gmail.com>'
 
+# Configuración de Cache (Memoria local para desarrollo)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
+
 GEMINI_API_KEY = 'AIzaSyADWeF-zRcei2kAygr-rHopo1l65eBwKTM'

@@ -354,8 +354,7 @@
                         </button>
 
                         <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-50">
-                            <span class="text-white fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">{{
-                                receta.get_tipo_dieta_display|upper }}</span>
+                            <span class="text-white fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">{{ receta.get_tipo_dieta_display|upper }}</span>
                         </div>
                     </div>
                     <div class="p-3">
@@ -478,8 +477,7 @@
                 <div class="text-center">
                     <h4 class="h2 fw-900 mb-0">
                         <span id="water-liters">{{ registro_agua.litros|default:"0.0"|floatformat:1 }}</span>
-                        <small class="text-muted h6">/ <span id="meta-liters-display">{{
-                                registro_agua.meta_litros|default:"2.0" }}</span> Lts</small>
+                        <small class="text-muted h6">/ <span id="meta-liters-display">{{ registro_agua.meta_litros|default:"2.0" }}</span> Lts</small>
                     </h4>
                     <p class="text-xs-bold text-muted mb-0" id="water-status">
                         Vasos: <span id="current-vasos-display">{{ registro_agua.cantidad_vasos|default:"0" }}</span> /

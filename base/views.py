@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 import requests
+from django.core.cache import cache
 import random
 from datetime import date, datetime, timedelta
 from deep_translator import GoogleTranslator
@@ -9,7 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .forms import CustomAuthenticationForm, CustomUserCreationForm
 from .forms import OnboardingForm
@@ -270,80 +271,77 @@ def planes(request):
     seed_db()
     from .models import Receta, RecetaFavorita
     
-    # 1. Búsqueda Local
-    recetas = list(Receta.objects.all())
-    q = request.GET.get('q')
-    
-    # query default para que siempre haya contenido (popular/saludable)
-    query_term = q if q else "healthy"
+    # 1. Búsqueda Local (Evita llamadas a API si ya tenemos resultados)
+    q = request.GET.get('q', '').strip()
+    if q:
+        recetas = list(Receta.objects.filter(Q(titulo__icontains=q) | Q(descripcion__icontains=q)))
+    else:
+        recetas = list(Receta.objects.all())
 
-    # Translator instance (cache to avoid repeatedly init)
-    translator = GoogleTranslator(source='auto', target='es')
+    # 2. Lógica de Cache para la API
+    # Usamos el cache para no repetir búsquedas en la API externas en un corto tiempo
+    cache_key = f"api_fetched_{q if q else 'default'}"
+    ya_buscado = cache.get(cache_key)
 
-    # 2. API 1: Spoonacular (Data rica en macros)
-    api_key = "40fcdd780cb940a5a6c55c79f3bf4857"
-    
-    # Siempre buscar recetas si hay menos de 20
-    should_fetch_api = q or len(recetas) < 20
-    
+    # Solo buscamos en la API si: 
+    # - No hemos buscado ese término recientemente (ya_buscado es None)
+    # - Y (Es una búsqueda específica q O tenemos menos de 15 recetas en total)
+    should_fetch_api = not ya_buscado and (q or len(recetas) < 15)
+
     if should_fetch_api:
         try:
-            # Solo buscar lo necesario
-            search_list = [query_term]
-            if not q and len(recetas) < 10:
-                search_list.append("healthy")
+            api_key = "40fcdd780cb940a5a6c55c79f3bf4857"
+            query_term = q if q else "healthy"
+            
+            # Spoonacular
+            url = f"https://api.spoonacular.com/recipes/complexSearch?apiKey={api_key}&query={query_term}&addRecipeInformation=true&number=10&addRecipeNutrition=true"
+            response = requests.get(url, timeout=5)
+            
+            if response.status_code == 200:
+                data = response.json()
+                for item in data.get('results', []):
+                    # Evitar duplicados consultando directamente la base de datos (más seguro)
+                    if not Receta.objects.filter(titulo__iexact=item['title']).exists():
+                        # Extraer Macros
+                        nuts = {n['name']: n for n in item.get('nutrition', {}).get('nutrients', [])}
+                        cal = int(nuts.get('Calories', {}).get('amount', 400))
+                        prot = int(nuts.get('Protein', {}).get('amount', 20))
+                        
+                        # Determinar categoría y dieta
+                        cat = 'explorar'
+                        if 'breakfast' in item.get('dishTypes', []): cat = 'desayuno'
+                        
+                        tipo_dieta = 'OMNI'
+                        if item.get('ketogenic'): tipo_dieta = 'KETO'
+                        elif item.get('vegan'): tipo_dieta = 'VEGA'
+                        elif item.get('vegetarian'): tipo_dieta = 'VEGE'
 
-            for search_query in search_list:
-                if len(recetas) >= 15: break
-                
-                url = f"https://api.spoonacular.com/recipes/complexSearch?apiKey={api_key}&query={search_query}&addRecipeInformation=true&number=10&addRecipeNutrition=true"
-                try:
-                    response = requests.get(url, timeout=3)
-                    if response.status_code == 200:
-                        data = response.json()
-                        for item in data.get('results', []):
-                            if not any(r.titulo.lower() == item['title'].lower() for r in recetas):
-                                # Macros
-                                nuts = {n['name']: n for n in item.get('nutrition', {}).get('nutrients', [])}
-                                cal = int(nuts.get('Calories', {}).get('amount', 400))
-                                prot = int(nuts.get('Protein', {}).get('amount', 20))
-                                
-                                # Simplified logic
-                                cat = 'explorar'
-                                if 'breakfast' in item.get('dishTypes', []): cat = 'desayuno'
-                                
-                                tipo_dieta = 'OMNI'
-                                if item.get('ketogenic'): tipo_dieta = 'KETO'
-                                elif item.get('vegan'): tipo_dieta = 'VEGA'
-                                elif item.get('vegetarian'): tipo_dieta = 'VEGE'
+                        # PERSISTENCIA: Guardamos en la base de datos
+                        nueva_receta = Receta.objects.create(
+                            titulo=item['title'],
+                            descripcion=f"Receta de {query_term} para tu plan saludable.",
+                            imagen_url=item['image'],
+                            calorias=cal,
+                            tiempo=f"{item.get('readyInMinutes', 30)} min",
+                            rating=round(4.0 + (item.get('aggregateLikes', 0) / 1000), 1),
+                            proteinas=prot,
+                            carbos=random.randint(20, 50),
+                            grasas=random.randint(10, 30),
+                            tipo_dieta=tipo_dieta,
+                            categoria=cat
+                        )
+                        recetas.append(nueva_receta)
 
-                                recetas.append(Receta(
-                                    id=item['id'] + 100000,
-                                    titulo=item['title'],
-                                    descripcion=f"Receta de {search_query} para tu plan saludable.",
-                                    imagen_url=item['image'],
-                                    calorias=cal,
-                                    tiempo=f"{item.get('readyInMinutes', 30)} min",
-                                    rating=round(4.0 + (item.get('aggregateLikes', 0) / 1000), 1),
-                                    proteinas=prot,
-                                    carbos=random.randint(20, 50),
-                                    grasas=random.randint(10, 30),
-                                    tipo_dieta=tipo_dieta,
-                                    categoria=cat
-                                ))
-                except: continue
-
-            # --- FALLBACK THEMEALDB SI SIGUE VACÍO ---
+            # --- FALLBACK THEMEALDB (Solo si seguimos con muy pocas) ---
             if len(recetas) < 8:
-                url_db = "https://www.themealdb.com/api/json/v1/1/search.php?s=chicken"
+                url_db = f"https://www.themealdb.com/api/json/v1/1/search.php?s={query_term}"
                 try:
-                    resp = requests.get(url_db, timeout=2)
+                    resp = requests.get(url_db, timeout=3)
                     if resp.status_code == 200:
                         meals = resp.json().get('meals', [])
-                        for m in (meals[:8] if meals else []):
-                            if not any(r.titulo.lower() == m['strMeal'].lower() for r in recetas):
-                                recetas.append(Receta(
-                                    id=int(m['idMeal']) + 500000,
+                        for m in (meals[:5] if meals else []):
+                            if not Receta.objects.filter(titulo__iexact=m['strMeal']).exists():
+                                nueva_receta = Receta.objects.create(
                                     titulo=m['strMeal'],
                                     descripcion="Deliciosa opción internacional.",
                                     imagen_url=m['strMealThumb'],
@@ -351,10 +349,15 @@ def planes(request):
                                     tiempo="30 min", rating=4.6,
                                     proteinas=30, carbos=20, grasas=10,
                                     tipo_dieta='OMNI', categoria='explorar'
-                                 ))
+                                 )
+                                recetas.append(nueva_receta)
                 except: pass
+            
+            # Marcar como ya buscado en cache por 1 hora para evitar re-hits constantes
+            cache.set(cache_key, True, 3600)
+
         except Exception as e:
-            print(f"Error General API: {e}")
+            print(f"Error API: {e}")
 
     # Favoritos
     favoritas_ids = []
