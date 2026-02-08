@@ -259,8 +259,7 @@
                         <span class="text-xs text-secondary fw-bold text-uppercase">Consumidas</span>
                         <hr class="my-1 text-secondary opacity-25" />
                         <span class="text-sm fw-black" style="color: var(--primary-color);">
-                            {% if progress.faltan_kcal > 0 %}Faltan {{ progress.faltan_kcal }}{% else %}Meta cumplida{%
-                            endif %}
+                            {% if progress.faltan_kcal > 0 %}Faltan {{ progress.faltan_kcal }}{% else %}Meta cumplida{% endif %}
                         </span>
                     </div>
                 </div>
@@ -276,8 +275,7 @@
                             </div>
                             <span class="text-xs fw-bold text-secondary">Proteína</span>
                         </div>
-                        <span class="text-sm fw-black">{{ consumo.proteinas|default:0 }}g / {{
-                            plan.proteinas_g|default:0 }}g</span>
+                        <span class="text-sm fw-black">{{ consumo.proteinas|default:0 }}g / {{ plan.proteinas_g|default:0 }}g</span>
                     </div>
                     <div class="micro-progress">
                         <div class="h-100"
@@ -295,8 +293,7 @@
                             </div>
                             <span class="text-xs fw-bold text-secondary">Carbos</span>
                         </div>
-                        <span class="text-sm fw-black">{{ consumo.carbos|default:0 }}g / {{
-                            plan.carbohidratos_g|default:0 }}g</span>
+                        <span class="text-sm fw-black">{{ consumo.carbos|default:0 }}g / {{ plan.carbohidratos_g|default:0 }}g</span>
                     </div>
                     <div class="micro-progress">
                         <div class="h-100"
@@ -314,8 +311,7 @@
                             </div>
                             <span class="text-xs fw-bold text-secondary">Grasas</span>
                         </div>
-                        <span class="text-sm fw-black">{{ consumo.grasas|default:0 }}g / {{
-                            plan.grasas_g|default:0}}g</span>
+                        <span class="text-sm fw-black">{{ consumo.grasas|default:0 }}g / {{ plan.grasas_g|default:0}}g</span>
                     </div>
                     <div class="micro-progress">
                         <div class="h-100"
