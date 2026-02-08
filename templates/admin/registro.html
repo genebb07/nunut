@@ -1,63 +1,72 @@
-{% extends 'base.html' %}
+{% extends base_template %}
 {% load static %}
 
-{% block title %}Registro Admin | nunut{% endblock %}
+{% block title %}Registro Staff | nunut{% endblock %}
 
 {% block content %}
-<div class="row min-vh-100 align-items-center justify-content-center py-5">
+<div class="row min-vh-100 align-items-center justify-content-center py-5 fade-in">
     <div class="col-md-6 col-lg-5 col-xl-4">
         <div class="text-center mb-5">
-            <h1 class="fw-black display-6">Acceso Administrativo</h1>
-            <p class="text-muted fw-bold">Crear nueva cuenta de staff</p>
+            <span class="material-symbols-outlined display-3 text-primary mb-3">shield_person</span>
+            <h1 class="fw-black display-6">Acceso Élite</h1>
+            <p class="text-muted fw-bold">Gestión de privilegios administrativos</p>
         </div>
 
-        <div class="card-custom border p-4 p-md-5 shadow-lg bg-white position-relative overflow-hidden">
+        <div class="card p-4 p-md-5 shadow-lg border-0 bg-content rounded-5 overflow-hidden">
             <!-- Decorative accent -->
-            <div class="position-absolute top-0 start-0 w-100 h-1 bg-dark" style="height: 5px;"></div>
+            <div class="position-absolute top-0 start-0 w-100 h-1 bg-primary" style="height: 6px;"></div>
 
             <form method="post" action="." class="needs-validation" novalidate>
                 {% csrf_token %}
 
-                {% if messages %}
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} rounded-4 border-0 small shadow-sm mb-4">
-                    {{ message }}
-                </div>
-                {% endfor %}
-                {% endif %}
-
                 <div class="mb-4">
-                    <label class="form-label small text-uppercase fw-bold text-muted">Código de Seguridad</label>
-                    <input type="password" name="security_code"
-                        class="form-control form-control-lg bg-light border-0 fw-bold" required placeholder="••••••••">
+                    <label class="form-label small text-uppercase fw-bold text-muted">Código de Autorización</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0"><span
+                                class="material-symbols-outlined fs-6">vpn_key</span></span>
+                        <input type="password" name="security_code"
+                            class="form-control form-control-lg bg-light border-0 fw-bold" required
+                            placeholder="NUNUT-XXXX-XXXX">
+                    </div>
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label small text-uppercase fw-bold text-muted">Usuario</label>
+                    <label class="form-label small text-uppercase fw-bold text-muted">Nombre de Usuario</label>
                     {{ form.username }}
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label small text-uppercase fw-bold text-muted">Email</label>
-                    {{ form.email }}
+                    <label class="form-label small text-uppercase fw-bold text-muted">Credenciales de Acceso</label>
+                    <div class="row g-2">
+                        <div class="col-12">{{ form.email }}</div>
+                        <div class="col-12">{{ form.password }}</div>
+                    </div>
                 </div>
 
-                <div class="mb-4">
-                    <label class="form-label small text-uppercase fw-bold text-muted">Contraseña</label>
-                    {{ form.password }}
-                </div>
-
-                <button type="submit" name="admin_register_submit"
-                    class="btn btn-dark w-100 py-3 rounded-4 fw-black shadow-lg mt-3">
-                    REGISTRAR ADMIN
+                <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-black shadow-lg mt-3">
+                    AUTORIZAR Y REGISTRAR
                 </button>
             </form>
 
-            <div class="text-center mt-4">
-                <a href="{% url 'base:admin_dashboard' %}" class="small text-muted fw-bold text-decoration-none">←
-                    Volver al panel</a>
+            <div class="text-center mt-4 pt-3 border-top">
+                <a href="{% url 'base:admin_dashboard' %}"
+                    class="small text-primary fw-bold text-decoration-none d-flex align-items-center justify-content-center gap-2">
+                    <span class="material-symbols-outlined fs-6">dashboard</span> Regresar al Panel
+                </a>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .bg-content {
+        background: var(--bg-content);
+    }
+
+    .form-control:focus {
+        box-shadow: 0 0 0 4px var(--primary-light);
+        border-color: var(--primary);
+    }
+</style>
+{% endblock %}
 {% endblock %}

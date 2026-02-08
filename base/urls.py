@@ -28,6 +28,7 @@ urlpatterns = [
     path('cerrar_sesion/', views.cerrar_sesion, name='cerrar_sesion'),
     path('gestion-nunut/dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('gestion-nunut/registro/', views.admin_registro, name='admin_registro'),
+    path('gestion-nunut/auditoria/', views.auditoria_view, name='auditoria'),
     path('api/borrar_receta/<int:receta_id>/', views.borrar_receta, name='borrar_receta'),
     path('editar_receta/<int:receta_id>/', views.editar_receta, name='editar_receta'),
     path('api/actualizar_agua/', views.actualizar_agua, name='actualizar_agua'),

@@ -162,6 +162,17 @@
 {% block container_class %}container max-w-7xl dashboard-elite{% endblock %}
 
 {% block content %}
+{% if user.is_authenticated and user.perfil.rol == 'ADMIN' %}
+<div class="alert alert-info rounded-4 p-4 shadow-sm border-0 d-flex align-items-center gap-3">
+    <span class="material-symbols-outlined fs-2">info</span>
+    <div>
+        <h4 class="fw-bold mb-1">Modo Administrador Activo</h4>
+        <p class="mb-0 opacity-75">Has accedido a la vista de usuario. Algunas funciones de seguimiento personal están
+            deshabilitadas para el rol ADMINISTRADOR.</p>
+    </div>
+</div>
+{% endif %}
+
 <div class="d-flex align-items-center justify-content-between mb-5 mt-2">
     <div class="d-flex align-items-center gap-3">
         <div class="rounded-circle border border-2 border-success p-1 shadow-sm" style="width: 62px; height: 62px;">
@@ -354,8 +365,7 @@
                         </button>
 
                         <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-50">
-                            <span class="text-white fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">{{
-                                receta.get_tipo_dieta_display|upper }}</span>
+                            <span class="text-white fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">{{ receta.get_tipo_dieta_display|upper }}</span>
                         </div>
                     </div>
                     <div class="p-3">

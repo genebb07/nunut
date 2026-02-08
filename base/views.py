@@ -16,9 +16,29 @@ from .forms import OnboardingForm
 from django.core.mail import send_mail
 from django.contrib.auth.hashers import make_password
 from datetime import date, timedelta, datetime
+from django.db.models import Q, F, Sum, Avg, Max
+from .models import Perfil, Receta, Articulo, RegistroPeso, RegistroAgua, LoginStreak, Sugerencia, Auditoria, RecetaFavorita, ArticuloGuardado, ComidaDiaria
 
 def get_base_template(request):
     return 'partial.html' if request.headers.get('HX-Request') else 'base.html'
+
+def log_auditoria(request, accion, detalle=""):
+    """Registra una acción en el sistema de auditoría"""
+    try:
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        
+        Auditoria.objects.create(
+            usuario=request.user if request.user.is_authenticated else None,
+            accion=accion,
+            detalle=detalle,
+            ip_address=ip
+        )
+    except:
+        pass
 
 def obtener_mensaje_racha(dias):
     """Retorna un mensaje motivador basado en los días de racha"""
@@ -105,13 +125,19 @@ def obtener_recomendacion_ia(perfil, racha_dias):
 
 @login_required
 def index(request):
-    es_invitado = False
-    if request.user.is_authenticated and hasattr(request.user, 'perfil'):
-        es_invitado = request.user.perfil.rol == 'GUEST'
-
     perfil = getattr(request.user, 'perfil', None)
+    if not perfil and request.user.is_authenticated:
+        # En caso de que el perfil no exista por algún error de señales
+        perfil = Perfil.objects.create(usuario=request.user)
+    
+    # --- LÓGICA DE ADMINISTRADOR ---
+    if perfil and perfil.rol == 'ADMIN':
+        return admin_dashboard(request)
+
+    es_invitado = perfil.rol == 'GUEST'
     perfil_completo = False
     racha_dias = 0
+    perdio_racha = False
     
     if perfil:
         perfil_completo = all([
@@ -125,12 +151,15 @@ def index(request):
         
         # Registrar el acceso de hoy si no es invitado
         if not es_invitado:
-            from .models import LoginStreak
+            # Detectar si perdió racha antes de registrar la de hoy
+            ultimo_streak = LoginStreak.objects.filter(perfil=perfil).order_by('-fecha').first()
+            if ultimo_streak and ultimo_streak.fecha < date.today() - timedelta(days=1):
+                perdio_racha = True
+                
             LoginStreak.objects.get_or_create(perfil=perfil, fecha=date.today())
             racha_dias = LoginStreak.calcular_racha(perfil)
     
     # Obtener Recetas Sugeridas basadas en el perfil y gustos
-    from .models import Receta, RecetaFavorita
     recetas_sugeridas = []
     if perfil and perfil.onboarding_completado:
         # 1. Filtrar por tipo de dieta y objetivo (base)
@@ -169,17 +198,19 @@ def index(request):
 
     # IDs de favoritos para marcar el corazón
     favoritas_ids = []
-    if request.user.is_authenticated and hasattr(request.user, 'perfil'):
-        favoritas_ids = list(RecetaFavorita.objects.filter(perfil=request.user.perfil).values_list('receta_id', flat=True))
+    if perfil:
+        favoritas_ids = list(RecetaFavorita.objects.filter(perfil=perfil).values_list('receta_id', flat=True))
 
     # Mostrar mensaje si el perfil está incompleto SOLO si no es invitado
     if not perfil_completo and not es_invitado:
         messages.info(request, "📋 Completa tu perfil para obtener recomendaciones nutricionales personalizadas y seguimiento preciso de tus objetivos.")
     
+    if perdio_racha:
+        messages.warning(request, "¡Oh no! Perdiste tu racha, pero no te preocupes. ¡Intentémoslo de nuevo hoy! 💪✨")
+
     # Hidratación
     registro_agua = None
     if perfil and not es_invitado:
-        from .models import RegistroAgua
         registro_agua, creado = RegistroAgua.objects.get_or_create(perfil=perfil, fecha=date.today())
         # Actualizar meta según peso actual
         registro_agua.actualizar_meta()
@@ -188,22 +219,13 @@ def index(request):
     informe = None
     if es_invitado:
         informe = {
-            'plan': {
-                'calorias_dia': 2000,
-                'proteinas_g': 150,
-                'carbohidratos_g': 200,
-                'grasas_g': 65
-            },
-            'porcentajes': {
-                'prot_pct': 30,
-                'carbs_pct': 40,
-                'grasa_pct': 30
-            }
+            'plan': { 'calorias_dia': 2000, 'proteinas_g': 150, 'carbohidratos_g': 200, 'grasas_g': 65 },
+            'porcentajes': { 'prot_pct': 30, 'carbs_pct': 40, 'grasa_pct': 30 }
         }
     elif perfil and perfil_completo:
         try:
             informe = perfil.generar_informe_nutricional()
-        except Exception:
+        except:
             informe = None
 
     return render(request, 'base/index.html', {
@@ -212,6 +234,7 @@ def index(request):
         'es_invitado': es_invitado,
         'informe': informe,
         'racha_dias': racha_dias,
+        'perdio_racha': perdio_racha,
         'mensaje_racha': obtener_mensaje_racha(racha_dias),
         'recomendacion_ia': obtener_recomendacion_ia(perfil, racha_dias),
         'recetas_sugeridas': recetas_sugeridas,
@@ -379,8 +402,27 @@ def planes(request):
         ))
 
     es_invitado = False
-    if request.user.is_authenticated and hasattr(request.user, 'perfil'):
-        es_invitado = request.user.perfil.rol == 'GUEST'
+    perfil = getattr(request.user, 'perfil', None)
+    if request.user.is_authenticated and perfil:
+        es_invitado = perfil.rol == 'GUEST'
+        
+    # --- LÓGICA DE ADMINISTRADOR ---
+    if perfil and perfil.rol == 'ADMIN':
+        recetas_stats = Receta.objects.annotate(
+            total_favoritos=Count('recetafavorita_set')
+        ).order_by('-vistas')
+        
+        return render(request, 'base/planes.html', {
+            'base_template': get_base_template(request),
+            'es_admin': True,
+            'recetas': recetas_stats
+        })
+
+    # Usuarios normales ven recetas
+    # Incrementar vistas (solo de recetas persistentes en DB)
+    saved_ids = [r.id for r in recetas if r.id and r.id < 500000]
+    if saved_ids:
+        Receta.objects.filter(id__in=saved_ids).update(vistas=F('vistas') + 1)
 
     return render(request, 'base/planes.html', {
         'base_template': get_base_template(request),
@@ -392,6 +434,8 @@ def planes(request):
 @login_required
 def diario(request):
     perfil = request.user.perfil
+    if perfil.rol == 'ADMIN':
+        return redirect('base:index')
     
     # 1. Manejo de Fecha
     date_str = request.GET.get('date')
@@ -460,8 +504,30 @@ def diario(request):
     
     return render(request, 'base/diario.html', context)
 
+@login_required
 def progreso(request):
     perfil = request.user.perfil
+    
+    # --- LÓGICA DE ADMINISTRADOR ---
+    if perfil.rol == 'ADMIN':
+        # Estadísticas globales de salud de los usuarios
+        total_perfiles = Perfil.objects.exclude(rol='ADMIN').count()
+        # Filtros de países
+        paises = Perfil.objects.exclude(rol='ADMIN').values('localidad').annotate(count=Count('id')).order_by('-count')
+        # Distribución de objetivos
+        objetivos = list(Perfil.objects.exclude(rol='ADMIN').values('objetivo').annotate(count=Count('id')))
+        # Dietas
+        dietas = list(Perfil.objects.exclude(rol='ADMIN').values('tipo_dieta').annotate(count=Count('id')))
+        
+        return render(request, 'base/progreso.html', {
+            'base_template': get_base_template(request),
+            'es_admin': True,
+            'total_perfiles': total_perfiles,
+            'paises': paises,
+            'objetivos': objetivos,
+            'dietas': dietas,
+        })
+
     peso = float(perfil.obtener_peso_actual())
     altura_m = float(perfil.altura) / 100 if perfil.altura else 0
     
@@ -534,8 +600,24 @@ def progreso(request):
 
 def biblio(request):
     seed_db()
-    from .models import Articulo, ArticuloGuardado
+    perfil = getattr(request.user, 'perfil', None)
+    
+    # --- LÓGICA DE ADMINISTRADOR ---
+    if perfil and perfil.rol == 'ADMIN':
+        # Estadísticas globales de artículos
+        articulos_stats = Articulo.objects.annotate(
+            total_guardados=Count('articuloguardado_set')
+        ).order_by('-vistas')
+        
+        return render(request, 'base/biblio.html', {
+            'base_template': get_base_template(request),
+            'es_admin': True,
+            'articulos': articulos_stats,
+        })
+
     articulos = Articulo.objects.all()
+    # Incrementar vistas al ver la lista (simplificado)
+    Articulo.objects.all().update(vistas=F('vistas') + 1)
     
     guardados_ids = []
     if request.user.is_authenticated and hasattr(request.user, 'perfil'):
@@ -603,9 +685,9 @@ def iniciar_sesion(request):
         # Si por alguna razón llega un POST de registro a esta URL (recuperación de errores)
         elif 'register_submit' in request.POST:
              return registro(request)
-    else:
-        login_form = CustomAuthenticationForm()
-        register_form = CustomUserCreationForm()
+    
+    login_form = CustomAuthenticationForm()
+    register_form = CustomUserCreationForm()
 
     return render(request, 'auth/autenticacion.html', {
         'base_template': get_base_template(request),
@@ -1023,31 +1105,43 @@ def calcular_macros_api(request):
 
 # --- ADMIN PANEL LOGIC ---
 
-@user_passes_test(lambda u: u.is_staff, login_url='base:index')
+@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.rol == 'ADMIN', login_url='base:index')
 def admin_dashboard(request):
-    seed_db()
-    from .models import Receta, Articulo
-    
-    # Stats
+    # Stats Generales
     total_users = User.objects.count()
-    total_recipes = Receta.objects.count()
-    total_articles = Articulo.objects.count()
+    total_registered = Perfil.objects.exclude(rol='GUEST').count()
+    total_admins = Perfil.objects.filter(rol='ADMIN').count()
     
-    # Recent users
-    recent_users = User.objects.order_by('-date_joined')[:5]
+    # Crecimiento (registros últimos 30 días)
+    last_30_days = date.today() - timedelta(days=30)
+    growth_data = User.objects.filter(date_joined__gte=last_30_days).extra(select={'day': 'date(date_joined)'}).values('day').annotate(count=Count('id')).order_by('day')
     
-    # Recent content (Basic combination)
-    recent_recipes = [{'titulo': r.titulo, 'type': 'recipe'} for r in Receta.objects.all().order_by('-id')[:3]]
-    recent_articles = [{'titulo': a.titulo, 'type': 'article'} for a in Articulo.objects.all().order_by('-id')[:2]]
-    recent_content = recent_recipes + recent_articles
+    # Distribución por países
+    paises = Perfil.objects.exclude(rol='ADMIN').values('localidad').annotate(count=Count('id')).order_by('-count')
+    
+    # Feedback (Sugerencias)
+    sugerencias = Sugerencia.objects.filter(leida=False)[:5]
+    
+    # Recetas más populares
+    popular_recipes = Receta.objects.annotate(fav_count=Count('recetafavorita')).order_by('-vistas')[:5]
     
     return render(request, 'admin/dashboard.html', {
         'base_template': get_base_template(request),
         'total_users': total_users,
-        'total_recipes': total_recipes,
-        'total_articles': total_articles,
-        'recent_users': recent_users,
-        'recent_content': recent_content
+        'total_registered': total_registered,
+        'total_admins': total_admins,
+        'growth_data': list(growth_data),
+        'paises': paises,
+        'sugerencias': sugerencias,
+        'popular_recipes': popular_recipes
+    })
+
+@user_passes_test(lambda u: hasattr(u, 'perfil') and u.perfil.rol == 'ADMIN', login_url='base:index')
+def auditoria_view(request):
+    logs = Auditoria.objects.all().select_related('usuario')
+    return render(request, 'admin/auditoria.html', {
+        'base_template': get_base_template(request),
+        'logs': logs
     })
 
 def admin_registro(request):

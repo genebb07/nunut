@@ -4,6 +4,16 @@
 {% block title %}Biblioteca de Salud | nunut{% endblock %}
 
 {% block content %}
+{% if es_admin %}
+<div class="alert alert-info rounded-4 p-4 shadow-sm border-0 d-flex align-items-center gap-3 mb-5">
+    <span class="material-symbols-outlined fs-2">info</span>
+    <div>
+        <h4 class="fw-bold mb-1">Métricas de Biblioteca</h4>
+        <p class="mb-0 opacity-75">Vista administrativa de la librería de contenidos. Analiza qué temas interesan más a
+            tus usuarios.</p>
+    </div>
+</div>
+{% endif %}
 <style>
     .text-primary-nunut {
         color: var(--primary) !important;
@@ -239,6 +249,66 @@
 </style>
 
 <!-- 1. DYNAMIC HERO SECTION -->
+{% if es_admin %}
+<div class="admin-stats-container mt-4 mb-5">
+    <div class="row g-4">
+        <div class="col-12">
+            <h2 class="fw-black mb-4"><span
+                    class="material-symbols-outlined align-middle me-2 fs-1 text-primary">analytics</span> Análisis de
+                Contenido</h2>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card-article p-4 shadow-sm border-0 h-100">
+                <h5 class="fw-bold mb-4">Artículos Más Relevantes</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="small-caps text-muted" style="font-size: 0.7rem;">
+                            <tr>
+                                <th>Artículo</th>
+                                <th>Categoría</th>
+                                <th class="text-center">Vistas</th>
+                                <th class="text-center">Guardados</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for art in articulos %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="{{ art.imagen_url }}" class="rounded-3"
+                                            style="width: 40px; height: 40px; object-fit: cover;">
+                                        <span class="fw-bold small">{{ art.titulo|truncatechars:40 }}</span>
+                                    </div>
+                                </td>
+                                <td><span class="badge rounded-pill bg-light text-secondary">{{ art.categoria }}</span>
+                                </td>
+                                <td class="text-center fw-black">{{ art.vistas }}</td>
+                                <td class="text-center text-primary fw-black">{{ art.total_guardados }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card-article p-4 shadow-sm border-0 bg-primary text-white h-100">
+                <h5 class="fw-bold mb-4 text-white">Salud del Repositorio</h5>
+                <div class="d-flex flex-column gap-4">
+                    <div class="stat-box">
+                        <p class="mb-1 x-small text-uppercase fw-bold opacity-75">Vistas Totales</p>
+                        <h2 class="fw-black mb-0">{% with total_vistas=0 %}{% for art in articulos %}{% with
+                            total_vistas=total_vistas|add:art.vistas %}{% endwith %}{% endfor %}{{ total_vistas }}{%
+                            endwith %}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
 <div class="parallax-hero" id="hero-section">
     <div class="hero-content" id="hero-content">
         <span class="skeleton d-inline-block mb-3" style="width: 150px; height: 30px; border-radius: 50px;"></span>
@@ -336,6 +406,7 @@
         <span class="material-symbols-outlined">expand_more</span>
     </button>
 </div>
+{% endif %}
 
 <!-- 5. MÁS PARA TI (FUNCIONAL) -->
 <div class="py-4 mt-2 border-top">

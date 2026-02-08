@@ -338,6 +338,7 @@ class Receta(models.Model):
     
     # Usuario que creó la receta (si es nulo, es una receta del sistema)
     perfil_creador = models.ForeignKey(Perfil, on_delete=models.SET_NULL, null=True, blank=True, related_name='recetas_propias')
+    vistas = models.PositiveIntegerField(default=0)
 
     def __str__(self): return self.titulo
 
@@ -355,6 +356,7 @@ class Articulo(models.Model):
     imagen_url = models.URLField(max_length=500)
     categoria = models.CharField(max_length=50)
     url = models.URLField(blank=True, max_length=500)
+    vistas = models.PositiveIntegerField(default=0)
     
     def __str__(self): return self.titulo
     
@@ -450,3 +452,23 @@ class RegistroAgua(models.Model):
             # 35ml por kg / 250ml por vaso = 0.14 vasos por kg
             self.meta_vasos = max(8, round(float(peso) * 0.14))
             self.save()
+
+class Sugerencia(models.Model):
+    perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name='sugerencias')
+    texto = models.TextField()
+    fecha = models.DateTimeField(auto_now_add=True)
+    leida = models.BooleanField(default=False)
+    respuesta = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-fecha']
+
+class Auditoria(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    accion = models.CharField(max_length=200)
+    detalle = models.TextField(blank=True)
+    fecha = models.DateTimeField(auto_now_add=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-fecha']

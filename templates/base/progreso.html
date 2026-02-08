@@ -138,8 +138,10 @@
                     <span class="material-symbols-outlined fs-2">analytics</span>
                 </div>
                 <div>
-                    <h1 class="h3 fw-900 mb-0" style="font-weight: 900;">Análisis de Rendimiento</h1>
-                    <p class="text-muted small mb-0 fw-bold">Seguimiento detallado de tus métricas biométricas.</p>
+                    <h1 class="h3 fw-900 mb-0" style="font-weight: 900;">{% if es_admin %}Salud de la Aplicación{% else
+                        %}Análisis de Rendimiento{% endif %}</h1>
+                    <p class="text-muted small mb-0 fw-bold">{% if es_admin %}Métricas globales de la comunidad Nunut.{%
+                        else %}Seguimiento detallado de tus métricas biométricas.{% endif %}</p>
                 </div>
             </div>
             {% if user.username == 'invitado' %}
@@ -152,6 +154,112 @@
 
     <!-- Contenedor con Posibilidad de Bloqueo -->
     <div class="col-12 position-relative">
+        {% if es_admin %}
+        <!-- VISTA DE ADMINISTRADOR -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-3">
+                <div class="card-progreso text-center">
+                    <h2 class="fw-black text-primary mb-0">{{ total_perfiles }}</h2>
+                    <p class="text-technical small">Perfiles Analizados</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card-progreso text-center">
+                    <h2 class="fw-black text-info mb-0">{{ objetivos.count }}</h2>
+                    <p class="text-technical small">Segmentos de Objetivo</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card-progreso text-center">
+                    <h2 class="fw-black text-warning mb-0">{{ dietas.count }}</h2>
+                    <p class="text-technical small">Tipos de Dietas</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card-progreso text-center">
+                    <h2 class="fw-black text-danger mb-0">{{ paises.count }}</h2>
+                    <p class="text-technical small">Países Alcanzados</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card-progreso shadow-sm h-100">
+                    <h5 class="fw-bold mb-4">Tendencias de Objetivos en la Comunidad</h5>
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <canvas id="objetivosChart"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            {% for obj in objetivos %}
+                            <div class="d-flex justify-content-between align-items-center mb-3 p-3 rounded-4"
+                                style="background: rgba(var(--primary-rgb), 0.05);">
+                                <span class="fw-bold">{{ obj.objetivo }}</span>
+                                <span class="badge bg-primary rounded-pill">{{ obj.count }} usuarios</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card-progreso shadow-sm h-100">
+                    <h5 class="fw-bold mb-4">Preferencia de Dietas</h5>
+                    <canvas id="dietasChart"></canvas>
+                    <div class="mt-4">
+                        {% for dieta in dietas %}
+                        <div class="d-flex justify-content-between small mb-2 text-muted">
+                            <span>{{ dieta.tipo_dieta }}</span>
+                            <span>{{ dieta.count }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{ objetivos|json_script:"objetivos-data" }}
+        {{ dietas|json_script:"dietas-data" }}
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const objetivosData = JSON.parse(document.getElementById('objetivos-data').textContent);
+                const dietasData = JSON.parse(document.getElementById('dietas-data').textContent);
+
+                // Objetivos Chart
+                const objCtx = document.getElementById('objetivosChart').getContext('2d');
+                new Chart(objCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: objetivosData.map(o => o.objetivo),
+                        datasets: [{
+                            data: objetivosData.map(o => o.count),
+                            backgroundColor: ['#85c81a', '#ff9933', '#4facfe', '#ef4444'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: { plugins: { legend: { position: 'bottom' } }, cutout: '70%' }
+                });
+
+                // Dietas Chart
+                const dietCtx = document.getElementById('dietasChart').getContext('2d');
+                new Chart(dietCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: dietasData.map(d => d.tipo_dieta),
+                        datasets: [{
+                            label: 'Usuarios',
+                            data: dietasData.map(d => d.count),
+                            backgroundColor: '#85c81a'
+                        }]
+                    },
+                    options: { scales: { y: { beginAtZero: true } } }
+                });
+            });
+        </script>
+
+        {% else %}
+        <!-- VISTA DE USUARIO NORMAL -->
         {% if user.username == 'invitado' %}
         <div class="guest-lock-overlay">
             <div class="lock-card">
@@ -350,7 +458,12 @@
                 </div>
             </div>
         </div>
+        {% endif %}
     </div><!-- Cierre row g-4 -->
+</div><!-- Cierre col-12 position-relative -->
+</div><!-- Cierre row g-4 mt-2 inicial -->
+{% endblock %}
+</div><!-- Cierre row g-4 -->
 </div><!-- Cierre col-12 position-relative -->
 </div><!-- Cierre row g-4 mt-2 inicial -->
 {% endblock %}

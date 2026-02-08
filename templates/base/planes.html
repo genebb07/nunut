@@ -4,6 +4,16 @@
 {% block title %}Explorador de Recetas | nunut{% endblock %}
 
 {% block content %}
+{% if es_admin %}
+<div class="alert alert-info rounded-4 p-4 shadow-sm border-0 d-flex align-items-center gap-3 mb-5">
+    <span class="material-symbols-outlined fs-2">info</span>
+    <div>
+        <h4 class="fw-bold mb-1">Centro de Análisis de Recetas</h4>
+        <p class="mb-0 opacity-75">Como administrador, aquí puedes monitorear el desempeño de todas las recetas en la
+            plataforma.</p>
+    </div>
+</div>
+{% endif %}
 <style>
     :root {
         --primary-color: #85c81a;
@@ -171,26 +181,75 @@
 
     .recipe-detail-offcanvas {
         width: 100% !important;
-        max-width: 550px !important;
         border-left: 0;
         background-color: var(--bg-content) !important;
+        color: var(--text-main) !important;
         box-shadow: -10px 0 40px rgba(0, 0, 0, 0.1);
     }
 
-    .dark-mode .recipe-detail-offcanvas {
-        background-color: var(--bg-content) !important;
-        color: var(--text-main);
+    /* Desktop Grande: Ancho fijo como antes */
+    @media (min-width: 1282px) {
+        .recipe-detail-offcanvas {
+            max-width: 550px !important;
+        }
     }
 
-    .stat-badge {
-        background-color: var(--primary-light);
-        padding: 8px 16px;
-        border-radius: 50px;
-        font-size: 0.8rem;
-        font-weight: 800;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+    /* Tablets / Pantallas Medianas: Un poco menos de la mitad */
+    @media (min-width: 768px) and (max-width: 1281px) {
+        .recipe-detail-offcanvas {
+            width: 30vw !important;
+            max-width: none !important;
+        }
+    }
+
+    /* Mobile: 100% de ancho */
+    @media (max-width: 767px) {
+        .recipe-detail-offcanvas {
+            width: 100% !important;
+        }
+    }
+
+    .recipe-detail-offcanvas .offcanvas-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        background: transparent !important;
+        border-bottom: none !important;
+    }
+
+    .recipe-detail-offcanvas .offcanvas-header .btn {
+        background: rgba(0, 0, 0, 0.05) !important;
+        color: var(--text-main) !important;
+        backdrop-filter: blur(5px);
+    }
+
+
+    .dark-mode .recipe-detail-offcanvas {
+        background-color: #0f172a !important;
+        color: #f8fafc;
+    }
+
+    .recipe-detail-offcanvas .custom-card-detail {
+        background: var(--bg-page) !important;
+        color: var(--text-main) !important;
+    }
+
+    .dark-mode .recipe-detail-offcanvas .custom-card-detail {
+        background: rgba(255, 255, 255, 0.03) !important;
+    }
+
+    .recipe-detail-offcanvas h1,
+    .recipe-detail-offcanvas h2,
+    .recipe-detail-offcanvas h5,
+    .recipe-detail-offcanvas .text-muted,
+    .recipe-detail-offcanvas .small {
+        color: var(--text-main) !important;
+    }
+
+    .recipe-detail-offcanvas .stat-badge {
+        background-color: var(--primary-light) !important;
         color: var(--primary-dark) !important;
     }
 
@@ -367,9 +426,12 @@
 <div class="container py-4">
     <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-            <h1 class="h3 fw-bolder m-0">Explorador de Recetas</h1>
-            <p class="text-muted small mb-0 fw-bold">Descubre platos personalizados para tu objetivo.</p>
+            <h1 class="h3 fw-bolder m-0">{% if es_admin %}Consola de Recetas{% else %}Explorador de Recetas{% endif %}
+            </h1>
+            <p class="text-muted small mb-0 fw-bold">{% if es_admin %}Analítica de consumo y popularidad de platos.{%
+                else %}Descubre platos personalizados para tu objetivo.{% endif %}</p>
         </div>
+        {% if not es_admin %}
         <div class="search-input-container">
             <span class="material-symbols-outlined position-absolute top-50 start-0 translate-middle-y ms-3"
                 style="color: var(--primary-color)">auto_awesome</span>
@@ -379,7 +441,84 @@
                     value="{{ request.GET.q|default:'' }}">
             </form>
         </div>
+        {% endif %}
     </header>
+
+    {% if es_admin %}
+    <!-- VISTA DE ADMINISTRADOR -->
+    <div class="admin-recipes-analytics mb-5">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="recipe-card p-4 shadow-sm border-0 h-100">
+                    <h5 class="fw-bold mb-4">Métricas de Rendimiento de Recetas</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="small-caps text-muted" style="font-size: 0.7rem;">
+                                <tr>
+                                    <th>Receta</th>
+                                    <th>Dieta</th>
+                                    <th class="text-center">Vistas</th>
+                                    <th class="text-center">Favoritos</th>
+                                    <th class="text-end">Rating</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for receta in recetas %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <img src="{{ receta.imagen_url }}" class="rounded-3"
+                                                style="width: 45px; height: 45px; object-fit: cover;">
+                                            <div class="overflow-hidden">
+                                                <div class="fw-bold small text-truncate" style="max-width: 150px;">{{
+                                                    receta.titulo }}</div>
+                                                <div class="x-small text-muted">{{ receta.calorias }} kcal</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge rounded-pill bg-light text-secondary">{{ receta.tipo_dieta
+                                            }}</span></td>
+                                    <td class="text-center fw-black">{{ receta.vistas }}</td>
+                                    <td class="text-center text-primary fw-black">{{ receta.total_favoritos }}</td>
+                                    <td class="text-end">
+                                        <span
+                                            class="badge {% if receta.rating >= 4.5 %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                            {{ receta.rating }} ★
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="recipe-card p-4 shadow-sm border-0 bg-dark text-white h-100">
+                    <h5 class="fw-bold mb-4 text-white">Insight de Popularidad</h5>
+                    <div class="d-flex flex-column gap-4">
+                        {% for receta in recetas|slice:":3" %}
+                        <div class="d-flex align-items-center gap-3">
+                            <h1 class="display-6 fw-black text-primary mb-0 opacity-50">{{ forloop.counter }}</h1>
+                            <div>
+                                <h6 class="mb-0 fw-bold">{{ receta.titulo }}</h6>
+                                <p class="mb-0 x-small text-muted">{{ receta.vistas }} personas la han visto esta semana
+                                </p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <hr class="my-4 opacity-25">
+                    <div class="text-center">
+                        <p class="small text-muted">Las recetas con más de 100 vistas son promovidas automáticamente por
+                            la IA.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
 
     <nav class="nav-tabs-custom" id="recipe-tabs">
         <button class="active" data-tab="explorar">Explorar</button>
@@ -428,7 +567,7 @@
     </div>
 
     <div class="row row-cols-2 row-cols-lg-4 g-3 g-md-4" id="recipe-grid">
-        <div id="no-results-msg" class="col-12 text-center py-5 d-none">
+        <div id="no-results-msg-grid" class="col-12 text-center py-5 d-none">
             <span class="material-symbols-outlined fs-1 text-muted opacity-50 mb-2">search_off</span>
             <p class="text-muted fw-bold">No se encontraron recetas con este filtro.</p>
         </div>
@@ -436,39 +575,48 @@
         <div class="col filter-item" data-category="{{ receta.categoria|lower }}" data-type="{{ receta.tipo_dieta }}"
             data-favorite="{% if user.is_authenticated and receta.id in favoritas_ids %}true{% else %}false{% endif %}"
             data-userrecipe="{% if user.is_authenticated and user.perfil and receta.perfil_creador == user.perfil %}true{% else %}false{% endif %}">
-            <div class="recipe-card" onclick="openRecipeDetail(this)" data-title="{{ receta.titulo|escape }}"
+
+            <div class="recipe-card btn-view-detail" data-id="{{ receta.id }}" data-title="{{ receta.titulo|escape }}"
                 data-kcal="{{ receta.calorias|default:0 }}" data-time="{{ receta.tiempo|escape }}"
                 data-rating="{{ receta.rating|default:0 }}"
                 data-img="{% if receta.imagen_url %}{{ receta.imagen_url|escape }}{% else %}https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=500&h=300&fit=crop{% endif %}"
                 data-prot="{{ receta.proteinas|default:0 }}" data-carbs="{{ receta.carbos|default:0 }}"
                 data-fats="{{ receta.grasas|default:0 }}" data-desc="{{ receta.descripcion|striptags|escape }}">
+
                 <div class="img-container">
                     {% if user.is_authenticated and user.perfil and receta.perfil_creador == user.perfil %}
                     <div class="position-absolute top-0 start-0 p-2 d-flex gap-2" style="z-index: 10;">
                         <!-- Edit -->
-                        <button onclick="event.stopPropagation(); openEditOverlay({{ receta.id }});"
-                            class="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                        <button
+                            class="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center shadow-sm btn-edit-recipe"
+                            data-recipe-id="{{ receta.id }}"
                             style="width: 32px; height: 32px; color: var(--text-muted);" title="Editar">
                             <span class="material-symbols-outlined" style="font-size: 16px;">edit</span>
                         </button>
 
                         <!-- Delete -->
-                        <button onclick="event.stopPropagation(); deleteRecipe({{ receta.id }}, this);"
-                            class="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center shadow-sm text-danger"
-                            style="width: 32px; height: 32px;" title="Borrar">
+                        <button
+                            class="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center shadow-sm text-danger btn-delete-recipe"
+                            data-recipe-id="{{ receta.id }}" style="width: 32px; height: 32px;" title="Borrar">
                             <span class="material-symbols-outlined" style="font-size: 16px;">delete</span>
                         </button>
                     </div>
                     {% endif %}
-                    <button class="favorite-btn {% if receta.id in favoritas_ids %}active{% endif %}"
-                        onclick="event.stopPropagation(); toggleFavorite({{ receta.id }}, this)">
+
+                    <button
+                        class="favorite-btn btn-toggle-favorite {% if receta.id in favoritas_ids %}active{% endif %}"
+                        data-recipe-id="{{ receta.id }}">
                         <span class="material-symbols-outlined fill-icon">favorite</span>
                     </button>
+
                     <img src="{% if receta.imagen_url %}{{ receta.imagen_url }}{% else %}https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=500&h=300&fit=crop{% endif %}"
                         class="recipe-img" alt="{{ receta.titulo }}">
-                    <span class="badge-recipe bg-brand text-white" style="background-color: var(--primary-color);">{{
-                        receta.tipo_dieta }}</span>
+
+                    <span class="badge-recipe bg-brand text-white" style="background-color: var(--primary-color);">
+                        {{ receta.tipo_dieta }}
+                    </span>
                 </div>
+
                 <div class="p-3">
                     <h3 class="h6 fw-bold line-clamp-2 mb-1" style="min-height: 2.4em;">{{ receta.titulo }}</h3>
                     <div class="d-flex flex-wrap gap-1 mb-3">
@@ -476,14 +624,16 @@
                             style="background: var(--macro-protein); color: var(--macro-protein-text);">P:
                             {{receta.proteinas }}</span>
                         <span class="macro-pill"
-                            style="background: var(--macro-carbs); color: var(--macro-carbs-text);">C: {{ receta.carbos}}</span>
+                            style="background: var(--macro-carbs); color: var(--macro-carbs-text);">C: {{
+                            receta.carbos}}</span>
                         <span class="macro-pill"
                             style="background: var(--macro-fats); color: var(--macro-fats-text);">G:
                             {{receta.grasas}}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center pt-2 border-top">
                         <div class="d-flex align-items-center gap-1 text-muted" style="font-size: 11px;">
-                            <span class="material-symbols-outlined" style="font-size: 14px;">schedule</span> {{ receta.tiempo }}
+                            <span class="material-symbols-outlined" style="font-size: 14px;">schedule</span> {{
+                            receta.tiempo }}
                         </div>
                         <div class="d-flex align-items-center gap-1 fw-bold" style="font-size: 11px;">
                             <span class="material-symbols-outlined text-brand"
@@ -514,17 +664,16 @@
 
     <!-- SIDE RECIPE DETAIL OFF-CANVAS -->
     <div class="offcanvas offcanvas-end recipe-detail-offcanvas" tabindex="-1" id="recipeDetailOffcanvas"
-        aria-labelledby="recipeDetailLabel">
-        <div class="offcanvas-header p-3 border-bottom">
+        aria-labelledby="recipeDetailLabel" data-bs-backdrop="false" data-bs-scroll="true">
+        <div class="offcanvas-header p-3">
             <button type="button" class="btn border-0 d-flex align-items-center justify-content-center p-0"
-                data-bs-dismiss="offcanvas"
-                style="width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.05);">
+                data-bs-dismiss="offcanvas" style="width: 40px; height: 40px; border-radius: 50%;">
                 <span class="material-symbols-outlined">arrow_back</span>
             </button>
             <h5 class="offcanvas-title fw-800 m-0 text-center flex-grow-1 h6" id="recipeDetailLabel">Detalle de Comida
             </h5>
             <button type="button" class="btn border-0 d-flex align-items-center justify-content-center p-0"
-                style="width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.05);">
+                style="width: 40px; height: 40px; border-radius: 50%;">
                 <span class="material-symbols-outlined">share</span>
             </button>
         </div>
@@ -599,7 +748,8 @@
                 </div>
             </div>
         </div>
-        <div class="offcanvas-footer p-3 bg-white border-top sticky-bottom dark-mode-bg-dark">
+        <div class="offcanvas-footer p-3 border-top sticky-bottom"
+            style="background: var(--bg-content); border-color: rgba(0,0,0,0.05) !important;">
             <button class="btn-add-diary">Añadir a mi diario</button>
         </div>
     </div>
@@ -1054,9 +1204,9 @@
         }
 
         function filterRecipes(btn) {
-            // Update active state
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            // Actualizar estado activo de los botones de filtro
             document.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.remove('active');
                 b.style.backgroundColor = '';
                 b.style.color = '';
             });
@@ -1065,46 +1215,22 @@
             btn.style.backgroundColor = 'var(--primary-color)';
             btn.style.color = 'white';
 
-            const activeFilter = btn.dataset.filter;
-            const cards = document.querySelectorAll('.filter-item');
-            let visibleCount = 0;
-
-            cards.forEach(card => {
-                const cardCategory = card.dataset.category ? card.dataset.category.toLowerCase() : '';
-                const cardType = card.dataset.type ? card.dataset.type.toString() : ''; // KETO, VEGA, etc.
-
-                let show = false;
-
-                if (activeFilter === 'todo') {
-                    show = true;
-                } else if (activeFilter === 'tendencia') {
-                    // Mostrar si es explícitamente tendencia o si es smart/popular
-                    show = cardCategory === 'tendencia' || cardCategory === 'smart';
-                } else if (activeFilter === 'keto') {
-                    // Match category OR diet type KETO
-                    show = cardCategory === 'keto' || cardType === 'KETO';
-                } else if (activeFilter === 'vegana') {
-                    // Match category OR diet type VEGA/VEGE
-                    show = cardCategory === 'vegana' || cardType === 'VEGA' || cardType === 'VEGE';
-                } else {
-                    // Fallback direct match
-                    show = cardCategory === activeFilter;
-                }
-
-                if (show) {
-                    card.style.display = 'block';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            // Toggle No Results Msg
-            const noResMsg = document.getElementById('no-results-msg');
-            if (noResMsg) {
-                noResMsg.style.display = visibleCount === 0 ? 'block' : 'none';
-            }
+            // Llamar a la lógica combinada
+            applyFilters();
         }
+
+        // Lógica de Tabs (Explorar, Mis Recetas, Favoritos)
+        document.querySelectorAll('#recipe-tabs button[data-tab]').forEach(tabBtn => {
+            tabBtn.addEventListener('click', function () {
+                // Remover active de todos los tabs
+                document.querySelectorAll('#recipe-tabs button').forEach(b => b.classList.remove('active'));
+                // Agregar active al clickeado
+                this.classList.add('active');
+
+                // Aplicar filtros combinados
+                applyFilters();
+            });
+        });
     </script>
     <script>
         // Ingredient Logic
@@ -1323,24 +1449,53 @@
             });
 
             // Toggle no results message
-            const noResMsg = document.getElementById('no-results-msg');
+            const noResMsg = document.getElementById('no-results-msg-grid') || document.getElementById('no-results-msg');
             if (noResMsg) {
                 noResMsg.style.display = visibleCount === 0 ? 'block' : 'none';
             }
         }
 
-        // Add this for backward compatibility with onclick="filterRecipes(this)" if not removed
-        function filterRecipes(btn) {
-            document.querySelectorAll('.filter-btn').forEach(b => {
-                b.classList.remove('active');
-                b.style.backgroundColor = '';
-                b.style.color = '';
-            });
-            btn.classList.add('active');
-            btn.style.backgroundColor = 'var(--primary-color)';
-            btn.style.color = 'white';
-            applyFilters();
-        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const recipeGrid = document.getElementById('recipe-grid');
+            if (recipeGrid) {
+                recipeGrid.addEventListener('click', function (e) {
+                    // 1. Favorite Toggle
+                    const favBtn = e.target.closest('.btn-toggle-favorite');
+                    if (favBtn) {
+                        e.stopPropagation();
+                        const id = favBtn.dataset.recipeId;
+                        toggleFavorite(id, favBtn);
+                        return;
+                    }
+
+                    // 2. Edit Recipe
+                    const editBtn = e.target.closest('.btn-edit-recipe');
+                    if (editBtn) {
+                        e.stopPropagation();
+                        const id = editBtn.dataset.recipeId;
+                        openEditOverlay(id);
+                        return;
+                    }
+
+                    // 3. Delete Recipe
+                    const deleteBtn = e.target.closest('.btn-delete-recipe');
+                    if (deleteBtn) {
+                        e.stopPropagation();
+                        const id = deleteBtn.dataset.recipeId;
+                        deleteRecipe(id, deleteBtn);
+                        return;
+                    }
+
+                    // 4. View Detail
+                    const viewCard = e.target.closest('.btn-view-detail');
+                    if (viewCard) {
+                        const d = viewCard.dataset;
+                        showRecipeDetail(d.title, d.kcal, d.time, d.rating, d.img, d.prot, d.carbs, d.fats, d.desc);
+                    }
+                });
+            }
+        });
 
         function openRecipeDetail(card) {
             const d = card.dataset;

@@ -56,6 +56,10 @@
         --brand-soft: #f4faeb;
     }
 
+    .text-brand {
+        color: var(--brand-primary) !important;
+    }
+
     .hover-brand:hover {
         background-color: var(--brand-primary) !important;
         color: white !important;
@@ -703,7 +707,8 @@
                             <h3 class="fw-black mb-1">{{ imc|default:"—" }}</h3>
                             <div class="d-flex justify-content-between align-items-end">
                                 <span class="x-small fw-black text-brand"> {% if imc %} {% if imc < 18.5 %} BAJO PESO {% elif imc < 25 %} NORMAL {% elif imc < 30 %} SOBREPESO {% else %} OBESIDAD {% endif %} {% else %} SIN DATOS {% endif %} </span>
-                                <span class="x-small text-muted" id="muscle-mass-display" title="Masa Muscular Estimada"></span>
+                                <span class="x-small text-muted" id="muscle-mass-display"
+                                    title="Masa Muscular Estimada"></span>
                             </div>
                         </div>
                     </div>
