@@ -473,39 +473,6 @@
                     {% if cat != 'explorar' and cat != 'tendencia' %}
                     <option value="{{ cat }}">{{ cat|capitalize }}</option>
                     {% endif %}
-<<<<<<< HEAD
-                    <button class="favorite-btn {% if receta.id in favoritas_ids %}active{% endif %}"
-                        onclick="event.stopPropagation(); toggleFavorite({{ receta.id }}, this)">
-                        <span class="material-symbols-outlined fill-icon">favorite</span>
-                    </button>
-                    <img src="{% if receta.imagen_url %}{{ receta.imagen_url }}{% else %}https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=500&h=300&fit=crop{% endif %}"
-                        class="recipe-img" alt="{{ receta.titulo }}" loading="lazy">
-                    <span class="badge-recipe bg-brand text-white" style="background-color: var(--primary-color);">{{
-                        receta.tipo_dieta }}</span>
-                </div>
-                <div class="p-3">
-                    <h3 class="h6 fw-bold line-clamp-2 mb-1" style="min-height: 2.4em;">{{ receta.titulo }}</h3>
-                    <div class="d-flex flex-wrap gap-1 mb-3">
-                        <span class="macro-pill"
-                            style="background: var(--macro-protein); color: var(--macro-protein-text);">P:
-                            {{receta.proteinas }}</span>
-                        <span class="macro-pill"
-                            style="background: var(--macro-carbs); color: var(--macro-carbs-text);">C: {{ receta.carbos}}</span>
-                        <span class="macro-pill"
-                            style="background: var(--macro-fats); color: var(--macro-fats-text);">G:
-                            {{receta.grasas}}</span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                        <div class="d-flex align-items-center gap-1 text-muted" style="font-size: 11px;">
-                            <span class="material-symbols-outlined" style="font-size: 14px;">schedule</span> {{ receta.tiempo }}
-                        </div>
-                        <div class="d-flex align-items-center gap-1 fw-bold" style="font-size: 11px;">
-                            <span class="material-symbols-outlined text-brand"
-                                style="font-size: 14px;">local_fire_department</span> {{ receta.calorias }} Kcal
-                        </div>
-                    </div>
-                </div>
-=======
                     {% endfor %}
                 </select>
             </div>
@@ -521,7 +488,6 @@
                         Ingredientes</option>
                     <option value="tiempo" {% if request.GET.sort=='tiempo' %}selected{% endif %}>Tiempo</option>
                 </select>
->>>>>>> 1bfdbbe (más avances)
             </div>
         </div>
 
@@ -633,116 +599,6 @@
             {% endfor %}
         </div>
 
-<<<<<<< HEAD
-    <script>
-        // --- INICIALIZACIÓN DE COMPONENTES (SAFE MODE) ---
-        // Usamos var para permitir re-declaraciones si HTMX recarga el script
-        if (!window.offcanvasInstance) {
-            var offcanvasElement = document.getElementById('recipeDetailOffcanvas');
-            if (offcanvasElement) {
-                window.offcanvasInstance = bootstrap.Offcanvas.getOrCreateInstance(offcanvasElement);
-            }
-        }
-
-        // --- LÓGICA DE RECETAS ---
-        function deleteRecipe(id, btn) {
-            if (!confirm('¿Estás seguro de que quieres borrar esta receta?')) return;
-            fetch(`/api/borrar_receta/${id}/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'Content-Type': 'application/json'
-                }
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        const col = btn.closest('.col');
-                        col.remove();
-                        if (typeof showToast === 'function') showToast('Receta eliminada', 'success');
-                    } else {
-                        alert('Error: ' + data.error);
-                    }
-                });
-        }
-
-        function toggleFavorite(recetaId, btn) {
-            fetch(`/api/toggle_favorito/${recetaId}/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'Content-Type': 'application/json'
-                }
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        btn.classList.toggle('active');
-                        var card = btn.closest('.filter-item');
-                        if (card) {
-                            card.dataset.favorite = data.is_favorite ? 'true' : 'false';
-                        }
-                        applyFilters();
-                    }
-                });
-        }
-
-        // --- OVERLAYS (CREAR Y EDITAR) ---
-        // Usamos asignación a window para evitar errores de Scope con HTMX
-        window.overlayCreator = document.getElementById('recipeOverlay');
-        window.editOverlay = document.getElementById('editRecipeOverlay');
-
-        // Manejo de eventos delegado para evitar duplicados
-        document.addEventListener('click', function (e) {
-            // Abrir Creador
-            if (e.target.id === 'openCreator') {
-                if (window.overlayCreator) {
-                    window.overlayCreator.classList.add('show');
-                    document.body.classList.add('overlay-active');
-                }
-            }
-            // Cerrar Creador
-            if (e.target.id === 'closeCreator' || e.target === window.overlayCreator) {
-                window.overlayCreator.classList.remove('show');
-                document.body.classList.remove('overlay-active');
-            }
-            // Cerrar Editor
-            if (e.target.id === 'closeEdit' || e.target === window.editOverlay) {
-                closeEditOverlay();
-            }
-        });
-
-        // --- DETALLE DE RECETA ---
-        function showRecipeDetail(title, kcal, time, rating, img, prot, carbs, fats, description) {
-            document.getElementById('detailTitle').innerText = title;
-            document.getElementById('detailKcal').innerText = kcal;
-            document.getElementById('detailTime').innerText = time;
-            document.getElementById('detailRating').innerText = rating;
-            document.getElementById('detailHeroImg').style.backgroundImage = `url('${img}')`;
-
-            var protPct = kcal > 0 ? Math.round((prot * 4 / kcal) * 100) + '%' : '0%';
-            var carbsPct = kcal > 0 ? Math.round((carbs * 4 / kcal) * 100) + '%' : '0%';
-            var fatsPct = kcal > 0 ? Math.round((fats * 9 / kcal) * 100) + '%' : '0%';
-
-            document.getElementById('detailProtText').innerText = `${prot}g (${protPct})`;
-            document.getElementById('detailProtBar').style.width = protPct;
-            document.getElementById('detailCarbsText').innerText = `${carbs}g (${carbsPct})`;
-            document.getElementById('detailCarbsBar').style.width = carbsPct;
-            document.getElementById('detailFatsText').innerText = `${fats}g (${fatsPct})`;
-            document.getElementById('detailFatsBar').style.width = fatsPct;
-
-            var stepsText = description || "Sin descripción disponible.";
-            var ingredientsHTML = "";
-
-            if (description && description.includes("INGREDIENTES:")) {
-                var parts = description.split("INGREDIENTES:");
-                stepsText = parts[0].trim();
-                var lines = parts[1].trim().split('\n');
-                lines.forEach(line => {
-                    if (line.trim().startsWith('-')) {
-                        var ing = line.replace('-', '').trim();
-                        ingredientsHTML += `<div class="custom-card-detail p-3 d-flex justify-content-between align-items-center border-0 shadow-sm mb-2" style="background: rgba(133,200,26,0.05); border-radius:12px;">
-=======
         <!-- Hidden element for JS empty state -->
         <div id="no-results-msg" class="d-none col-12 text-center py-5">
             <span class="material-symbols-outlined text-muted fs-1 mb-3">filter_list_off</span>
@@ -1313,157 +1169,11 @@
                         if (line.trim().startsWith('-')) {
                             var ing = line.replace('-', '').trim();
                             ingredientsHTML += `<div class="custom-card-detail p-3 d-flex justify-content-between align-items-center border-0 shadow-sm mb-2" style="background: rgba(133,200,26,0.05); border-radius:12px;">
->>>>>>> 1bfdbbe (más avances)
                             <div class="d-flex align-items-center gap-3">
                                 <span class="material-symbols-outlined text-brand">check_circle</span>
                                 <span class="fw-medium text-sm">${ing}</span>
                             </div>
                         </div>`;
-<<<<<<< HEAD
-                    }
-                });
-            } else {
-                ingredientsHTML = `<p class="text-muted small">Ver descripción general.</p>`;
-            }
-
-            document.getElementById('detailIngredients').innerHTML = ingredientsHTML;
-            var stepsBox = document.getElementById('detailSteps');
-            if (stepsBox) stepsBox.innerHTML = `<p class="small text-muted">${stepsText.replace(/\n/g, '<br>')}</p>`;
-
-            window.offcanvasInstance.show();
-        }
-
-        // --- FILTROS ---
-        function applyFilters() {
-            var activeTab = document.querySelector('#recipe-tabs button.active')?.dataset.tab || 'explorar';
-            var activeFilterBtn = document.querySelector('.filter-btn.active');
-            var activeFilter = activeFilterBtn ? activeFilterBtn.dataset.filter : 'todo';
-            var cards = document.querySelectorAll('.filter-item');
-            var visibleCount = 0;
-
-            cards.forEach(card => {
-                var d = card.dataset;
-                var cardCategory = (d.category || '').toLowerCase();
-                var cardType = (d.type || '').toString();
-                var isFavorite = d.favorite === 'true';
-                var isUserRecipe = d.userrecipe === 'true';
-
-                var showByTab = (activeTab === 'explorar') ||
-                    (activeTab === 'mis-recetas' && isUserRecipe) ||
-                    (activeTab === 'favoritos' && isFavorite);
-
-                var showByFilter = (activeFilter === 'todo') ||
-                    (activeFilter === 'tendencia' && (cardCategory === 'tendencia' || cardCategory === 'smart')) ||
-                    (activeFilter === 'keto' && (cardCategory === 'keto' || cardType === 'KETO')) ||
-                    (activeFilter === 'vegana' && (cardCategory === 'vegana' || cardType === 'VEGA' || cardType === 'VEGE')) ||
-                    (cardCategory === activeFilter);
-
-                if (showByTab && showByFilter) {
-                    card.style.display = 'block';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            var noResMsg = document.getElementById('no-results-msg');
-            if (noResMsg) noResMsg.style.display = visibleCount === 0 ? 'block' : 'none';
-        }
-
-        function filterRecipes(btn) {
-            document.querySelectorAll('.filter-btn').forEach(b => {
-                b.classList.remove('active');
-                b.style.backgroundColor = '';
-                b.style.color = '';
-            });
-            btn.classList.add('active');
-            btn.style.backgroundColor = 'var(--primary-color)';
-            btn.style.color = 'white';
-            applyFilters();
-        }
-
-        // --- LÓGICA DE INGREDIENTES DINÁMICOS ---
-        function addIngredientRow(containerId, nombre = '', cantidad = '') {
-            var container = document.getElementById(containerId);
-            if (!container) return;
-            var row = document.createElement('div');
-            row.className = 'ingredient-row d-flex gap-2 mb-2';
-            row.innerHTML = `
-                <input type="text" name="ingredientes_nombres" class="form-control creator-input flex-grow-1" value="${nombre}" placeholder="Ej. Pollo">
-                <input type="text" name="ingredientes_cantidades" class="form-control creator-input text-center" value="${cantidad}" placeholder="Cant." style="width: 80px;">
-                <button type="button" class="btn btn-light text-danger delete-ingredient-btn" style="border-radius:12px;">
-                    <span class="material-symbols-outlined">delete</span>
-                </button>
-            `;
-            container.appendChild(row);
-        }
-
-        // Escuchador global para borrar ingredientes (Delegación)
-        document.addEventListener('click', function (e) {
-            var btn = e.target.closest('.delete-ingredient-btn') || e.target.closest('.delete-ingredient') || e.target.closest('.delete-ingredient-edit');
-            if (btn) {
-                var row = btn.closest('.ingredient-row');
-                if (row) row.remove();
-            }
-        });
-
-        // --- IA Y EDICIÓN ---
-        function generateRecipeAI(btn) {
-            var originalContent = btn.innerHTML;
-            btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Creando...`;
-            btn.disabled = true;
-
-            fetch('/api/generar_receta_ia/', {
-                method: 'POST',
-                headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' }
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        var r = data.receta;
-                        var form = document.getElementById('recipeCreatorForm');
-                        form.querySelector('[name="titulo"]').value = r.titulo || '';
-                        form.querySelector('[name="descripcion"]').value = r.descripcion || '';
-                        // ... llenar resto de campos ...
-                        var container = document.getElementById('ingredientsContainer');
-                        container.innerHTML = '';
-                        r.ingredientes.forEach(ing => addIngredientRow('ingredientsContainer', ing.nombre, ing.cantidad));
-                        if (typeof showToast === 'function') showToast('¡Receta generada!', 'success');
-                    }
-                })
-                .finally(() => {
-                    btn.innerHTML = originalContent;
-                    btn.disabled = false;
-                });
-        }
-
-        function openEditOverlay(recetaId) {
-            fetch(`/editar_receta/${recetaId}/`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        var r = data.receta;
-                        document.getElementById('edit_receta_id').value = r.id;
-                        document.getElementById('edit_titulo').value = r.titulo;
-                        document.getElementById('edit_descripcion').value = r.descripcion;
-                        var container = document.getElementById('editIngredientsContainer');
-                        container.innerHTML = '';
-                        r.ingredientes.forEach(ing => addIngredientRow('editIngredientsContainer', ing.nombre, ing.cantidad));
-                        window.editOverlay.classList.add('show');
-                        document.body.classList.add('overlay-active');
-                    }
-                });
-        }
-
-        function closeEditOverlay() {
-            if (window.editOverlay) {
-                window.editOverlay.classList.remove('show');
-                document.body.classList.remove('overlay-active');
-            }
-        }
-    </script>
-    {% endblock %}
-=======
                         }
                     });
                 } else {
@@ -1868,4 +1578,3 @@
             }
         </script>
         {% endblock %}
->>>>>>> 1bfdbbe (más avances)
