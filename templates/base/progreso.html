@@ -168,54 +168,242 @@
 
             <div class="row align-items-center g-4">
                 <div class="col-md-5">
+                    <style>
+                        .avatar-wrapper {
+                            position: relative;
+                            width: 220px;
+                            height: 260px;
+                            margin: 0 auto;
+                        }
+
+                        .character-float {
+                            animation: float 3s ease-in-out infinite;
+                            transform-origin: center bottom;
+                        }
+
+                        .character-breathe {
+                            animation: breathe 4s ease-in-out infinite;
+                            transform-origin: center center;
+                        }
+
+                        .eye-blink {
+                            animation: blink 4s infinite;
+                            transform-origin: center;
+                        }
+
+                        .mouth-anim {
+                            transition: d 0.3s ease;
+                        }
+
+                        /* Mood Animations */
+                        .zzz-anim {
+                            animation: float-zzz 2s infinite linear;
+                            opacity: 0;
+                        }
+
+                        .spark-anim {
+                            animation: pulse-spark 1s infinite alternate;
+                        }
+
+                        /* Hydration */
+                        .drop-anim {
+                            animation: drop-fall-new 2s infinite ease-in;
+                        }
+
+                        @keyframes float {
+
+                            0%,
+                            100% {
+                                transform: translateY(0);
+                            }
+
+                            50% {
+                                transform: translateY(-10px);
+                            }
+                        }
+
+                        @keyframes breathe {
+
+                            0%,
+                            100% {
+                                transform: scale(1);
+                            }
+
+                            50% {
+                                transform: scale(1.02);
+                            }
+                        }
+
+                        @keyframes blink {
+
+                            0%,
+                            48%,
+                            52%,
+                            100% {
+                                transform: scaleY(1);
+                            }
+
+                            50% {
+                                transform: scaleY(0.1);
+                            }
+                        }
+
+                        @keyframes float-zzz {
+                            0% {
+                                transform: translate(0, 0) scale(1);
+                                opacity: 0;
+                            }
+
+                            20% {
+                                opacity: 1;
+                            }
+
+                            100% {
+                                transform: translate(20px, -30px) scale(1.5);
+                                opacity: 0;
+                            }
+                        }
+
+                        @keyframes pulse-spark {
+                            0% {
+                                transform: scale(1);
+                                opacity: 0.7;
+                            }
+
+                            100% {
+                                transform: scale(1.3);
+                                opacity: 1;
+                            }
+                        }
+
+                        @keyframes drop-fall-new {
+                            0% {
+                                transform: translateY(-5px);
+                                opacity: 0;
+                            }
+
+                            30% {
+                                opacity: 1;
+                            }
+
+                            100% {
+                                transform: translateY(15px);
+                                opacity: 0;
+                            }
+                        }
+
+                        .shadow-pulse {
+                            animation: shadow-scale 3s ease-in-out infinite;
+                            transform-origin: center;
+                        }
+
+                        @keyframes shadow-scale {
+
+                            0%,
+                            100% {
+                                transform: scale(1);
+                                opacity: 0.2;
+                            }
+
+                            50% {
+                                transform: scale(0.8);
+                                opacity: 0.1;
+                            }
+                        }
+                    </style>
+
                     <div class="avatar-container animate__animated animate__fadeIn">
-                        <svg width="220" height="260" viewBox="0 0 240 280" fill="none"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <ellipse cx="120" cy="260" rx="60" ry="10" fill="rgba(0,0,0,0.05)" />
+                        <div class="avatar-wrapper">
+                            <svg width="100%" height="100%" viewBox="0 0 200 240" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <!-- Shadow -->
+                                <ellipse cx="100" cy="220" rx="60" ry="8" fill="#000" class="shadow-pulse" />
 
-                            <g id="body" class="transition-all">
-                                {% if avatar.cuerpo == 'flaco' %}
-                                <rect x="85" y="100" width="70" height="150" rx="35"
-                                    class="{% if avatar.hidratacion == 'deshidratado' %}skin-dehydrated{% else %}skin-normal{% endif %}" />
-                                {% elif avatar.cuerpo == 'ancho' %}
-                                <rect x="65" y="100" width="110" height="150" rx="45"
-                                    class="{% if avatar.hidratacion == 'deshidratado' %}skin-dehydrated{% else %}skin-normal{% endif %}" />
-                                {% else %}
-                                <rect x="75" y="100" width="90" height="150" rx="40"
-                                    class="{% if avatar.hidratacion == 'deshidratado' %}skin-dehydrated{% else %}skin-normal{% endif %}" />
-                                {% endif %}
-                            </g>
+                                <!-- Character Group -->
+                                <g class="character-float">
+                                    <g class="character-breathe">
+                                        <!-- Body Shape Based on Type -->
+                                        {% if avatar.cuerpo == 'flaco' %}
+                                        <!-- Slim Body -->
+                                        <path d="M65 80 C65 40 135 40 135 80 V180 C135 210 65 210 65 180 V80 Z"
+                                            fill="#FFD1DC" stroke="#FFB6C1" stroke-width="3" />
+                                        {% elif avatar.cuerpo == 'ancho' %}
+                                        <!-- Round Body -->
+                                        <ellipse cx="100" cy="140" rx="85" ry="75" fill="#FFD1DC" stroke="#FFB6C1"
+                                            stroke-width="3" />
+                                        {% else %}
+                                        <!-- Normal Body (Blob) -->
+                                        <path d="M50 140 C50 80 150 80 150 140 C150 200 50 200 50 140 Z" fill="#FFD1DC"
+                                            stroke="#FFB6C1" stroke-width="3" />
+                                        {% endif %}
 
-                            <rect x="50" y="120" width="20" height="80" rx="10" transform="rotate(10 50 120)"
-                                class="{% if avatar.hidratacion == 'deshidratado' %}skin-dehydrated{% else %}skin-normal{% endif %}" />
-                            <rect x="170" y="120" width="20" height="80" rx="10" transform="rotate(-10 170 120)"
-                                class="{% if avatar.hidratacion == 'deshidratado' %}skin-dehydrated{% else %}skin-normal{% endif %}" />
-                            <circle cx="120" cy="80" r="50"
-                                class="{% if avatar.hidratacion == 'deshidratado' %}skin-dehydrated{% else %}skin-normal{% endif %}" />
+                                        <!-- Face Group -->
+                                        <g transform="translate(0, -10)">
+                                            <!-- Eyes -->
+                                            {% if avatar.animo == 'cansado' %}
+                                            <!-- Closed Eyes -->
+                                            <path d="M75 125 Q85 130 95 125" stroke="#555" stroke-width="3" fill="none"
+                                                stroke-linecap="round" />
+                                            <path d="M105 125 Q115 130 125 125" stroke="#555" stroke-width="3"
+                                                fill="none" stroke-linecap="round" />
+                                            {% else %}
+                                            <!-- Open Eyes with Sparkle -->
+                                            <g class="eye-blink">
+                                                <circle cx="80" cy="125" r="8" fill="#333" />
+                                                <circle cx="83" cy="122" r="3" fill="white" />
 
-                            <g id="face">
+                                                <circle cx="120" cy="125" r="8" fill="#333" />
+                                                <circle cx="123" cy="122" r="3" fill="white" />
+                                            </g>
+                                            {% endif %}
+
+                                            <!-- Mouth -->
+                                            {% if avatar.animo == 'energico' %}
+                                            <path d="M85 140 Q100 155 115 140" stroke="#555" stroke-width="3"
+                                                fill="none" stroke-linecap="round" />
+                                            {% elif avatar.animo == 'cansado' %}
+                                            <circle cx="100" cy="145" r="4" fill="#555" opacity="0.5" />
+                                            {% else %}
+                                            <path d="M90 142 Q100 148 110 142" stroke="#555" stroke-width="3"
+                                                fill="none" stroke-linecap="round" />
+                                            {% endif %}
+
+                                            <!-- Cheeks -->
+                                            <circle cx="65" cy="135" r="6" fill="#FF8FAB" opacity="0.4" />
+                                            <circle cx="135" cy="135" r="6" fill="#FF8FAB" opacity="0.4" />
+                                        </g>
+                                    </g>
+                                </g>
+
+                                <!-- Accessories / Status Effects -->
+
+                                <!-- Sleep Zzz -->
                                 {% if avatar.animo == 'cansado' %}
-                                <path d="M95 85 Q 105 90, 115 85" stroke="#334155" stroke-width="3" fill="none" />
-                                <path d="M125 85 Q 135 90, 145 85" stroke="#334155" stroke-width="3" fill="none" />
-                                <path d="M110 110 L 130 110" stroke="#334155" stroke-width="2" />
-                                {% elif avatar.animo == 'energico' %}
-                                <circle cx="105" cy="80" r="6" fill="#1e293b" />
-                                <circle cx="135" cy="80" r="6" fill="#1e293b" />
-                                <path d="M100 105 Q 120 125, 140 105" stroke="#334155" stroke-width="4" fill="none"
-                                    stroke-linecap="round" />
-                                {% else %}
-                                <circle cx="105" cy="80" r="5" fill="#1e293b" />
-                                <circle cx="135" cy="80" r="5" fill="#1e293b" />
-                                <path d="M105 108 Q 120 115, 135 108" stroke="#334155" stroke-width="3" fill="none"
-                                    stroke-linecap="round" />
+                                <g transform="translate(130, 80)">
+                                    <text x="0" y="0" font-family="sans-serif" font-weight="bold" fill="#888"
+                                        font-size="20" class="zzz-anim" style="animation-delay: 0s;">Z</text>
+                                    <text x="15" y="-15" font-family="sans-serif" font-weight="bold" fill="#888"
+                                        font-size="16" class="zzz-anim" style="animation-delay: 0.5s;">Z</text>
+                                    <text x="25" y="-30" font-family="sans-serif" font-weight="bold" fill="#888"
+                                        font-size="12" class="zzz-anim" style="animation-delay: 1s;">z</text>
+                                </g>
                                 {% endif %}
-                            </g>
 
-                            {% if avatar.hidratacion == 'deshidratado' %}
-                            <path d="M165 60 Q 170 70, 165 75" stroke="#38bdf8" stroke-width="2" fill="none"
-                                class="animate-drop" />
-                            {% endif %}
-                        </svg>
+                                <!-- Energy Sparks -->
+                                {% if avatar.animo == 'energico' %}
+                                <path d="M160 100 L170 80 L180 100" stroke="#FFD700" stroke-width="3" fill="none"
+                                    class="spark-anim" />
+                                <path d="M30 100 L40 80 L20 100" stroke="#FFD700" stroke-width="3" fill="none"
+                                    class="spark-anim" style="animation-delay: 0.5s;" />
+                                {% endif %}
+
+                                <!-- Dehydration Drop -->
+                                {% if avatar.hidratacion == 'deshidratado' %}
+                                <path d="M140 100 Q145 110 140 115 C138 117 135 117 133 115 Q128 110 133 100"
+                                    fill="#38BDF8" class="drop-anim" />
+                                {% endif %}
+                            </svg>
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-7 text-md-start">
@@ -228,7 +416,8 @@
                             style="font-size: 0.7rem;">
                             <span
                                 class="material-symbols-outlined fs-6 {% if avatar.animo == 'energico' %}text-success{% elif avatar.animo == 'cansado' %}text-danger{% else %}text-warning{% endif %}">
-                                {% if avatar.animo == 'energico' %}bolt{% elif avatar.animo == 'cansado' %}battery_low{% else %}battery_charging_80{% endif %}
+                                {% if avatar.animo == 'energico' %}bolt{% elif avatar.animo == 'cansado' %}battery_low{%
+                                else %}battery_charging_80{% endif %}
                             </span>
                             {{ avatar.animo|upper }}
                         </span>
@@ -293,7 +482,8 @@
                     <circle cx="800" cy="40" fill="#85c81a" r="6" stroke="white" stroke-width="3"></circle>
                 </svg>
                 <div class="position-absolute top-0 end-0 text-end">
-                    <span class="display-5 fw-black text-dark dark-mode-text-white">{{ peso_actual|floatformat:1 }}</span>
+                    <span class="display-5 fw-black text-dark dark-mode-text-white">{{ peso_actual|floatformat:1
+                        }}</span>
                     <span class="text-slate-400 fw-black">KG</span>
                     <div class="d-flex align-items-center justify-content-end text-lime fw-black"
                         style="font-size: 0.75rem;">
@@ -341,7 +531,7 @@
             </div>
         </div>
 
-        
+
 
         <!-- HIDRATACIÓN Y METABOLISMO -->
         <div class="row g-4">
@@ -499,65 +689,65 @@
             </div>
         </div>
 
-<<<<<<< HEAD
-        <!-- Barra Lateral -->
-        <div class="col-lg-4">
-            <div class="card-progreso mb-4">
-                <h5 class="fw-black mb-4 h6 text-uppercase" style="letter-spacing: 1px;">Resumen Científico</h5>
-                <div class="table-responsive">
-                    <table class="table table-progreso align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th>Métrica</th>
-                                <th class="text-end">Valor</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="small fw-bold py-3">Grasa Corporal</td>
-                                <td class="text-end font-mono fw-black text-primary">{{ composicion.grasa_pct }}%</td>
-                            </tr>
-                            <tr>
-                                <td class="small fw-bold py-3">Masa Magra</td>
-                                <td class="text-end font-mono fw-black">{{ composicion.masa_magra }}kg</td>
-                            </tr>
-                            <tr>
-                                <td class="small fw-bold py-3">TMB</td>
-                                <td class="text-end font-mono fw-black">{{ metabolismo.tmb }}kcal</td>
-                            </tr>
-                            <tr>
-                                <td class="small fw-bold py-3">Gasto Total</td>
-                                <td class="text-end font-mono fw-black">{{ metabolismo.tdee }}kcal</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+        <!-- Barra Lateral Adicional -->
+        <div class="card-pro mb-4">
+            <h5 class="fw-black mb-4 h6 text-uppercase" style="letter-spacing: 1px;">Resumen Científico</h5>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="small text-muted fw-bold">Métrica</th>
+                            <th class="text-end small text-muted fw-bold">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="small fw-bold py-3">Grasa Corporal</td>
+                            <td class="text-end font-mono fw-black text-primary">{{ composicion.grasa_pct }}%</td>
+                        </tr>
+                        <tr>
+                            <td class="small fw-bold py-3">Masa Magra</td>
+                            <td class="text-end font-mono fw-black">{{ composicion.masa_magra }}kg</td>
+                        </tr>
+                        <tr>
+                            <td class="small fw-bold py-3">TMB</td>
+                            <td class="text-end font-mono fw-black">{{ metabolismo.tmb }}kcal</td>
+                        </tr>
+                        <tr>
+                            <td class="small fw-bold py-3">Gasto Total</td>
+                            <td class="text-end font-mono fw-black">{{ metabolismo.tdee }}kcal</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
+        </div>
 
-            <div class="card-progreso bg-soft-purple border-0">
-                <div class="d-flex align-items-center gap-3 mb-3">
-                    <span class="material-symbols-outlined text-purple">psychology</span>
-                    <span class="text-technical" style="color: #a855f7;">Insight IA</span>
-                </div>
-                <p class="small fw-bold mb-3" style="color: #6b21a8;">
-                    Manteniendo el déficit actual de {{ metabolismo.tdee|add:metabolismo.objetivo_calorico|floatformat:0 }}
-                    kcal, alcanzarás tu meta de 75kg en aproximadamente <span class="fw-black">45 días</span>.
-                </p>
-                <div class="progress" style="height: 6px; background-color: rgba(168, 85, 247, 0.2);">
-                    <div class="progress-bar" style="width: 75%; background-color: #a855f7;"></div>
-                </div>
-=======
+        <div class="card-pro bg-soft-purple border-0" style="background: rgba(168, 85, 247, 0.05);">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <span class="material-symbols-outlined text-purple" style="color: #a855f7;">psychology</span>
+                <span class="text-technical" style="color: #a855f7; font-weight: 800; font-size: 0.7rem;">INSIGHT
+                    IA</span>
+            </div>
+            <p class="small fw-bold mb-3" style="color: #6b21a8;">
+                Manteniendo el déficit actual, alcanzarás tu meta de peso en aproximadamente <span class="fw-black">45
+                    días</span>.
+            </p>
+            <div class="progress" style="height: 6px; background-color: rgba(168, 85, 247, 0.2);">
+                <div class="progress-bar" style="width: 75%; background-color: #a855f7;"></div>
+            </div>
+        </div>
+
         <!-- Meta -->
         <div class="card-pro border-2 bg-lime bg-opacity-10" style="border-color: rgba(133, 200, 26, 0.2) !important;">
             <p class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-2" style="font-size: 0.6rem;">
                 Próxima Meta</p>
-            <h4 class="fw-black mb-3">Bajar 2kg adicionales</h4>
+            <h4 class="fw-black mb-3">Objetivo Nutricional</h4>
             <div class="progress bg-white shadow-sm" style="height: 12px;">
                 <div class="progress-bar bg-lime" style="width: 65%"></div>
->>>>>>> 1bfdbbe (más avances)
             </div>
             <p class="small mt-2 mb-0 fw-bold text-muted">Aproximadamente 21 días al ritmo actual.</p>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}

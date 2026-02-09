@@ -41,4 +41,10 @@ urlpatterns = [
     path('api/enviar_sugerencia/', views.enviar_sugerencia, name='enviar_sugerencia'),
     path('api/responder_sugerencia/<int:sugerencia_id>/', views.responder_sugerencia, name='responder_sugerencia'),
     path('api/curar_receta/<int:receta_id>/', views.curar_receta, name='curar_receta'),
+    path('gestionar_cuenta/', views.gestionar_cuenta, name='gestionar_cuenta'),
+    path('cambiar_username/', views.cambiar_username, name='cambiar_username'),
+    path('cambiar_email/', views.cambiar_email, name='cambiar_email'),
+    path('cambiar_contrasena/', views.cambiar_contrasena, name='cambiar_contrasena'),
+    path('api/marcar_leido_sugerencia/<int:sugerencia_id>/', views.marcar_leido_sugerencia, name='marcar_leido_sugerencia'),
+    path('api/archivar_sugerencia/<int:sugerencia_id>/', views.archivar_sugerencia, name='archivar_sugerencia'),
 ]

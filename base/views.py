@@ -294,7 +294,23 @@ def _get_admin_dashboard_data(request):
     }
     
     dist_objetivos = list(Perfil.objects.exclude(usuario__username='invitado').values('objetivo').annotate(count=Count('id')))
-    sugerencias_recientes = Sugerencia.objects.order_by('-fecha')[:10]
+    
+    # 4. Gestión de Sugerencias con Filtros
+    status_filter = request.GET.get('sug_estado')
+    rating_filter = request.GET.get('sug_rating')
+    
+    sugerencias_all = Sugerencia.objects.all()
+    if status_filter:
+        sugerencias_all = sugerencias_all.filter(estado=status_filter)
+    else:
+        # Por defecto ocultamos los archivados en la vista principal
+        sugerencias_all = sugerencias_all.exclude(estado='ARCHIVADO')
+        
+    if rating_filter:
+        sugerencias_all = sugerencias_all.filter(calificacion=rating_filter)
+    
+    sugerencias_recientes = sugerencias_all.order_by('-fecha')[:15]
+    
     recetas_pendientes = Receta.objects.filter(esta_aprobada=False)
     
     recent_users_list = []
@@ -324,6 +340,10 @@ def _get_admin_dashboard_data(request):
         'sugerencias': sugerencias_recientes,
         'recetas_pendientes': recetas_pendientes,
         'recent_users': recent_users_list,
+        'filtros_sug': {
+            'estado': status_filter,
+            'rating': rating_filter
+        }
     }
 
 @login_required
@@ -1403,6 +1423,17 @@ def responder_sugerencia(request, sugerencia_id):
             sug.estado = data.get('estado', 'REVISION')
             sug.save()
             
+            # Intento de envío de email
+            try:
+                send_mail(
+                    f"nunt AI: Respuesta a tu sugerencia",
+                    f"Hola {sug.perfil.usuario.first_name or sug.perfil.usuario.username},\n\nHemos revisado tu mensaje: '{sug.mensaje}'\n\nRespuesta de nuestro equipo:\n{sug.respuesta_admin}\n\nGracias por ayudarnos a mejorar.",
+                    'soporte@nunut.ai',
+                    [sug.perfil.usuario.email],
+                    fail_silently=True
+                )
+            except: pass
+
             LogActividad.objects.create(
                 usuario=request.user,
                 accion=f"Respondió a sugerencia #{sug.id}",
@@ -1412,6 +1443,28 @@ def responder_sugerencia(request, sugerencia_id):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     return JsonResponse({'status': 'error'}, status=400)
+
+@user_passes_test(lambda u: u.is_staff)
+def marcar_leido_sugerencia(request, sugerencia_id):
+    from .models import Sugerencia
+    try:
+        sug = Sugerencia.objects.get(id=sugerencia_id)
+        sug.estado = 'LEIDO'
+        sug.save()
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+@user_passes_test(lambda u: u.is_staff)
+def archivar_sugerencia(request, sugerencia_id):
+    from .models import Sugerencia
+    try:
+        sug = Sugerencia.objects.get(id=sugerencia_id)
+        sug.estado = 'ARCHIVADO'
+        sug.save()
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
 @user_passes_test(lambda u: u.is_staff)
 def curar_receta(request, receta_id):
@@ -1938,4 +1991,57 @@ def calificar_receta(request, receta_id):
                 })
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-    return JsonResponse({'status': 'error', 'message': 'Método no permitido o no autenticado'}, status=403)
+    return JsonResponse({'status': 'error'}, status=400)
+
+@login_required
+def gestionar_cuenta(request):
+    return render(request, 'base/gestionar_cuenta.html', {
+        'base_template': get_base_template(request),
+        'user': request.user
+    })
+
+@login_required
+def cambiar_username(request):
+    from django.contrib.auth.models import User
+    if request.method == 'POST':
+        new_username = request.POST.get('username')
+        if new_username:
+            if User.objects.filter(username=new_username).exists():
+                messages.error(request, 'El nombre de usuario ya está en uso.')
+            else:
+                request.user.username = new_username
+                request.user.save()
+                messages.success(request, 'Nombre de usuario actualizado.')
+        return redirect('base:gestionar_cuenta')
+    return redirect('base:gestionar_cuenta')
+
+@login_required
+def cambiar_email(request):
+    from django.contrib.auth.models import User
+    if request.method == 'POST':
+        new_email = request.POST.get('email')
+        if new_email:
+            if User.objects.filter(email=new_email).exclude(pk=request.user.pk).exists():
+                messages.error(request, 'El correo electrónico ya está en uso.')
+            else:
+                request.user.email = new_email
+                request.user.save()
+                messages.success(request, 'Correo electrónico actualizado.')
+        return redirect('base:gestionar_cuenta')
+    return redirect('base:gestionar_cuenta')
+
+@login_required
+def cambiar_contrasena(request):
+    if request.method == 'POST':
+        from django.contrib.auth import update_session_auth_hash
+        from django.contrib.auth.forms import PasswordChangeForm
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, 'Tu contraseña ha sido actualizada exitosamente.')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{error}")
+    return redirect('base:gestionar_cuenta')

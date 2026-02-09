@@ -334,3 +334,33 @@ class EditarPerfilForm(forms.ModelForm):
                 perfil.save()
                 self.save_m2m() # Importante para campos ManyToMany
         return perfil
+
+class ChangeUsernameForm(forms.Form):
+    new_username = forms.CharField(max_length=150, required=True, label="Nuevo Nombre de Usuario")
+    
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control custom-input'})
+
+    def clean_new_username(self):
+        new_username = self.cleaned_data.get('new_username')
+        if User.objects.filter(username=new_username).exists():
+            raise forms.ValidationError("Este nombre de usuario ya existe.")
+        return new_username
+
+class ChangeEmailForm(forms.Form):
+    new_email = forms.EmailField(required=True, label="Nuevo Correo Electrónico")
+    
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control custom-input'})
+
+    def clean_new_email(self):
+        new_email = self.cleaned_data.get('new_email')
+        if User.objects.filter(email=new_email).exists():
+            raise forms.ValidationError("Este correo ya está registrado.")
+        return new_email

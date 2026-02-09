@@ -62,6 +62,7 @@ class Perfil(models.Model):
     OPCIONES_ROL = [('ADMIN', 'Administrador'), ('USER', 'Usuario'), ('GUEST', 'Invitado')]
     onboarding_completado = models.BooleanField(default=False)
     rol = models.CharField(max_length=5, choices=OPCIONES_ROL, default='USER')
+    ultimo_cambio_nombre = models.DateTimeField(null=True, blank=True)
     
     @property
     def edad(self):
@@ -332,9 +333,11 @@ class RegistroAgua(models.Model):
 class Sugerencia(models.Model):
     ESTADOS = [
         ('PENDIENTE', 'Pendiente'),
+        ('LEIDO', 'Leído'),
         ('REVISION', 'En Revisión'),
         ('IMPLEMENTADO', 'Implementado'),
         ('DESCARTADO', 'Descartado'),
+        ('ARCHIVADO', 'Archivado'),
     ]
     perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name='sugerencias')
     asunto = models.CharField(max_length=200, blank=True)

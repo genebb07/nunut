@@ -824,18 +824,16 @@
                     </h5>
                 </div>
                 <div class="list-group list-group-flush p-2">
-                    <div class="list-group-item border-0 d-flex align-items-center justify-content-between">
+                    <a href="{% url 'base:gestionar_cuenta' %}"
+                        class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-3">
                             <div class="bg-success bg-opacity-10 p-2 rounded-circle text-brand">
-                                <span class="material-symbols-outlined">notifications</span>
+                                <span class="material-symbols-outlined">manage_accounts</span>
                             </div>
-                            <span class="fw-bold small">Notificaciones</span>
+                            <span class="fw-bold small">Gestionar Cuenta</span>
                         </div>
-                        <div class="form-check form-switch mb-0">
-                            <input class="form-check-input" type="checkbox" id="notify-toggle" checked
-                                onchange="handleNotify(this)">
-                        </div>
-                    </div>
+                        <span class="material-symbols-outlined text-muted">chevron_right</span>
+                    </a>
 
                     <div class="list-group-item border-0 d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-3">
@@ -861,7 +859,7 @@
                         <span class="material-symbols-outlined text-muted">chevron_right</span>
                     </a>
 
-                    <a href="{% url 'base:cerrar_sesion' %}"
+                    <a href="javascript:void(0)" onclick="handleLogout()"
                         class="list-group-item list-group-item-action border-0 d-flex align-items-center gap-3 text-danger">
                         <div class="bg-danger bg-opacity-10 p-2 rounded-circle">
                             <span class="material-symbols-outlined">logout</span>

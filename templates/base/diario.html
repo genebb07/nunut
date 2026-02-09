@@ -240,7 +240,28 @@
 {% block container_class %}container max-w-6xl diario-elite py-4{% endblock %}
 
 {% block content %}
-<div id="diario-content" class="animate-fade-in">
+<div id="diario-content"
+    class="animate-fade-in position-relative {% if not user.is_authenticated or user.username == 'invitado' %}app-locked{% endif %}">
+    {% if not user.is_authenticated or user.username == 'invitado' %}
+    <div class="position-absolute top-50 start-50 translate-middle d-flex align-items-center justify-content-center w-100 h-100"
+        style="z-index: 100; min-height: 400px;">
+        <div class="text-center p-5 bg-white dark-mode-bg-dark rounded-4 shadow-lg border dark-mode-border-subtle"
+            style="max-width: 400px;">
+            <div class="bg-light dark-mode-bg-dark rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
+                style="width: 80px; height: 80px;">
+                <span class="material-symbols-outlined display-4 text-muted opacity-50">lock</span>
+            </div>
+            <h2 class="fw-black mb-2">Diario Personal</h2>
+            <p class="text-muted mb-4">Lleva un registro detallado de tus comidas y macros. Regístrate para comenzar tu
+                viaje.</p>
+            <a href="{% url 'base:registro' %}"
+                class="btn btn-primary rounded-pill px-5 fw-bold py-3 shadow-sm w-100">Crear Cuenta Gratis</a>
+            <a href="{% url 'base:iniciar_sesion' %}"
+                class="btn btn-link text-muted fw-bold mt-3 text-decoration-none small">¿Ya tienes cuenta? Ingresa
+                aquí</a>
+        </div>
+    </div>
+    {% endif %}
     <!-- Header: Calendario Semanal Compacto -->
     <header class="mb-5">
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -260,200 +281,22 @@
                     <span class="material-symbols-outlined">chevron_right</span>
                 </button>
             </div>
-<<<<<<< HEAD
-            <div class="row text-center g-1">
+
+            <div class="calendar-container">
                 {% for dia in semana %}
-                <div class="col">
-                    <div class="text-xs fw-bold text-secondary mb-2">{{ dia.nombre }}</div>
-                    <button
-                        class="btn w-100 aspect-square d-flex align-items-center justify-content-center {% if dia.is_active %}calendar-day active{% else %}text-main{% endif %}"
-                        hx-get="{% url 'base:diario' %}?date={{ dia.fecha_iso }}" hx-target="#diario-main-container"
-                        hx-select="#diario-main-container" hx-push-url="true">
-                        {{ dia.dia_num }}
-                    </button>
-                </div>
-                {% endfor %}
-            </div>
-        </section>
-
-        <!-- Listado de Comidas -->
-        <section>
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="h4 mb-0 fw-black">Comidas del {{ current_date|date:"d M" }}</h2>
-                <button class="btn btn-link text-decoration-none p-0 d-flex align-items-center gap-1"
-                    style="color: var(--primary-color);">
-                    <span class="material-symbols-outlined fs-5">add_circle</span>
-                    <span class="fw-bold">Añadir Comida</span>
-                </button>
-            </div>
-
-            <div class="d-flex flex-column gap-3">
-                {% for comida in comidas %}
-                <div class="meal-card p-3 shadow-sm d-flex align-items-center gap-3 border">
-                    <div class="w-20 h-20 rounded-4 overflow-hidden flex-shrink-0">
-                        <img alt="{{ comida.nombre }}" class="w-100 h-100 object-fit-cover"
-                            src="{{ comida.imagen_url|default:'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=200&h=200&fit=crop' }}" />
+                <a href="?date={{ dia.fecha_iso }}" hx-get="{% url 'base:diario' %}?date={{ dia.fecha_iso }}"
+                    hx-target="#diario-content" hx-push-url="true"
+                    class="calendar-day-btn {% if dia.is_active %}active{% endif %}">
+                    <span class="day-name">{{ dia.nombre }}</span>
+                    <span class="day-num">{{ dia.dia_num }}</span>
+                    {% if dia.is_today %}
+                    <div
+                        style="width: 4px; height: 4px; border-radius: 50%; background: currentColor; margin-top: 4px;">
                     </div>
-                    <div class="flex-grow-1">
-                        <div class="d-flex justify-content-between">
-                            <h3 class="h6 mb-1 fw-black">{{ comida.nombre }}</h3>
-                            <span class="text-xs text-secondary fw-bold">{{ comida.hora|time:"H:i"|default:"--"
-                                }}</span>
-                        </div>
-                        <p class="text-xs text-secondary mb-0">
-                            {{ comida.calorias }} kcal •
-                            {{ comida.proteinas }}g Proteína •
-                            {{ comida.carbos }}g Carbos
-                        </p>
-                    </div>
-                    {% if comida.completada %}
-                    <span class="material-symbols-outlined" style="color: var(--primary-color);">check_circle</span>
-                    {% else %}
-                    <span class="material-symbols-outlined text-muted">radio_button_unchecked</span>
                     {% endif %}
-                </div>
-                {% empty %}
-                <div class="text-center py-5 opacity-50">
-                    <span class="material-symbols-outlined fs-1">restaurant</span>
-                    <p class="fw-bold mt-2">No hay comidas registradas para este día.</p>
-                </div>
+                </a>
                 {% endfor %}
             </div>
-        </section>
-    </div>
-
-    <!-- Resumen lateral -->
-    <div class="col-lg-4">
-        <section class="card meal-card p-4 shadow mb-4 border-0">
-            <h2 class="h5 fw-black mb-4 text-center">Resumen Diario</h2>
-            <div class="calorie-ring-container mb-4">
-                <div class="calorie-ring">
-                    <svg height="180" width="180">
-                        <circle class="calorie-ring-bg" cx="90" cy="90" r="70"></circle>
-                        <circle class="calorie-ring-progress" cx="90" cy="90" r="70" stroke-opacity="0.9"
-                            style="stroke-dashoffset: calc(440 - (440 * {{ progress.calorias|default:0 }}) / 100);">
-                        </circle>
-                    </svg>
-                    <div class="calorie-ring-content">
-                        <span class="d-block h2 fw-black mb-0">{{ consumo.calorias|default:0 }}</span>
-                        <span class="text-xs text-secondary fw-bold text-uppercase">Consumidas</span>
-                        <hr class="my-1 text-secondary opacity-25" />
-                        <span class="text-sm fw-black" style="color: var(--primary-color);">
-                            {% if progress.faltan_kcal > 0 %}Faltan {{ progress.faltan_kcal }}{% else %}Meta cumplida{% endif %}
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="d-flex flex-column gap-2 mb-4">
-                <!-- Proteína -->
-                <div class="macro-card p-3">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="p-2 rounded-circle bg-blue-50 d-flex">
-                                <span class="material-symbols-outlined text-blue-500 fs-5">fitness_center</span>
-                            </div>
-                            <span class="text-xs fw-bold text-secondary">Proteína</span>
-                        </div>
-                        <span class="text-sm fw-black">{{ consumo.proteinas|default:0 }}g / {{
-                            plan.proteinas_g|default:0 }}g</span>
-                    </div>
-                    <div class="micro-progress">
-                        <div class="h-100"
-                            style="width: {{ progress.proteinas|default:0 }}%; background-color: var(--protein-color);">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Carbos -->
-                <div class="macro-card p-3">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="p-2 rounded-circle bg-orange-50 d-flex">
-                                <span class="material-symbols-outlined text-orange-500 fs-5">energy_savings_leaf</span>
-                            </div>
-                            <span class="text-xs fw-bold text-secondary">Carbos</span>
-                        </div>
-                        <span class="text-sm fw-black">{{ consumo.carbos|default:0 }}g / {{
-                            plan.carbohidratos_g|default:0 }}g</span>
-                    </div>
-                    <div class="micro-progress">
-                        <div class="h-100"
-                            style="width: {{ progress.carbos|default:0 }}%; background-color: var(--carbs-color);">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Grasas -->
-                <div class="macro-card p-3">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="p-2 rounded-circle bg-yellow-50 d-flex">
-                                <span class="material-symbols-outlined text-yellow-500 fs-5">shutter_speed</span>
-                            </div>
-                            <span class="text-xs fw-bold text-secondary">Grasas</span>
-                        </div>
-                        <span class="text-sm fw-black">{{ consumo.grasas|default:0 }}g / {{
-                            plan.grasas_g|default:0}}g</span>
-                    </div>
-                    <div class="micro-progress">
-                        <div class="h-100"
-                            style="width: {{ progress.grasas|default:0 }}%; background-color: var(--fats-color);">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Botón de acción -->
-            <div class="text-center mt-4 mb-4">
-                <button id="add-log-btn"
-                    class="btn btn-primary-custom d-inline-flex align-items-center justify-content-center gap-2 shadow-sm">
-                    <span class="material-symbols-outlined">add_circle</span>
-                    Añadir Registro
-                </button>
-            </div>
-
-            <div class="row g-2">
-                <div class="col-6">
-                    <div class="bg-blue-50 p-3 rounded-4 text-center border border-info-subtle">
-                        <span class="material-symbols-outlined text-info mb-1">water_drop</span>
-                        <div class="text-xs text-secondary fw-bold">Agua</div>
-                        <div class="fw-black text-sm text-primary">0 / 3L</div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="bg-emerald-50 p-3 rounded-4 text-center border border-success-subtle">
-                        <span class="material-symbols-outlined text-success mb-1">grain</span>
-                        <div class="text-xs text-secondary fw-bold">Fibra</div>
-                        <div class="fw-black text-sm text-success">0g / 30g</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <section class="card meal-card p-4 shadow-sm border-0">
-        <div class="mb-4">
-            <h2 class="h5 fw-black mb-2">Crea tu Plan</h2>
-            <p class="text-sm text-secondary">Ajusta tus objetivos para maximizar tu rendimiento físico.</p>
-=======
->>>>>>> 1bfdbbe (más avances)
-        </div>
-
-        <div class="calendar-container">
-            {% for dia in semana %}
-            <a href="?date={{ dia.fecha_iso }}" hx-get="{% url 'base:diario' %}?date={{ dia.fecha_iso }}"
-                hx-target="#diario-content" hx-push-url="true"
-                class="calendar-day-btn {% if dia.is_active %}active{% endif %}">
-                <span class="day-name">{{ dia.nombre }}</span>
-                <span class="day-num">{{ dia.dia_num }}</span>
-                {% if dia.is_today %}
-                <div style="width: 4px; height: 4px; border-radius: 50%; background: currentColor; margin-top: 4px;">
-                </div>
-                {% endif %}
-            </a>
-            {% endfor %}
-        </div>
     </header>
 
     <div class="row g-4">

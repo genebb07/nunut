@@ -141,14 +141,14 @@
         background: var(--primary);
         color: #fff;
         border: none;
-        box-shadow: 0 8px 24px rgba(16,185,129,0.18);
+        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.18);
         transition: transform 0.3s ease, box-shadow 0.3s ease, color 0.2s ease, filter 0.2s ease;
     }
 
     /* Darken slightly on hover to indicate press state */
     #load-more-container .btn-brand:hover {
         transform: translateY(-6px) scale(1.02);
-        box-shadow: 0 14px 40px rgba(16,185,129,0.22);
+        box-shadow: 0 14px 40px rgba(16, 185, 129, 0.22);
         filter: brightness(0.88);
         color: #fff;
     }
@@ -158,13 +158,13 @@
         background: var(--primary);
         color: #fff;
         border: none;
-        box-shadow: 0 8px 24px rgba(16,185,129,0.14);
+        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.14);
         transition: transform 0.28s ease, box-shadow 0.28s ease, filter 0.2s ease;
     }
 
     #guide-container .btn-brand:hover {
         transform: translateY(-4px) scale(1.01);
-        box-shadow: 0 12px 32px rgba(16,185,129,0.18);
+        box-shadow: 0 12px 32px rgba(16, 185, 129, 0.18);
         filter: brightness(0.86);
         color: #fff;
     }
@@ -185,8 +185,9 @@
     .btn-save-inline.saved {
         background: var(--primary);
         color: white;
-        box-shadow: 0 6px 18px rgba(16,185,129,0.18);
+        box-shadow: 0 6px 18px rgba(16, 185, 129, 0.18);
     }
+
     .btn-save-inline.saved .material-symbols-outlined {
         font-variation-settings: 'FILL' 1;
         color: white !important;
@@ -604,7 +605,8 @@
             <p class="text-muted small mb-0">Tus artículos guardados para leer después.</p>
         </div>
         <div>
-            <button class="btn btn-sm btn-link text-muted" onclick="(function(e){e.preventDefault(); localStorage.setItem('nunut_saved', '[]'); renderSavedSection(); })(event)">Limpiar</button>
+            <button class="btn btn-sm btn-link text-muted"
+                onclick="(function(e){e.preventDefault(); localStorage.setItem('nunut_saved', '[]'); renderSavedSection(); })(event)">Limpiar</button>
         </div>
     </div>
 
@@ -1044,6 +1046,24 @@
                 modal.classList.remove('active');
                 document.body.style.overflow = '';
             }
+        };
+
+        // --- EXPORT TO WINDOW (Fix for inline event handlers) ---
+        window.handleSearch = function (val) {
+            currentSearch = val.toLowerCase();
+            applyFilters();
+        };
+
+        window.setFilter = function (el, filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            applyFilters();
+        };
+
+        window.showMoreArticles = function () {
+            currentLimit += 4;
+            applyFilters();
         };
 
         // --- INITIALIZATION ---
