@@ -180,4 +180,4 @@ CACHES = {
     }
 }
 
-GEMINI_API_KEY = 'AIzaSyAdojTtr7saPHfZcxAF5WI-x_c-7pJUaAI'
+GEMINI_API_KEY = 'AIzaSyB4tsPEjZ4b4lRaKbdooI6YESmDtMImwFk'

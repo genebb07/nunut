@@ -546,6 +546,7 @@ def planes(request):
     # 1. Búsqueda Local y Ordenamiento
     q = request.GET.get('q', '').strip()
     sort = request.GET.get('sort', '')
+    vista_activa = request.GET.get('view', 'recetario')
     
     if q == 'tendencia':
         recetas = Receta.objects.all().order_by('-rating')[:20]
