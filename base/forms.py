@@ -130,7 +130,7 @@ class OnboardingForm(forms.ModelForm):
             1: ['localidad'],
             2: ['altura', 'peso', 'objetivo', 'nivel_actividad'],
             3: ['alergias'],
-            4: ['gustos']
+            4: ['gustos', 'disgustos']
         }
         
         # Obtener los campos permitidos para este paso
@@ -206,6 +206,22 @@ class OnboardingForm(forms.ModelForm):
                 except Exception:
                     pass
 
+        # --- MANEJO DE DISGUSTOS (Paso 4) ---
+        raw_disgustos = self.data.getlist('disgustos')
+        if raw_disgustos:
+            pks_disgustos = []
+            for item in raw_disgustos:
+                nombre = item.strip()
+                if nombre:
+                    obj, _ = Gustos.objects.get_or_create(nombre__iexact=nombre, defaults={'nombre': nombre})
+                    pks_disgustos.append(obj.pk)
+            
+            if pks_disgustos:
+                try:
+                    perfil.disgustos.set(pks_disgustos)
+                except Exception:
+                    pass
+
 
 
 class EditarPerfilForm(forms.ModelForm):
@@ -222,7 +238,7 @@ class EditarPerfilForm(forms.ModelForm):
             'medida_cintura', 'medida_cuello', 'medida_cadera',
             'tipo_dieta', 'objetivo', 'nivel_actividad',
             'frecuencia_comidas', 'horario_sueno',
-            'alergias', 'intolerancias', 'condiciones_medicas', 'notas_medicas', 'gustos'
+            'alergias', 'intolerancias', 'condiciones_medicas', 'notas_medicas', 'gustos', 'disgustos'
         ]
         labels = {
             'localidad': 'Ubicación',
@@ -243,7 +259,14 @@ class EditarPerfilForm(forms.ModelForm):
             'intolerancias': 'Intolerancias',
             'condiciones_medicas': 'Condiciones Médicas',
             'notas_medicas': 'Notas Adicionales / Especificaciones',
-            'gustos': 'Mis Gustos'
+            'gustos': 'Mis Gustos',
+            'disgustos': 'Mis Disgustos',
+        }
+        help_texts = {
+            'porcentaje_grasa': 'Para esto se deben usar las balanzas especializadas.',
+            'medida_cintura': 'Completar para cálculo automático (Método Marina USA). No es preciso o exacto, pero es una aproximación confiable.',
+            'medida_cuello': 'Completar para cálculo automático (Método Marina USA).',
+            'medida_cadera': 'Completar para cálculo automático (Método Marina USA).',
         }
         widgets = {
             'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
@@ -259,6 +282,7 @@ class EditarPerfilForm(forms.ModelForm):
             'intolerancias': forms.CheckboxSelectMultiple(),
             'condiciones_medicas': forms.CheckboxSelectMultiple(),
             'gustos': forms.CheckboxSelectMultiple(),
+            'disgustos': forms.CheckboxSelectMultiple(),
         }
     
     def __init__(self, *args, **kwargs):
@@ -295,10 +319,17 @@ class EditarPerfilForm(forms.ModelForm):
                 if self.cleaned_data.get('foto_perfil_file'):
                     perfil.foto_perfil = self.cleaned_data['foto_perfil_file'].read()
 
-                # Calcular grasa automática si hay medidas
-                grasa_auto = perfil.calcular_porcentaje_grasa_marina()
-                if grasa_auto is not None:
-                    perfil.porcentaje_grasa = grasa_auto
+                # LÓGICA DE ACTUALIZACIÓN DE GRASA
+                # 1. Si el usuario modificó manualmente el campo 'porcentaje_grasa', usamos ese valor.
+                if 'porcentaje_grasa' in self.changed_data:
+                    # El valor ya está en perfil.porcentaje_grasa gracias a super().save(commit=False)
+                    pass 
+                
+                # 2. Si no modificó manual, pero sí cambió alguna medida, recalculamos con Método Marina.
+                elif any(f in self.changed_data for f in ['medida_cintura', 'medida_cuello', 'medida_cadera', 'altura', 'genero']):
+                    grasa_auto = perfil.calcular_porcentaje_grasa_marina()
+                    if grasa_auto is not None:
+                        perfil.porcentaje_grasa = grasa_auto
                     
                 perfil.save()
                 self.save_m2m() # Importante para campos ManyToMany

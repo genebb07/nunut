@@ -71,6 +71,8 @@
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
     }
 
+    /* (reverted custom hover styles) */
+
     .dark-mode .card-article {
         border-color: rgba(255, 255, 255, 0.05);
     }
@@ -132,6 +134,62 @@
         transform: translateY(-2px);
         box-shadow: 0 8px 20px var(--primary-glow);
         color: white;
+    }
+
+    /* Specific style for 'Ver más artículos' button inside load-more container */
+    #load-more-container .btn-brand {
+        background: var(--primary);
+        color: #fff;
+        border: none;
+        box-shadow: 0 8px 24px rgba(16,185,129,0.18);
+        transition: transform 0.3s ease, box-shadow 0.3s ease, color 0.2s ease, filter 0.2s ease;
+    }
+
+    /* Darken slightly on hover to indicate press state */
+    #load-more-container .btn-brand:hover {
+        transform: translateY(-6px) scale(1.02);
+        box-shadow: 0 14px 40px rgba(16,185,129,0.22);
+        filter: brightness(0.88);
+        color: #fff;
+    }
+
+    /* Apply same primary background + darken effect to the 'Abrir Guía Maestra' button */
+    #guide-container .btn-brand {
+        background: var(--primary);
+        color: #fff;
+        border: none;
+        box-shadow: 0 8px 24px rgba(16,185,129,0.14);
+        transition: transform 0.28s ease, box-shadow 0.28s ease, filter 0.2s ease;
+    }
+
+    #guide-container .btn-brand:hover {
+        transform: translateY(-4px) scale(1.01);
+        box-shadow: 0 12px 32px rgba(16,185,129,0.18);
+        filter: brightness(0.86);
+        color: #fff;
+    }
+
+    /* Make icons inside .btn-brand white (inherit current color) */
+    .btn-brand .material-symbols-outlined {
+        color: currentColor;
+        transition: transform 0.2s ease, color 0.15s ease;
+    }
+
+    /* Article title turns primary green on hover */
+    .card-article:hover .article-title,
+    .card-article:focus-within .article-title {
+        color: var(--primary);
+    }
+
+    /* Saved button state */
+    .btn-save-inline.saved {
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 6px 18px rgba(16,185,129,0.18);
+    }
+    .btn-save-inline.saved .material-symbols-outlined {
+        font-variation-settings: 'FILL' 1;
+        color: white !important;
     }
 
     /* Fix for "Ver Todo" link hover */
@@ -235,6 +293,135 @@
         .img-container {
             height: 120px;
         }
+    }
+
+    .dark-mode .bg-light {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        color: #e2e8f0 !important;
+    }
+
+    .dark-mode .text-dark {
+        color: #f1f5f9 !important;
+    }
+
+    /* --- NUNUT MASTER GUIDE MODAL --- */
+    .modal-overlay-elite {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(12px);
+        z-index: 9999;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .modal-overlay-elite.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    .modal-card-elite {
+        background: var(--bg-content);
+        width: 100%;
+        max-width: 700px;
+        border-radius: 1.5rem;
+        box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.3);
+        transform: scale(0.95) translateY(20px);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        max-height: 85vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    @media (max-width: 768px) {
+        .modal-card-elite {
+            max-width: 95%;
+            max-height: 90vh;
+            border-radius: 1.25rem;
+        }
+    }
+
+    .modal-overlay-elite.active .modal-card-elite {
+        transform: scale(1) translateY(0);
+    }
+
+    .dark-mode .modal-card-elite {
+        background: #151710;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.6);
+    }
+
+    .modal-body-elite {
+        overflow-y: auto;
+        padding: 0;
+    }
+
+    @media (max-width: 768px) {
+        .modal-body-elite {
+            font-size: 0.9rem;
+        }
+    }
+
+    .btn-close-elite {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(4px);
+        border: none;
+        border-radius: 50%;
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        z-index: 20;
+        color: white;
+    }
+
+    .btn-close-elite:hover {
+        background: rgba(255, 255, 255, 0.4);
+        transform: rotate(90deg);
+    }
+
+    /* Updated Hero Button */
+    .btn-hero {
+        background: linear-gradient(135deg, var(--primary) 0%, #a3e635 100%);
+        color: #1a1a1a;
+        font-weight: 800;
+        border: none;
+        box-shadow: 0 4px 20px rgba(163, 230, 53, 0.4);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .btn-hero:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 10px 30px rgba(163, 230, 53, 0.5);
+        color: #000;
+        background: linear-gradient(135deg, #a3e635 0%, var(--primary) 100%);
+    }
+
+    /* Updated Brand Button Hover */
+    .btn-brand:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 12px 30px -5px var(--primary-glow);
+    }
+
+    .btn-brand:hover .material-symbols-outlined {
+        transform: translateY(3px);
+        transition: transform 0.3s;
     }
 </style>
 
@@ -409,6 +596,128 @@
         </div>
     </div>
 </div>
+<!-- SAVED ARTICLES SECTION -->
+<div id="saved-articles-section" class="py-4 mt-4 border-top">
+    <div class="section-header d-flex justify-content-between align-items-center">
+        <div>
+            <h3 class="section-title">Artículos Guardados</h3>
+            <p class="text-muted small mb-0">Tus artículos guardados para leer después.</p>
+        </div>
+        <div>
+            <button class="btn btn-sm btn-link text-muted" onclick="(function(e){e.preventDefault(); localStorage.setItem('nunut_saved', '[]'); renderSavedSection(); })(event)">Limpiar</button>
+        </div>
+    </div>
+
+    <div id="saved-grid" class="row g-3 mt-3">
+        <div class="col-12 text-muted small">Cargando guardados...</div>
+    </div>
+</div>
+
+<!-- NUNUT MASTER GUIDE MODAL -->
+<div class="modal-overlay-elite" id="masterGuideModal" onclick="closeMasterGuideModal(event)">
+    <div class="modal-card-elite" onclick="event.stopPropagation()">
+        <button class="btn-close-elite" onclick="closeMasterGuideModal()">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+
+        <!-- Header Image/Banner -->
+        <div class="position-relative" style="height: 160px;">
+            <div class="position-absolute inset-0 w-100 h-100"
+                style="background: url('https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=1200') center/cover;">
+            </div>
+            <div class="position-absolute top-0 start-0 w-100 h-100"
+                style="background: linear-gradient(to top, #111 5%, transparent 100%);"></div>
+
+            <div class="position-absolute bottom-0 start-0 p-3 w-100">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-primary text-black fw-bold px-2 py-1 rounded-pill shadow-lg"
+                        style="font-size: 0.7rem;">
+                        <span class="material-symbols-outlined align-middle me-1"
+                            style="font-size: 14px;">auto_awesome</span>
+                        IA Powered
+                    </span>
+                    <span
+                        class="badge bg-dark bg-opacity-50 text-white backdrop-blur px-2 py-1 rounded-pill border border-white border-opacity-25"
+                        style="font-size: 0.7rem;">
+                        Versión 2.0
+                    </span>
+                </div>
+                <h2 class="h3 fw-black text-white mb-0" style="text-shadow: 0 4px 20px rgba(0,0,0,0.5);">Guía
+                    Maestra nunut</h2>
+            </div>
+        </div>
+
+        <div class="modal-body-elite p-3 p-md-4">
+            <h5 class="fw-bold text-muted mb-3 d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined text-primary">analytics</span>
+                Análisis en Tiempo Real
+            </h5>
+
+            <!-- Cards Grid inside Modal -->
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div
+                        class="p-3 rounded-4 bg-light h-100 border border-opacity-10 position-relative overflow-hidden group-hover-effect">
+                        <div class="position-absolute top-0 end-0 p-2 opacity-10">
+                            <span class="material-symbols-outlined fs-2">fingerprint</span>
+                        </div>
+                        <h6 class="fw-black mb-2">Biometría Adaptativa</h6>
+                        <p class="text-muted small mb-2">Tu plan de {{ informe.plan.calorias_dia|default:"2000" }} kcal
+                            se ajusta automáticamente según tu actividad diaria detectada.</p>
+                        <div class="progress" style="height: 5px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 75%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div
+                        class="p-3 rounded-4 bg-light h-100 border border-opacity-10 position-relative overflow-hidden">
+                        <div class="position-absolute top-0 end-0 p-2 opacity-10">
+                            <span class="material-symbols-outlined fs-2">bedtime</span>
+                        </div>
+                        <h6 class="fw-black mb-2">Ciclo de Descanso</h6>
+                        <p class="text-muted small mb-2">Detectamos una oportunidad de mejora en tu recuperación
+                            post-entreno. Prioriza dormir antes de las 11 PM.</p>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-dark text-white rounded-pill"
+                                style="font-size: 0.7rem;">Melatonina</span>
+                            <span class="badge bg-dark text-white rounded-pill"
+                                style="font-size: 0.7rem;">Recuperación</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 p-3 rounded-4 position-relative overflow-hidden"
+                style="background: linear-gradient(135deg, rgba(133, 200, 26, 0.1) 0%, rgba(133, 200, 26, 0.05) 100%); border: 1px solid rgba(133, 200, 26, 0.2);">
+                <div class="d-flex gap-2">
+                    <div class="flex-shrink-0 bg-white p-2 rounded-circle shadow-sm" style="height: fit-content;">
+                        <span class="material-symbols-outlined text-primary fs-5">lightbulb</span>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-1">Insight del Día</h6>
+                        <p class="mb-0 text-muted small">"Estudios recientes sugieren que consumir proteínas en el
+                            desayuno
+                            reduce los antojos nocturnos en un 40%. Hoy te sugerimos: <strong>Huevos con
+                                Espinaca</strong>."</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 text-center">
+                <p class="small text-muted fst-italic mb-0">Información generada por nuestros algoritmos de salud.</p>
+            </div>
+        </div>
+
+        <div class="p-3 border-top d-flex justify-content-end gap-3 bg-light">
+            <button class="btn btn-link text-muted fw-bold text-decoration-none px-4"
+                onclick="closeMasterGuideModal()">Cerrar</button>
+            <button class="btn btn-brand rounded-pill px-5 shadow-sm" onclick="closeMasterGuideModal()">
+                Entendido
+            </button>
+        </div>
+    </div>
+</div>
 
 <script>
     (function () {
@@ -489,6 +798,7 @@
             displayedArticles = remaining;
 
             applyFilters();
+            renderSavedSection();
         }
 
         function renderHero(art) {
@@ -503,8 +813,8 @@
                 </span>
                 <h1 class="display-4 fw-black mb-3 text-white line-clamp-2" style="text-shadow: 0 5px 30px rgba(0,0,0,0.8);">${art.title}</h1>
                 <p class="opacity-90 mb-4 lead text-white line-clamp-2" style="max-width: 700px; text-shadow: 0 2px 10px rgba(0,0,0,0.8);">${art.description}</p>
-                <a href="${art.url}" target="_blank" class="btn btn-hero rounded-pill px-5 py-3 fw-bold d-inline-flex align-items-center gap-2">
-                    Leer Artículo Completo
+                <a href="${art.url}" target="_blank" class="btn btn-hero rounded-pill px-5 py-3 d-inline-flex align-items-center gap-2">
+                    <span>Leer Artículo Completo</span>
                     <span class="material-symbols-outlined">arrow_forward</span>
                 </a>
             `;
@@ -521,10 +831,10 @@
                             <span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-3 py-2 rounded-pill fw-bold mb-3 small-caps">Guía Recomendada por IA</span>
                             <h2 class="fw-black mb-3">${art.title}</h2>
                             <p class="text-muted mb-4 fs-5 line-clamp-3">${art.description}</p>
-                            <a href="${art.url}" target="_blank" class="btn btn-brand rounded-pill px-4 py-3 fw-bold shadow-lg d-inline-flex align-items-center gap-2">
-                                <span class="material-symbols-outlined">auto_stories</span>
-                                Leer Guía Interactiva
-                            </a>
+                            <button onclick="openMasterGuideModal()" class="btn btn-brand rounded-pill px-4 py-3 fw-bold shadow-lg d-inline-flex align-items-center gap-2 border-0">
+                                <span class="material-symbols-outlined filled">auto_awesome</span>
+                                Abrir Guía Maestra
+                            </button>
                         </div>
                         <div class="col-lg-5 d-none d-lg-block">
                             <div class="rounded-5 overflow-hidden shadow-lg position-relative" style="height: 250px; transform: rotate(2deg);">
@@ -590,11 +900,21 @@
         function createCard(art) {
             const col = document.createElement('div');
             col.className = 'col-6 col-md-4 col-lg-3';
+
+            // Check saved state from localStorage
+            let savedList = [];
+            try { savedList = JSON.parse(localStorage.getItem('nunut_saved') || '[]'); } catch (e) { savedList = []; }
+            const isSaved = savedList.some(s => s.url === art.url);
+
+            const safeTitle = (art.title || '').replace(/"/g, '&quot;').replace(/\`/g, '\\`');
+
             col.innerHTML = `
                 <div class="card-article h-100">
                     <div class="img-container">
                         <span class="badge-cat">${art.category}</span>
-                        <button class="btn-save-inline" onclick="event.preventDefault(); toggleSave(this)">
+                        <button class="btn-save-inline ${isSaved ? 'saved' : ''}" 
+                            data-title="${safeTitle}" data-url="${art.url}" data-img="${art.urlToImage}" data-category="${art.category}" 
+                            onclick="event.preventDefault(); toggleSave(this)">
                             <span class="material-symbols-outlined fs-6">bookmark</span>
                         </button>
                         <img src="${art.urlToImage}" alt="Img">
@@ -636,9 +956,94 @@
         };
 
         window.toggleSave = function (btn) {
-            const icon = btn.querySelector('span');
-            if (icon.style.fontVariationSettings) { icon.style = ''; icon.style.color = ''; }
-            else { icon.style = "font-variation-settings: 'FILL' 1; color: var(--primary);"; }
+            try {
+                const item = {
+                    title: btn.dataset.title || btn.getAttribute('data-title') || '',
+                    url: btn.dataset.url || btn.getAttribute('data-url') || '',
+                    img: btn.dataset.img || btn.getAttribute('data-img') || '',
+                    category: btn.dataset.category || btn.getAttribute('data-category') || ''
+                };
+
+                let saved = [];
+                try { saved = JSON.parse(localStorage.getItem('nunut_saved') || '[]'); } catch (e) { saved = []; }
+
+                const idx = saved.findIndex(s => s.url === item.url);
+                if (idx > -1) {
+                    // remove
+                    saved.splice(idx, 1);
+                    btn.classList.remove('saved');
+                } else {
+                    // add to start
+                    saved.unshift(item);
+                    btn.classList.add('saved');
+                }
+
+                localStorage.setItem('nunut_saved', JSON.stringify(saved));
+                renderSavedSection();
+            } catch (e) {
+                console.warn('save failed', e);
+            }
+        };
+
+        function renderSavedSection() {
+            const container = document.getElementById('saved-articles-section');
+            const grid = document.getElementById('saved-grid');
+            if (!container || !grid) return;
+            let saved = [];
+            try { saved = JSON.parse(localStorage.getItem('nunut_saved') || '[]'); } catch (e) { saved = []; }
+            grid.innerHTML = '';
+            if (!saved || saved.length === 0) {
+                grid.innerHTML = '<div class="col-12 text-muted small">No tienes artículos guardados.</div>';
+                return;
+            }
+            saved.forEach(s => grid.appendChild(renderSavedCard(s)));
+        }
+
+        function renderSavedCard(s) {
+            const col = document.createElement('div');
+            col.className = 'col-12 col-md-6 col-lg-4';
+            col.innerHTML = `
+                <div class="card p-2 d-flex flex-row gap-3 align-items-center" style="background: var(--bg-content);">
+                    <img src="${s.img}" style="width:84px;height:64px;object-fit:cover;border-radius:8px;" />
+                    <div class="flex-grow-1">
+                        <a href="${s.url}" target="_blank" class="fw-bold text-decoration-none" style="color:var(--text-dark);">${s.title}</a>
+                        <div class="small text-muted">${s.category}</div>
+                    </div>
+                    <div class="text-end">
+                        <button class="btn btn-link text-danger small" onclick="(function(e){e.preventDefault(); removeSaved('${encodeURIComponent(s.url)}');})(event)">Eliminar</button>
+                    </div>
+                </div>
+            `;
+            return col;
+        }
+
+        window.removeSaved = function (encUrl) {
+            const url = decodeURIComponent(encUrl);
+            let saved = [];
+            try { saved = JSON.parse(localStorage.getItem('nunut_saved') || '[]'); } catch (e) { saved = []; }
+            const idx = saved.findIndex(s => s.url === url);
+            if (idx > -1) saved.splice(idx, 1);
+            localStorage.setItem('nunut_saved', JSON.stringify(saved));
+            // update buttons in grid
+            document.querySelectorAll('.btn-save-inline').forEach(b => { if ((b.dataset && b.dataset.url) === url) b.classList.remove('saved'); });
+            renderSavedSection();
+        };
+
+        window.openMasterGuideModal = function () {
+            const modal = document.getElementById('masterGuideModal');
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Prevent page scroll
+            }
+        };
+
+        window.closeMasterGuideModal = function (e) {
+            // Optional: check if click target is overlay or close button
+            const modal = document.getElementById('masterGuideModal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
         };
 
         // --- INITIALIZATION ---

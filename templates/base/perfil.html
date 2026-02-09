@@ -40,14 +40,6 @@
 {% endblock %}
 
 {% block content %}
-<!-- Botón Regresar -->
-<div class="mb-4 d-flex align-items-center">
-    <a href="{% url 'base:index' %}"
-        class="btn btn-light rounded-pill px-4 d-inline-flex align-items-center gap-2 shadow-sm border fw-bold text-muted hover-brand">
-        <span class="material-symbols-outlined">arrow_back</span>
-        Regresar al Dashboard
-    </a>
-</div>
 
 <style>
     :root {
@@ -140,6 +132,10 @@
         100% {
             background-position: 0% 50%;
         }
+    }
+
+    .text-green {
+        color: var(--brand-primary);
     }
 
     .profile-avatar {
@@ -585,8 +581,9 @@
                 <h2 class="fw-black mb-1 h4">{{ user.get_full_name|default:user.username }}</h2>
 
                 <div class="sidebar-extra">
-                    <span class="badge bg-brand-soft rounded-pill px-3 py-2 small shadow-sm mb-3">
-                        {% if user.perfil.somatotipo %} {{ user.perfil.get_somatotipo_display }} {% else %} Optimización Activa {% endif %}
+                    <span class="badge bg-brand-soft text-green px-3 py-2 small shadow-sm mb-3">
+                        {% if user.perfil.somatotipo %} {{ user.perfil.get_somatotipo_display }} {% else %} Optimización
+                        Activa {% endif %}
                     </span>
 
                     <div class="d-grid gap-2 mt-2">
@@ -702,8 +699,11 @@
                             </div>
                             <h3 class="fw-black mb-1">{{ imc|default:"—" }}</h3>
                             <div class="d-flex justify-content-between align-items-end">
-                                <span class="x-small fw-black text-brand"> {% if imc %} {% if imc < 18.5 %} BAJO PESO {% elif imc < 25 %} NORMAL {% elif imc < 30 %} SOBREPESO {% else %} OBESIDAD {% endif %} {% else %} SIN DATOS {% endif %} </span>
-                                <span class="x-small text-muted" id="muscle-mass-display" title="Masa Muscular Estimada"></span>
+                                <span class="x-small fw-black text-brand"> {% if imc %} {% if imc < 18.5 %} BAJO PESO {%
+                                        elif imc < 25 %} NORMAL {% elif imc < 30 %} SOBREPESO {% else %} OBESIDAD {%
+                                        endif %} {% else %} SIN DATOS {% endif %} </span>
+                                        <span class="x-small text-muted" id="muscle-mass-display"
+                                            title="Masa Muscular Estimada"></span>
                             </div>
                         </div>
                     </div>
@@ -826,7 +826,9 @@
                             <span class="fw-bold small">Modo oscuro</span>
                         </div>
                         <div class="form-check form-switch mb-0">
-                            <input id="perfil-dark-mode-toggle" class="form-check-input" type="checkbox" {% if user.perfil.modo_oscuro %}checked {% endif %} onclick="toggleTheme()" aria-label="Alternar modo oscuro">
+                            <input id="perfil-dark-mode-toggle" class="form-check-input" type="checkbox" {% if
+                                user.perfil.modo_oscuro %}checked {% endif %} onclick="toggleTheme()"
+                                aria-label="Alternar modo oscuro">
                         </div>
                     </div>
 
@@ -992,7 +994,7 @@
                                         onclick="switchBFMode('manual')">
                                         <span class="material-symbols-outlined fs-2 mb-1">edit_note</span>
                                         <div class="fw-bold small">INGRESO MANUAL</div>
-                                        <div class="x-small opacity-75">Bioimpedancia / Calipers</div>
+                                        <div class="x-small opacity-75">Balanzas especializadas</div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -1001,7 +1003,7 @@
                                         onclick="switchBFMode('calc')">
                                         <span class="material-symbols-outlined fs-2 mb-1">straighten</span>
                                         <div class="fw-bold small">FÓRMULA MARINA</div>
-                                        <div class="x-small opacity-75">EE.UU. (Cinta métrica)</div>
+                                        <div class="x-small opacity-75">Aproximación confiable</div>
                                     </div>
                                 </div>
                             </div>
@@ -1012,6 +1014,10 @@
                                     <label class="small fw-bold text-muted mb-2 d-block text-center ps-1">VALOR %
                                         GRASA</label>
                                     {{ form.porcentaje_grasa }}
+                                    <p class="x-small text-muted text-center mt-2 mb-0">
+                                        <i class="fas fa-info-circle me-1"></i> Para esto se deben usar balanzas
+                                        especializadas.
+                                    </p>
                                 </div>
                             </div>
 
@@ -1020,8 +1026,8 @@
                                 <div class="bg-white dark-mode-bg-dark rounded-4 p-3 mb-3 border border-brand-soft">
                                     <p class="x-small mb-0 text-muted">
                                         <span class="material-symbols-outlined fs-6 align-middle text-brand">info</span>
-                                        Este método utiliza mediciones de circunferencias. Asegúrate de tomar las
-                                        medidas de forma precisa sobre la piel.
+                                        <strong>Nota:</strong> No es preciso o exacto, pero es una aproximación
+                                        confiable. Este método utiliza mediciones de circunferencias.
                                     </p>
                                 </div>
                                 <div class="row g-3">
@@ -1116,6 +1122,15 @@
                     </div>
                 </div>
 
+                <div class="mb-5">
+                    <label class="small fw-bold text-muted mb-3 d-block d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined text-danger fs-5">thumb_down</span> MIS DISGUSTOS
+                    </label>
+                    <div class="styled-checkbox-grid">
+                        {{ form.disgustos }}
+                    </div>
+                </div>
+
                 <!-- SECCIÓN 5: NOTAS MÉDICAS -->
                 <div class="form-section-title d-flex align-items-center gap-2 text-primary">
                     <span class="material-symbols-outlined" style="font-size: 18px;">description</span>
@@ -1124,7 +1139,7 @@
                 <div class="mb-5">
                     <p class="x-small text-muted mb-3 ps-1">Describe condiciones específicas, lesiones o recomendaciones
                         de tu médico tratante.</p>
-                    {{ form.notas_medicas }}
+                    {{ form.notas_medicas }} 
                 </div>
 
                 <div class="mt-5 d-flex gap-3 justify-content-end sticky-bottom py-3 border-top dark-mode-bg-dark"

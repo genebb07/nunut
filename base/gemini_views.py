@@ -3,15 +3,16 @@ import json
 import google.generativeai as genai
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 
 @login_required
 def generar_receta_ia(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
     
-    api_key = os.environ.get('GEMINI_API_KEY')
+    api_key = getattr(settings, 'GEMINI_API_KEY', None)
     if not api_key:
-        return JsonResponse({'success': False, 'error': 'API Key de Gemini no configurada.'}, status=500)
+        return JsonResponse({'success': False, 'error': 'API Key de Gemini no configurada en settings.py.'}, status=500)
 
     try:
         genai.configure(api_key=api_key)
@@ -152,8 +153,8 @@ def generar_receta_ia(request):
             
             return JsonResponse({'success': True, 'receta': final_data})
         except json.JSONDecodeError:
-             print("Error decoding JSON:", text_resp)
-             return JsonResponse({'success': False, 'error': 'La IA no devolvió un formato válido. Intenta de nuevo.'}, status=500)
+            print("Error decoding JSON:", text_resp)
+            return JsonResponse({'success': False, 'error': 'La IA no devolvió un formato válido. Intenta de nuevo.'}, status=500)
 
     except Exception as e:
         print("Gemini Error:", e)
@@ -161,13 +162,13 @@ def generar_receta_ia(request):
 
 @login_required
 def generar_plan_ia(request):
-    """Genera 3 recetas (Desayuno, Almuerzo, Cena) y las guarda automáticamente."""
+    """Genera un plan diario de comidas adaptado al perfil completo del usuario."""
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
     
-    api_key = os.environ.get('GEMINI_API_KEY')
+    api_key = getattr(settings, 'GEMINI_API_KEY', None)
     if not api_key:
-        return JsonResponse({'success': False, 'error': 'API Key no configurada.'}, status=500)
+        return JsonResponse({'success': False, 'error': 'API Key no configurada en settings.py.'}, status=500)
 
     try:
         genai.configure(api_key=api_key)
@@ -181,154 +182,157 @@ def generar_plan_ia(request):
         except Exception as list_err:
             print(f"Could not list models: {list_err}")
         
-        # Try models in order of preference
-        model_name = None
-        preferred_models = ['models/gemini-1.5-flash', 'models/gemini-pro', 'models/gemini-1.0-pro']
-        
-        for pref in preferred_models:
-            if pref in available_models:
-                model_name = pref
-                break
-        
-        if not model_name and available_models:
-            model_name = available_models[0]
+        # Prefer flash for speed
+        model_name = next((m for m in ['models/gemini-1.5-flash', 'models/gemini-pro'] if m in available_models), available_models[0] if available_models else None)
         
         if not model_name:
-            return JsonResponse({'success': False, 'error': 'No hay modelos disponibles para tu API key.'}, status=500)
+            return JsonResponse({'success': False, 'error': 'No hay modelos disponibles.'}, status=500)
         
-        print(f"Using model for plan: {model_name}")
         model = genai.GenerativeModel(model_name)
         
         perfil = request.user.perfil
-        dieta = perfil.get_tipo_dieta_display()
-        objetivo = perfil.get_objetivo_display()
+        informe = perfil.generar_informe_nutricional()
         
-        # Get nutritional info
-        informe = None
-        try:
-            informe = perfil.generar_informe_nutricional()
-        except:
-            pass
+        # Nutritional data
+        plan_cal = informe['plan']['calorias_dia']
+        plan_prot = informe['plan']['proteinas_g']
+        plan_carb = informe['plan']['carbohidratos_g']
+        plan_gras = informe['plan']['grasas_g']
+        tdee = informe['datos_base']['mantenimiento']
+        imc = round(float(perfil.obtener_peso_actual()) / ((float(perfil.altura)/100)**2), 1) if perfil.altura and perfil.obtener_peso_actual() else 0
         
-        calorias_objetivo = informe['plan']['calorias_dia'] if informe else 2000
-        proteinas_objetivo = informe['plan']['proteinas_g'] if informe else 150
-        carbos_objetivo = informe['plan']['carbohidratos_g'] if informe else 200
-        grasas_objetivo = informe['plan']['grasas_g'] if informe else 65
+        # Preferences and restrictions
+        dieta = perfil.get_tipo_dieta_display() or "Omnívora"
+        objetivo = perfil.get_objetivo_display() or "Mantener"
+        localidad = perfil.localidad or "Chile/Venezuela"
+        alergias = ", ".join([a.nombre for a in perfil.alergias.all()])
+        gustos = ", ".join([g.nombre for g in perfil.gustos.all()])
+        disgustos = ", ".join([d.nombre for d in perfil.disgustos.all()])
+        medico = ", ".join([c.nombre for c in perfil.condiciones_medicas.all()])
+        if perfil.notas_medicas:
+            medico += f". Notas: {perfil.notas_medicas}"
         
-        edad = perfil.edad if perfil.fecha_nacimiento else "adulto"
-        peso = perfil.obtener_peso_actual() or "peso promedio"
-        localidad = perfil.localidad or "internacional"
+        # Meal Frequency
+        freq_map = {'3G': 3, '5P': 5, '6+': 6, 'OMAD': 1}
+        n_comidas = freq_map.get(perfil.frecuencia_comidas, 3)
         
         prompt = f"""
-        Crea un plan diario de 3 comidas adaptadas al país del usuario (Desayuno, Almuerzo, Cena) adaptado a:
+        Actúa como un Nutricionista Jefe experto en comida de {localidad}. Crea un plan diario de exactamente {n_comidas} comidas para este usuario:
         
-        PERFIL DEL USUARIO:
+        DATOS DEL USUARIO:
         - Ubicación: {localidad}
-        - Edad: {edad} años
-        - Peso: {peso} kg
+        - IMC: {imc} (Estado: {objetivo})
         - Dieta: {dieta}
-        - Objetivo: {objetivo}
+        - Alergias/Restricciones: {alergias if alergias else 'Ninguna'}
+        - Condiciones Médicas: {medico if medico else 'Ninguna'}
+        - Gustos: {gustos if gustos else 'Variado'}
+        - Disgustos (EVITAR COMPLETAMENTE): {disgustos if disgustos else 'Ninguno'}
         
-        REQUERIMIENTOS NUTRICIONALES DIARIOS:
-        - Calorías totales: {calorias_objetivo} kcal/día
-        - Proteínas: {proteinas_objetivo}g/día
-        - Carbohidratos: {carbos_objetivo}g/día
-        - Grasas: {grasas_objetivo}g/día
+        REQUERIMIENTOS DIARIOS (TOTAL):
+        - Calorías: {plan_cal} kcal (TDEE: {tdee})
+        - Proteína: {plan_prot}g | Carbos: {plan_carb}g | Grasas: {plan_gras}g
         
-        INSTRUCCIONES CRÍTICAS:
-        1. Usa SOLO ingredientes comunes en el país del usuario
-        2. Los platos deben ser TÍPICOS del país o adaptaciones saludables
-        3. Evita ingredientes exóticos o difíciles de conseguir
-        4. Distribuye calorías: Desayuno 30% ({int(calorias_objetivo*0.3)} kcal), Almuerzo 40% ({int(calorias_objetivo*0.4)} kcal), Cena 30% ({int(calorias_objetivo*0.3)} kcal)
-        5. CADA receta DEBE tener al menos 5 ingredientes con cantidades exactas
-        6. CADA receta DEBE tener pasos numerados y detallados
+        INSTRUCCIONES:
+        1. Genera EXACTAMENTE {n_comidas} comidas que sumen aproximadamentne los totales anteriores.
+        2. Para cada receta, asigna un "presupuesto" (Económico, Medio, Caro) y una "dificultad" (Fácil, Media, Difícil).
+        3. Usa ingredientes locales y reales de {localidad}.
+        4. No hables, responde exclusivamente con el JSON.
         
-        Responde EXCLUSIVAMENTE con un JSON Array de 3 objetos con esta estructura EXACTA:
+        Responde EXCLUSIVAMENTE con un JSON Array de objetos con esta estructura:
         [
             {{
                 "titulo": "Nombre del plato",
-                "tipo": "DESAYUNO",
-                "tiempo": "15 min",
-                "descripcion": "Descripción breve del plato",
-                "calorias": {int(calorias_objetivo*0.3)},
-                "proteinas": {int(proteinas_objetivo*0.3)},
-                "carbos": {int(carbos_objetivo*0.3)},
-                "grasas": {int(grasas_objetivo*0.3)},
-                "pasos": "1. Paso detallado.\\n2. Otro paso.\\n3. Servir.",
-                "ingredientes": ["Ingrediente 1 - 100g", "Ingrediente 2 - 50g", "Ingrediente 3 - 2 unidades", "Ingrediente 4 - al gusto", "Ingrediente 5 - 1 taza"]
-            }},
-            {{
-                "titulo": "Plato para almuerzo",
-                "tipo": "ALMUERZO",
-                "tiempo": "30 min",
-                "descripcion": "Descripción",
-                "calorias": {int(calorias_objetivo*0.4)},
-                "proteinas": {int(proteinas_objetivo*0.4)},
-                "carbos": {int(carbos_objetivo*0.4)},
-                "grasas": {int(grasas_objetivo*0.4)},
-                "pasos": "1. Paso.\\n2. Paso.\\n3. Paso.",
-                "ingredientes": ["Ingrediente 1", "Ingrediente 2", "Ingrediente 3", "Ingrediente 4", "Ingrediente 5"]
-            }},
-            {{
-                "titulo": "Cena ligera",
-                "tipo": "CENA",
+                "tipo": "DESAYUNO/ALMUERZO/CENA/SNACK",
+                "descripcion": "Descripción breve",
                 "tiempo": "20 min",
-                "descripcion": "Descripción",
-                "calorias": {int(calorias_objetivo*0.3)},
-                "proteinas": {int(proteinas_objetivo*0.3)},
-                "carbos": {int(carbos_objetivo*0.3)},
-                "grasas": {int(grasas_objetivo*0.3)},
-                "pasos": "1. Paso.\\n2. Paso.\\n3. Paso.",
-                "ingredientes": ["Ingrediente 1", "Ingrediente 2", "Ingrediente 3", "Ingrediente 4", "Ingrediente 5"]
+                "calorias": 0,
+                "proteinas": 0,
+                "carbos": 0,
+                "grasas": 0,
+                "presupuesto": "Economico/Medio/Caro",
+                "dificultad": "Facil/Media/Dificil",
+                "ingredientes": ["ingrediente 1", "ingrediente 2"],
+                "pasos": "1. Paso 1.\\n2. Paso 2."
             }}
         ]
-        
-        IMPORTANTE: Cada objeto DEBE tener exactamente estos campos. Los ingredientes deben ser una lista de strings.
         """
         
-        response = model.generate_content(prompt)
-        text_resp = response.text.replace('```json', '').replace('```', '').strip()
+        safety = [
+            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+        ]
         
-        data_list = json.loads(text_resp)
-        if not isinstance(data_list, list):
-            raise ValueError("La respuesta no es una lista")
+        response = model.generate_content(prompt, safety_settings=safety)
+        text_resp = response.text.strip()
+        print(f"DEBUG Plan IA Raw Resp: {text_resp[:200]}...") # Log first 200 chars
+
+        # Robust JSON extraction
+        try:
+            # Look for the first '[' and last ']'
+            start_index = text_resp.find('[')
+            end_index = text_resp.rfind(']') + 1
+            if start_index == -1 or end_index == 0:
+                raise ValueError("No se encontró un JSON válido en la respuesta de la IA")
+            
+            json_str = text_resp[start_index:end_index]
+            data_list = json.loads(json_str)
+        except Exception as parse_err:
+            print(f"Error parseando JSON IA: {parse_err}")
+            print(f"Respuesta completa fallida: {text_resp}")
+            return JsonResponse({'success': False, 'error': f"Error en formato de IA: {str(parse_err)}"}, status=500)
 
         from .models import Receta
         
-        # Placeholder images mapped by type
         images = {
-            "DESAYUNO": "https://images.unsplash.com/photo-1533089862017-5614a9570541?w=500&h=300&fit=crop",
-            "ALMUERZO": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&h=300&fit=crop",
-            "CENA": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=500&h=300&fit=crop"
+            "DESAYUNO": "https://images.unsplash.com/photo-1533089862017-5614a9570541?w=500",
+            "ALMUERZO": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500",
+            "CENA": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=500",
+            "SNACK": "https://images.unsplash.com/photo-1590080875515-8a3a8dc339c?w=500"
         }
         
-        created_count = 0
+        result_plan = []
         for item in data_list:
             tipo = item.get('tipo', 'ALMUERZO').upper()
             
-            # Formatear descripción e ingredientes
-            desc = item.get('descripcion', '')
+            # Persistir en BD
+            desc_full = item.get('descripcion', '')
             if 'ingredientes' in item:
-                desc += "\n\nINGREDIENTES:\n" + "\n".join([f"- {ing}" for ing in item['ingredientes']])
+                desc_full += "\n\nINGREDIENTES:\n" + "\n".join([f"- {ing}" for ing in item['ingredientes']])
             if 'pasos' in item:
-                desc += "\n\nPREPARACIÓN:\n" + item['pasos']
+                desc_full += "\n\nPREPARACIÓN:\n" + item['pasos']
 
-            Receta.objects.create(
+            receta = Receta.objects.create(
                 titulo=item.get('titulo', 'Receta IA'),
-                descripcion=desc,
+                descripcion=desc_full,
                 tiempo=item.get('tiempo', '30 min'),
-                calorias=item.get('calorias', 500),
-                proteinas=item.get('proteinas', 20),
-                carbos=item.get('carbos', 50),
-                grasas=item.get('grasas', 20),
+                calorias=item.get('calorias', 0),
+                proteinas=item.get('proteinas', 0),
+                carbos=item.get('carbos', 0),
+                grasas=item.get('grasas', 0),
+                presupuesto=item.get('presupuesto', 'Medio'),
+                dificultad=item.get('dificultad', 'Media'),
                 tipo_dieta=perfil.tipo_dieta,
                 categoria=tipo.lower(),
                 imagen_url=images.get(tipo, images["ALMUERZO"]),
                 perfil_creador=perfil
             )
-            created_count += 1
+            # Data for frontend
+            item['id'] = receta.id
+            item['imagen_url'] = receta.imagen_url
+            result_plan.append(item)
             
-        return JsonResponse({'success': True, 'count': created_count})
+        return JsonResponse({
+            'success': True, 
+            'plan': result_plan,
+            'metas': {
+                'calorias_dia': plan_cal,
+                'proteinas_g': plan_prot,
+                'carbohidratos_g': plan_carb,
+                'grasas_g': plan_gras
+            }
+        })
         
     except Exception as e:
         print("Error Plan IA:", e)

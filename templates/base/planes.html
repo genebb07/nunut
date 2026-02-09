@@ -14,6 +14,14 @@
         --macro-carbs-text: #b45309;
         --macro-fats: rgba(239, 68, 68, 0.1);
         --macro-fats-text: #b91c1c;
+        --star-color: #ffc107;
+    }
+
+    .star-rating-grid {
+        color: var(--star-color);
+        display: flex;
+        align-items: center;
+        gap: 2px;
     }
 
     /* Estilos de Tarjetas */
@@ -142,7 +150,7 @@
         justify-content: center;
         box-shadow: 0 10px 25px var(--primary-glow);
         text-decoration: none !important;
-        z-index: 1000;
+        z-index: 1060;
         transition: var(--transition-fluid);
     }
 
@@ -254,7 +262,7 @@
         height: 100%;
         background: rgba(0, 0, 0, 0.5);
         backdrop-filter: blur(10px);
-        z-index: 5000;
+        z-index: 1070;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -266,6 +274,10 @@
     .recipe-creator-overlay.show {
         opacity: 1;
         pointer-events: auto;
+    }
+
+    .recipe-detail-offcanvas {
+        z-index: 9600 !important;
     }
 
     .recipe-creator-container {
@@ -362,104 +374,106 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
+
+    /* Estrellas Calificación */
+    .star-rating .rating-star {
+        cursor: pointer;
+        font-size: 2rem;
+        color: #e4e5e9;
+        transition: color 0.2s;
+    }
+
+    .star-rating .rating-star.active {
+        color: #ffc107 !important;
+        font-variation-settings: 'FILL' 1;
+    }
+
+    .star-rating .rating-star.hover-active {
+        color: #ffdb6e;
+        font-variation-settings: 'FILL' 1;
+    }
 </style>
 
 <div class="container py-4">
     <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-        <div>
-            <h1 class="h3 fw-bolder m-0">Explorador de Recetas</h1>
-            <p class="text-muted small mb-0 fw-bold">Descubre platos personalizados para tu objetivo.</p>
+        <div class="text-center text-md-start">
+            <h1 class="h3 fw-bolder m-0">Mis Planes y Recetas</h1>
+            <p class="text-muted small mb-0 fw-bold">Organiza tu nutrición y descubre nuevos sabores.</p>
         </div>
         <div class="search-input-container">
             <span class="material-symbols-outlined position-absolute top-50 start-0 translate-middle-y ms-3"
                 style="color: var(--primary-color)">auto_awesome</span>
             <form action="." method="get" class="w-100">
                 <input type="text" name="q" class="form-control ps-5 search-input"
-                    placeholder="Pregúntale a la IA (ej: 'algo keto con aguacate')..."
-                    value="{{ request.GET.q|default:'' }}">
+                    placeholder="Buscar recetas (ej: 'Ensalada de Quinoa')..." value="{{ request.GET.q|default:'' }}">
             </form>
         </div>
     </header>
 
-    <nav class="nav-tabs-custom" id="recipe-tabs">
-        <button class="active" data-tab="explorar">Explorar</button>
-        <button data-tab="mis-recetas">Mis Recetas</button>
-        <button data-tab="favoritos">Favoritos</button>
-        <div class="vr mx-2 opacity-25"></div>
-
-        <button id="btnAutoPlan" onclick="generateAutoPlan()"
-            class="btn btn-sm text-primary rounded-pill px-3 fw-bold d-flex align-items-center gap-2 shadow-sm"
-            style="background: linear-gradient(135deg, #eef7e2 0%, #ffffff 100%); border: 1px solid var(--primary-light); white-space: nowrap;">
-            <span class="material-symbols-outlined fs-6">smart_toy</span>
-            Generar Plan Diario
-        </button>
-    </nav>
-
-    <div class="d-flex gap-2 overflow-x-auto pb-3 mb-3" id="recipe-filters">
-        <button class="filter-btn btn btn-sm rounded-pill px-3 fw-bold active" data-filter="todo"
-            onclick="filterRecipes(this)" style="background-color: var(--primary-color); color: white;">Todo</button>
-        <button class="filter-btn btn btn-sm bg-white border rounded-pill px-3 fw-bold text-secondary dark-mode-bg-dark"
-            data-filter="tendencia" onclick="filterRecipes(this)">🔥
-            Tendencia</button>
-        <button class="filter-btn btn btn-sm bg-white border rounded-pill px-3 fw-bold text-secondary dark-mode-bg-dark"
-            data-filter="keto" onclick="filterRecipes(this)">🥑
-            Keto</button>
-        <button class="filter-btn btn btn-sm bg-white border rounded-pill px-3 fw-bold text-secondary dark-mode-bg-dark"
-            data-filter="vegana" onclick="filterRecipes(this)">🌿
-            Vegana</button>
-        <button class="filter-btn btn btn-sm bg-white border rounded-pill px-3 fw-bold text-secondary dark-mode-bg-dark"
-            data-filter="vegetariana" onclick="filterRecipes(this)">🥚
-            Vegetariana</button>
-        <button class="filter-btn btn btn-sm bg-white border rounded-pill px-3 fw-bold text-secondary dark-mode-bg-dark"
-            data-filter="omnivora" onclick="filterRecipes(this)">🥩
-            Omnívora</button>
-        <button class="filter-btn btn btn-sm bg-white border rounded-pill px-3 fw-bold text-secondary dark-mode-bg-dark"
-            data-filter="paleo" onclick="filterRecipes(this)">🦴
-            Paleo</button>
-        <button class="filter-btn btn btn-sm bg-white border rounded-pill px-3 fw-bold text-secondary dark-mode-bg-dark"
-            data-filter="alta-proteina" onclick="filterRecipes(this)">💪
-            Alta Proteína</button>
-        <button class="filter-btn btn btn-sm bg-white border rounded-pill px-3 fw-bold text-secondary dark-mode-bg-dark"
-            data-filter="snacks" onclick="filterRecipes(this)">🍿
-            Snacks</button>
-        <button class="filter-btn btn btn-sm bg-white border rounded-pill px-3 fw-bold text-secondary dark-mode-bg-dark"
-            data-filter="mediterranea" onclick="filterRecipes(this)">🫒
-            Mediterránea</button>
+    <!-- Top Navigation Toggle -->
+    <div class="d-flex justify-content-center mb-4">
+        <div class="bg-white dark-mode-bg-dark p-1 rounded-pill shadow-sm border d-flex gap-1"
+            style="width: fit-content;">
+            <a href="?view=recetario"
+                class="btn btn-sm rounded-pill px-4 fw-bold transition-all {% if vista_activa != 'calendario' %}bg-primary text-white{% else %}text-muted{% endif %}">
+                Recetario
+            </a>
+            <a href="?view=calendario"
+                class="btn btn-sm rounded-pill px-4 fw-bold transition-all {% if vista_activa == 'calendario' %}bg-primary text-white{% else %}text-muted{% endif %}">
+                Calendario
+            </a>
+        </div>
     </div>
 
-    <div class="row row-cols-2 row-cols-lg-4 g-3 g-md-4" id="recipe-grid">
-        <div id="no-results-msg" class="col-12 text-center py-5 d-none">
-            <span class="material-symbols-outlined fs-1 text-muted opacity-50 mb-2">search_off</span>
-            <p class="text-muted fw-bold">No se encontraron recetas con este filtro.</p>
-        </div>
-        {% for receta in recetas %}
-        <div class="col filter-item" data-category="{{ receta.categoria|lower }}" data-type="{{ receta.tipo_dieta }}"
-            data-favorite="{% if user.is_authenticated and receta.id in favoritas_ids %}true{% else %}false{% endif %}"
-            data-userrecipe="{% if user.is_authenticated and user.perfil and receta.perfil_creador == user.perfil %}true{% else %}false{% endif %}">
-            <div class="recipe-card" onclick="openRecipeDetail(this)" data-title="{{ receta.titulo|escape }}"
-                data-kcal="{{ receta.calorias|default:0 }}" data-time="{{ receta.tiempo|escape }}"
-                data-rating="{{ receta.rating|default:0 }}"
-                data-img="{% if receta.imagen_url %}{{ receta.imagen_url|escape }}{% else %}https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=500&h=300&fit=crop{% endif %}"
-                data-prot="{{ receta.proteinas|default:0 }}" data-carbs="{{ receta.carbos|default:0 }}"
-                data-fats="{{ receta.grasas|default:0 }}" data-desc="{{ receta.descripcion|striptags|escape }}">
-                <div class="img-container">
-                    {% if user.is_authenticated and user.perfil and receta.perfil_creador == user.perfil %}
-                    <div class="position-absolute top-0 start-0 p-2 d-flex gap-2" style="z-index: 10;">
-                        <!-- Edit -->
-                        <button onclick="event.stopPropagation(); openEditOverlay({{ receta.id }});"
-                            class="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center shadow-sm"
-                            style="width: 32px; height: 32px; color: var(--text-muted);" title="Editar">
-                            <span class="material-symbols-outlined" style="font-size: 16px;">edit</span>
-                        </button>
+    <!-- VIEW: RECETARIO -->
+    <div id="recetario-view" class="{% if vista_activa == 'calendario' %}d-none{% endif %}">
+        <nav class="nav-tabs-custom" id="recipe-tabs">
+            <button class="active" data-tab="explorar">Explorar</button>
+            <button data-tab="mis-recetas">Mis Recetas</button>
+            <button data-tab="favoritos">Favoritos</button>
+            <div class="vr mx-2 opacity-25"></div>
 
-                        <!-- Delete -->
-                        <button onclick="event.stopPropagation(); deleteRecipe({{ receta.id }}, this);"
-                            class="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center shadow-sm text-danger"
-                            style="width: 32px; height: 32px;" title="Borrar">
-                            <span class="material-symbols-outlined" style="font-size: 16px;">delete</span>
-                        </button>
-                    </div>
+            <button id="btnAutoPlan" onclick="generateAutoPlan()"
+                class="btn btn-sm text-primary rounded-pill px-3 fw-bold d-flex align-items-center gap-2 shadow-sm"
+                style="background: linear-gradient(135deg, #eef7e2 0%, #ffffff 100%); border: 1px solid var(--primary-light); white-space: nowrap;">
+                <span class="material-symbols-outlined fs-6" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+                Diseñar Plan Diario IA
+            </button>
+        </nav>
+
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-4 bg-light dark-mode-bg-dark p-2 rounded-4 border"
+            id="recipe-filters">
+            <!-- Tendencias Principal (Botón) -->
+            <button
+                class="filter-btn btn btn-sm rounded-pill px-4 fw-bold {% if request.GET.q == 'tendencia' %}bg-primary text-white border-0{% else %}bg-white text-primary border border-primary-light{% endif %}"
+                onclick="window.location.href='?q=tendencia'">
+                Tendencias
+            </button>
+
+            <!-- Separador sutil -->
+            <div class="vr mx-1 opacity-25 d-none d-md-block" style="height: 20px;"></div>
+
+            <!-- Filtro Dieta (Selección) -->
+            <div class="col-auto">
+                <select class="form-select form-select-sm rounded-pill fw-bold border-0 shadow-sm px-3"
+                    id="diet-filter-select" onchange="applyFilters()">
+                    <option value="todo">Tipo de Dieta</option>
+                    {% for code, name in opciones_dieta.items %}
+                    <option value="{{ code }}">{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Filtro Comida (Selección) -->
+            <div class="col-auto">
+                <select class="form-select form-select-sm rounded-pill fw-bold border-0 shadow-sm px-3"
+                    id="category-filter-select" onchange="applyFilters()">
+                    <option value="todo">Tipo de Comida</option>
+                    {% for cat in categorias_receta %}
+                    {% if cat != 'explorar' and cat != 'tendencia' %}
+                    <option value="{{ cat }}">{{ cat|capitalize }}</option>
                     {% endif %}
+<<<<<<< HEAD
                     <button class="favorite-btn {% if receta.id in favoritas_ids %}active{% endif %}"
                         onclick="event.stopPropagation(); toggleFavorite({{ receta.id }}, this)">
                         <span class="material-symbols-outlined fill-icon">favorite</span>
@@ -491,410 +505,135 @@
                         </div>
                     </div>
                 </div>
+=======
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <span class="small fw-bold text-muted d-none d-sm-inline">Ordenar por:</span>
+                <select class="form-select form-select-sm rounded-pill fw-bold border-0 shadow-sm px-3"
+                    id="sort-filter-select" onchange="window.location.href='?sort='+this.value">
+                    <option value="">Recientes</option>
+                    <option value="dificultad" {% if request.GET.sort=='dificultad' %}selected{% endif %}>Dificultad
+                    </option>
+                    <option value="ingredientes" {% if request.GET.sort=='ingredientes' %}selected{% endif %}>
+                        Ingredientes</option>
+                    <option value="tiempo" {% if request.GET.sort=='tiempo' %}selected{% endif %}>Tiempo</option>
+                </select>
+>>>>>>> 1bfdbbe (más avances)
             </div>
         </div>
-        {% empty %}
-        <div class="col-12 text-center py-5">
-            <span class="material-symbols-outlined text-muted fs-1 mb-3">manage_search</span>
-            <h3 class="h5 fw-bold text-muted">No encontramos recetas con esos filtros.</h3>
-            <p class="small text-muted">Intenta ajustando tu búsqueda o pregúntale a la IA.</p>
-        </div>
-        {% endfor %}
-    </div>
 
-    <!-- Hidden element for JS empty state -->
-    <div id="no-results-msg" class="d-none col-12 text-center py-5">
-        <span class="material-symbols-outlined text-muted fs-1 mb-3">filter_list_off</span>
-        <h3 class="h5 fw-bold text-muted">Sin resultados en esta categoría</h3>
-        <p class="small text-muted">Prueba con otro filtro o la pestaña "Explorar".</p>
-    </div>
-
-
-    <!-- Hardcoded cards removed -->
-
-    <!-- SIDE RECIPE DETAIL OFF-CANVAS -->
-    <div class="offcanvas offcanvas-end recipe-detail-offcanvas" tabindex="-1" id="recipeDetailOffcanvas"
-        aria-labelledby="recipeDetailLabel">
-        <div class="offcanvas-header p-3 border-bottom">
-            <button type="button" class="btn border-0 d-flex align-items-center justify-content-center p-0"
-                data-bs-dismiss="offcanvas"
-                style="width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.05);">
-                <span class="material-symbols-outlined">arrow_back</span>
-            </button>
-            <h5 class="offcanvas-title fw-800 m-0 text-center flex-grow-1 h6" id="recipeDetailLabel">Detalle de Comida
-            </h5>
-            <button type="button" class="btn border-0 d-flex align-items-center justify-content-center p-0"
-                style="width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.05);">
-                <span class="material-symbols-outlined">share</span>
-            </button>
-        </div>
-        <div class="offcanvas-body p-0">
-            <div class="p-4">
-                <div id="detailHeroImg" class="detail-hero-img mb-4"></div>
-
-                <h1 id="detailTitle" class="fw-800 mb-3 h2 dark-mode-text-white" style="font-weight: 800;"></h1>
-
-                <div class="d-flex flex-wrap gap-2 mb-4">
-                    <div class="stat-badge">
-                        <span class="material-symbols-outlined">local_fire_department</span>
-                        <span id="detailKcal"></span>
-                    </div>
-                    <div class="stat-badge">
-                        <span class="material-symbols-outlined">schedule</span>
-                        <span id="detailTime"></span>
-                    </div>
-                    <div class="stat-badge">
-                        <span class="material-symbols-outlined">star</span>
-                        <span id="detailRating"></span>
-                    </div>
-                </div>
-
-                <h2 class="h5 fw-bold mb-3 mt-5">Macros Detallados</h2>
-                <div class="custom-card-detail mb-5">
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="small fw-bold">Proteínas</span>
-                            <span class="small fw-bold" id="detailProtText"></span>
-                        </div>
-                        <div class="progress" style="height: 10px; border-radius: 10px;">
-                            <div id="detailProtBar" class="progress-bar bg-primary"
-                                style="width: 0%; border-radius: 10px;">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="small fw-bold">Carbohidratos</span>
-                            <span class="small fw-bold" id="detailCarbsText"></span>
-                        </div>
-                        <div class="progress" style="height: 10px; border-radius: 10px;">
-                            <div id="detailCarbsBar" class="progress-bar bg-warning"
-                                style="width: 0%; border-radius: 10px;"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="small fw-bold">Grasas</span>
-                            <span class="small fw-bold" id="detailFatsText"></span>
-                        </div>
-                        <div class="progress" style="height: 10px; border-radius: 10px;">
-                            <div id="detailFatsBar" class="progress-bar bg-info"
-                                style="width: 0%; border-radius: 10px;">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2 class="h5 fw-bold m-0">Ingredientes</h2>
-                    <span class="small fw-bold text-brand">1 ración</span>
-                </div>
-                <div class="d-grid gap-2 mb-5" id="detailIngredients">
-                    <!-- Se poblará por JS -->
-                </div>
-
-                <h2 class="h5 fw-bold mb-3">Preparación</h2>
-                <div class="d-grid gap-4 mb-5" id="detailSteps">
-                    <!-- Se poblará por JS -->
-                </div>
-            </div>
-        </div>
-        <div class="offcanvas-footer p-3 bg-white border-top sticky-bottom dark-mode-bg-dark">
-            <button class="btn-add-diary">Añadir a mi diario</button>
-        </div>
-    </div>
-
-    <a href="javascript:void(0)" class="fab-btn" id="openCreator">
-        <span class="material-symbols-outlined fs-2">add</span>
-    </a>
-
-    <!-- RECIPE CREATOR OVERLAY -->
-    <div class="recipe-creator-overlay" id="recipeOverlay">
-        <div class="recipe-creator-container">
-            <!-- Header -->
-            <form id="recipeCreatorForm" hx-post="{% url 'base:crear_receta' %}" hx-swap="none"
-                hx-on::after-request="if(event.detail.successful) { showToast('Receta creada con éxito', 'success'); document.getElementById('closeCreator').click(); window.location.reload(); }">
-                <header class="sticky-top p-3 d-flex align-items-center"
-                    style="background: var(--bg-content); border-bottom: 1px solid rgba(0,0,0,0.05); z-index: 100; flex-shrink: 0;">
-                    <div id="closeCreator" class="d-flex align-items-center justify-content-center"
-                        style="width: 48px; cursor: pointer;">
-                        <span class="material-symbols-outlined">arrow_back</span>
-                    </div>
-                    <h2 class="h6 m-0 fw-bold flex-grow-1 text-center">Creador de Recetas</h2>
-
-                    <button type="button"
-                        class="btn btn-sm btn-light text-primary rounded-pill d-flex align-items-center gap-2 px-3 shadow-sm"
-                        id="btnGenerateAI" onclick="generateRecipeAI(this)"
-                        style="background: linear-gradient(135deg, #eef7e2 0%, #ffffff 100%); border: 1px solid var(--primary-light);">
-                        <span class="material-symbols-outlined fs-6">auto_awesome</span>
-                        <span class="d-none d-sm-inline fw-bold" style="font-size: 0.8rem;">Generar con IA</span>
-                    </button>
-                </header>
-
-                <main class="p-4">
-                    <!-- Info section -->
-                    <section class="mb-4">
-                        <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">Información
-                            General
-                        </h3>
-
-                        <div class="mb-3">
-                            <label class="small fw-bold mb-2 opacity-75">Título de la receta</label>
-                            <input type="text" name="titulo" class="form-control creator-input"
-                                placeholder="Ej. Ensalada Mediterránea" required>
-                        </div>
-
-                        <div class="row g-3">
-                            <div class="col-sm-6">
-                                <label class="small fw-bold mb-2 opacity-75">Categoría</label>
-                                <select name="dieta" class="form-select creator-input" required>
-                                    <option value="OMNI">🥩 Omnívorora</option>
-                                    <option value="KETO">🥑 Keto</option>
-                                    <option value="VEGA">🌿 Vegana</option>
-                                    <option value="VEGE">🥚 Vegetariana</option>
-                                </select>
-                            </div>
-                            <div class="col-sm-6">
-                                <label class="small fw-bold mb-2 opacity-75">Tiempo</label>
-                                <div class="input-group">
-                                    <input type="text" name="tiempo" class="form-control creator-input border-end-0"
-                                        placeholder="20 min" required>
-                                    <span class="input-group-text creator-input border-start-0 bg-transparent">
-                                        <span class="material-symbols-outlined fs-6 opacity-50">schedule</span>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- Macros Section -->
-                    <section class="mb-4">
-                        <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">Nutrición
-                            (por ración)</h3>
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <label class="x-small fw-bold mb-1 opacity-75">Calorías</label>
-                                <input type="number" name="calorias" class="form-control creator-input" placeholder="0"
-                                    required>
-                            </div>
-                            <div class="col-6">
-                                <label class="x-small fw-bold mb-1 opacity-75">Proteína (g)</label>
-                                <input type="number" name="proteinas" class="form-control creator-input" placeholder="0"
-                                    required>
-                            </div>
-                            <div class="col-6">
-                                <label class="x-small fw-bold mb-1 opacity-75">Carbos (g)</label>
-                                <input type="number" name="carbos" class="form-control creator-input" placeholder="0"
-                                    required>
-                            </div>
-                            <div class="col-6">
-                                <label class="x-small fw-bold mb-1 opacity-75">Grasas (g)</label>
-                                <input type="number" name="grasas" class="form-control creator-input" placeholder="0"
-                                    required>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- Photo section (as URL for now to simplify) -->
-                    <section class="mb-4">
-                        <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">Imagen</h3>
-                        <div class="mb-3">
-                            <label class="small fw-bold mb-2 opacity-75">URL de la imagen (Opcional)</label>
-                            <input type="url" name="imagen_url" class="form-control creator-input"
-                                placeholder="https://ejemplo.com/foto.jpg">
-                        </div>
-                    </section>
-
-                    <!-- Ingredients -->
-                    <section class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h3 class="h6 fw-bold m-0 text-uppercase opacity-75" style="letter-spacing: 1px;">
-                                Ingredientes
-                            </h3>
-                            <div class="small fw-bold" style="color: var(--primary-color);">
-                                <span class="material-symbols-outlined fs-6">calculate</span> 0 Kcal
-                            </div>
-                        </div>
-
-                        <div id="ingredientsContainer" class="d-flex flex-column gap-2">
-                            <div class="ingredient-row d-flex gap-2">
-                                <input type="text" name="ingredientes_nombres"
-                                    class="form-control creator-input flex-grow-1 py-2" placeholder="Ej. Quinoa">
-                                <input type="text" name="ingredientes_cantidades"
-                                    class="form-control creator-input text-center py-2" placeholder="Cant."
-                                    style="width: 80px;">
-                                <button type="button"
-                                    class="btn btn-light text-danger d-flex align-items-center justify-content-center delete-ingredient"
-                                    style="width: 44px; border-radius: 12px; background: var(--bg-page); border: 1px solid rgba(0,0,0,0.05);">
-                                    <span class="material-symbols-outlined">delete</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <button type="button" id="addIngredientBtn"
-                            class="btn w-100 py-2 mt-2 d-flex align-items-center justify-content-center gap-2 small fw-bold"
-                            style="background: var(--primary-light); color: var(--primary-color); border: 1px dashed var(--primary-color); border-radius: 12px;">
-                            <span class="material-symbols-outlined fs-6">add</span> Añadir ingrediente
-                        </button>
-                    </section>
-
-                    <!-- Steps -->
-                    <section class="mb-4">
-                        <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">Preparación
-                        </h3>
-                        <div class="rounded-3 border overflow-hidden" style="border-color: rgba(0,0,0,0.05);">
-                            <textarea name="descripcion" class="form-control border-0 creator-input rounded-0" rows="6"
-                                placeholder="Escribe el paso a paso o ingredientes..."
-                                style="height: auto; background: transparent !important;"></textarea>
-                        </div>
-                    </section>
-
-                    <div class="pt-2">
-                        <button type="submit"
-                            class="btn-creator-save d-flex align-items-center justify-content-center gap-2">
-                            <span class="material-symbols-outlined">save</span>
-                            Guardar Receta
-                        </button>
-                    </div>
-                </main>
-            </form>
-        </div>
-    </div>
-
-    <!-- EDIT RECIPE OVERLAY -->
-    <div class="recipe-creator-overlay" id="editRecipeOverlay">
-        <div class="recipe-creator-container">
-            <!-- Header -->
-            <form id="editRecipeForm" onsubmit="submitEditForm(event)">
-                <header class="sticky-top p-3 d-flex align-items-center"
-                    style="background: var(--bg-content); border-bottom: 1px solid rgba(0,0,0,0.05); z-index: 100;">
-                    <div id="closeEdit" class="d-flex align-items-center justify-content-center"
-                        style="width: 48px; cursor: pointer;">
-                        <span class="material-symbols-outlined">arrow_back</span>
-                    </div>
-                    <h2 class="h6 m-0 fw-bold flex-grow-1 text-center" style="margin-right: 48px !important;">Editar
-                        Receta
+        <!-- SECCIÓN DE PLAN DIARIO (INTEGRADA) -->
+        <div id="dailyPlanSection" class="d-none mb-5 animate__animated animate__fadeIn">
+            <div class="premium-card p-4 p-md-5"
+                style="border-radius: 2.5rem; background: var(--bg-content); border: 2px solid var(--primary-light); box-shadow: 0 20px 40px rgba(133, 200, 26, 0.1);">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bolder m-0 d-flex align-items-center gap-3">
+                        <span class="material-symbols-outlined text-success"
+                            style="font-size: 2.5rem;">auto_awesome</span>
+                        Tu Plan Nutricional de Hoy
                     </h2>
-                </header>
+                    <button class="btn btn-light rounded-circle"
+                        onclick="document.getElementById('dailyPlanSection').classList.add('d-none')">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <div id="dailyPlanContent">
+                    <!-- Se poblará vía JS -->
+                </div>
+            </div>
+        </div>
 
-                <main class="p-4">
-                    <!-- Hidden ID -->
-                    <input type="hidden" id="edit_receta_id" name="receta_id">
+        <div class="row row-cols-2 row-cols-lg-4 g-3 g-md-4" id="recipe-grid">
+            <div id="no-results-msg" class="col-12 text-center py-5 d-none">
+                <span class="material-symbols-outlined fs-1 text-muted opacity-50 mb-2">search_off</span>
+                <p class="text-muted fw-bold">No se encontraron recetas con este filtro.</p>
+            </div>
+            {% for receta in recetas %}
+            <div class="col filter-item" data-category="{{ receta.categoria|lower }}"
+                data-type="{{ receta.tipo_dieta }}"
+                data-favorite="{% if user.is_authenticated and receta.id in favoritas_ids %}true{% else %}false{% endif %}"
+                data-userrecipe="{% if user.is_authenticated and user.perfil and receta.perfil_creador == user.perfil %}true{% else %}false{% endif %}">
+                <div class="recipe-card" onclick="openRecipeDetail(this)" data-id="{{ receta.id }}"
+                    data-title="{{ receta.titulo|escape }}" data-kcal="{{ receta.calorias|default:0 }}"
+                    data-time="{{ receta.tiempo|escape }}" data-rating="{{ receta.rating|default:0 }}"
+                    data-category="{{ receta.categoria|lower }}"
+                    data-img="{% if receta.imagen_url %}{{ receta.imagen_url|escape }}{% else %}https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=500&h=300&fit=crop{% endif %}"
+                    data-prot="{{ receta.proteinas|default:0 }}" data-carbs="{{ receta.carbos|default:0 }}"
+                    data-fats="{{ receta.grasas|default:0 }}" data-desc="{{ receta.descripcion|striptags|escape }}">
+                    <div class="img-container">
+                        {% if user.is_authenticated and user.perfil and receta.perfil_creador == user.perfil %}
+                        <div class="position-absolute top-0 start-0 p-2 d-flex gap-2" style="z-index: 10;">
+                            <!-- Edit -->
+                            <button onclick="event.stopPropagation(); openEditOverlay({{ receta.id }});"
+                                class="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                                style="width: 32px; height: 32px; color: var(--text-muted);" title="Editar">
+                                <span class="material-symbols-outlined" style="font-size: 16px;">edit</span>
+                            </button>
 
-                    <!-- Info section -->
-                    <section class="mb-4">
-                        <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">Información
-                            General
-                        </h3>
-
-                        <div class="mb-3">
-                            <label class="small fw-bold mb-2 opacity-75">Título de la receta</label>
-                            <input type="text" id="edit_titulo" name="titulo" class="form-control creator-input"
-                                required>
+                            <!-- Delete -->
+                            <button onclick="event.stopPropagation(); deleteRecipe({{ receta.id }}, this);"
+                                class="btn btn-sm btn-light rounded-circle d-flex align-items-center justify-content-center shadow-sm text-danger"
+                                style="width: 32px; height: 32px;" title="Borrar">
+                                <span class="material-symbols-outlined" style="font-size: 16px;">delete</span>
+                            </button>
                         </div>
-
-                        <div class="row g-3">
-                            <div class="col-sm-6">
-                                <label class="small fw-bold mb-2 opacity-75">Categoría</label>
-                                <select id="edit_dieta" name="dieta" class="form-select creator-input" required>
-                                    <option value="OMNI">🥩 Omnívorora</option>
-                                    <option value="KETO">🥑 Keto</option>
-                                    <option value="VEGA">🌿 Vegana</option>
-                                    <option value="VEGE">🥚 Vegetariana</option>
-                                </select>
+                        {% endif %}
+                        <button class="favorite-btn {% if receta.id in favoritas_ids %}active{% endif %}"
+                            onclick="event.stopPropagation(); toggleFavorite({{ receta.id }}, this)">
+                            <span class="material-symbols-outlined fill-icon">favorite</span>
+                        </button>
+                        <img src="{% if receta.imagen_url %}{{ receta.imagen_url }}{% else %}https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=500&h=300&fit=crop{% endif %}"
+                            class="recipe-img" alt="{{ receta.titulo }}" loading="lazy">
+                        <span class="badge-recipe bg-brand text-white"
+                            style="background-color: var(--primary-color);">{{ receta.tipo_dieta }}</span>
+                    </div>
+                    <div class="p-3">
+                        <h3 class="h6 fw-bold line-clamp-2 mb-1" style="min-height: 2.4em;">{{ receta.titulo }}</h3>
+                        <div class="d-flex flex-wrap gap-1 mb-3">
+                            <span class="macro-pill"
+                                style="background: var(--macro-protein); color: var(--macro-protein-text);">P:
+                                {{receta.proteinas }}</span>
+                            <span class="macro-pill"
+                                style="background: var(--macro-carbs); color: var(--macro-carbs-text);">C: {{
+                                receta.carbos}}</span>
+                            <span class="macro-pill"
+                                style="background: var(--macro-fats); color: var(--macro-fats-text);">G:
+                                {{receta.grasas}}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <div class="star-rating-grid" style="font-size: 11px;">
+                                <span class="material-symbols-outlined fill-icon"
+                                    style="font-size: 14px; font-variation-settings: 'FILL' 1;">star</span>
+                                <span class="fw-bold">{{ receta.rating|default:"4.5" }}</span>
                             </div>
-                            <div class="col-sm-6">
-                                <label class="small fw-bold mb-2 opacity-75">Tiempo</label>
-                                <div class="input-group">
-                                    <input type="text" id="edit_tiempo" name="tiempo"
-                                        class="form-control creator-input border-end-0" required>
-                                    <span class="input-group-text creator-input border-start-0 bg-transparent">
-                                        <span class="material-symbols-outlined fs-6 opacity-50">schedule</span>
-                                    </span>
+                            <div class="d-flex align-items-center gap-2 fw-bold" style="font-size: 11px;">
+                                <div class="d-flex align-items-center gap-1 text-muted">
+                                    <span class="material-symbols-outlined" style="font-size: 14px;">schedule</span>
+                                    {{ receta.tiempo }}
+                                </div>
+                                <div class="d-flex align-items-center gap-1 text-brand">
+                                    <span class="material-symbols-outlined"
+                                        style="font-size: 14px;">local_fire_department</span>
+                                    {{ receta.calorias }} Kcal
                                 </div>
                             </div>
                         </div>
-                    </section>
-
-                    <!-- Macros Section -->
-                    <section class="mb-4">
-                        <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">Nutrición
-                            (por ración)</h3>
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <label class="x-small fw-bold mb-1 opacity-75">Calorías</label>
-                                <input type="number" id="edit_calorias" name="calorias"
-                                    class="form-control creator-input" required>
-                            </div>
-                            <div class="col-6">
-                                <label class="x-small fw-bold mb-1 opacity-75">Proteína (g)</label>
-                                <input type="number" id="edit_proteinas" name="proteinas"
-                                    class="form-control creator-input" required>
-                            </div>
-                            <div class="col-6">
-                                <label class="x-small fw-bold mb-1 opacity-75">Carbos (g)</label>
-                                <input type="number" id="edit_carbos" name="carbos" class="form-control creator-input"
-                                    required>
-                            </div>
-                            <div class="col-6">
-                                <label class="x-small fw-bold mb-1 opacity-75">Grasas (g)</label>
-                                <input type="number" id="edit_grasas" name="grasas" class="form-control creator-input"
-                                    required>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- Photo section -->
-                    <section class="mb-4">
-                        <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">Imagen</h3>
-                        <div class="mb-3">
-                            <label class="small fw-bold mb-2 opacity-75">URL de la imagen (Opcional)</label>
-                            <input type="url" id="edit_imagen_url" name="imagen_url" class="form-control creator-input">
-                        </div>
-                    </section>
-
-                    <!-- Ingredients -->
-                    <section class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h3 class="h6 fw-bold m-0 text-uppercase opacity-75" style="letter-spacing: 1px;">
-                                Ingredientes
-                            </h3>
-                        </div>
-
-                        <div id="editIngredientsContainer" class="d-flex flex-column gap-2">
-                            <!-- Populated by JS -->
-                        </div>
-
-                        <button type="button" id="addIngredientBtnEdit"
-                            class="btn w-100 py-2 mt-2 d-flex align-items-center justify-content-center gap-2 small fw-bold"
-                            style="background: var(--primary-light); color: var(--primary-color); border: 1px dashed var(--primary-color); border-radius: 12px;">
-                            <span class="material-symbols-outlined fs-6">add</span> Añadir ingrediente
-                        </button>
-                    </section>
-
-                    <!-- Steps -->
-                    <section class="mb-4">
-                        <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">Preparación
-                        </h3>
-                        <div class="rounded-3 border overflow-hidden" style="border-color: rgba(0,0,0,0.05);">
-                            <textarea id="edit_descripcion" name="descripcion"
-                                class="form-control border-0 creator-input rounded-0" rows="6"
-                                style="height: auto; background: transparent !important;"></textarea>
-                        </div>
-                    </section>
-
-                    <div class="pt-2">
-                        <button type="submit"
-                            class="btn-creator-save d-flex align-items-center justify-content-center gap-2">
-                            <span class="material-symbols-outlined">save</span>
-                            Guardar Cambios
-                        </button>
                     </div>
-                </main>
-            </form>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <span class="material-symbols-outlined text-muted fs-1 mb-3">manage_search</span>
+                <h3 class="h5 fw-bold text-muted">No encontramos recetas con esos filtros.</h3>
+                <p class="small text-muted">Intenta ajustando tu búsqueda o pregúntale a la IA.</p>
+            </div>
+            {% endfor %}
         </div>
-    </div>
 
+<<<<<<< HEAD
     <script>
         // --- INICIALIZACIÓN DE COMPONENTES (SAFE MODE) ---
         // Usamos var para permitir re-declaraciones si HTMX recarga el script
@@ -1003,11 +742,584 @@
                     if (line.trim().startsWith('-')) {
                         var ing = line.replace('-', '').trim();
                         ingredientsHTML += `<div class="custom-card-detail p-3 d-flex justify-content-between align-items-center border-0 shadow-sm mb-2" style="background: rgba(133,200,26,0.05); border-radius:12px;">
+=======
+        <!-- Hidden element for JS empty state -->
+        <div id="no-results-msg" class="d-none col-12 text-center py-5">
+            <span class="material-symbols-outlined text-muted fs-1 mb-3">filter_list_off</span>
+            <h3 class="h5 fw-bold text-muted">Sin resultados en esta categoría</h3>
+            <p class="small text-muted">Prueba con otro filtro o la pestaña "Explorar".</p>
+        </div>
+
+
+        <!-- Hardcoded cards removed -->
+
+        <!-- SIDE RECIPE DETAIL OFF-CANVAS -->
+        <div class="offcanvas offcanvas-end recipe-detail-offcanvas" tabindex="-1" id="recipeDetailOffcanvas"
+            aria-labelledby="recipeDetailLabel">
+            <div class="offcanvas-header p-3 border-bottom">
+                <button type="button" class="btn border-0 d-flex align-items-center justify-content-center p-0"
+                    data-bs-dismiss="offcanvas"
+                    style="width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.05);">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </button>
+                <h5 class="offcanvas-title fw-800 m-0 text-center flex-grow-1 h6" id="recipeDetailLabel">Detalle de
+                    Comida
+                </h5>
+                <button type="button" class="btn border-0 d-flex align-items-center justify-content-center p-0"
+                    style="width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.05);">
+                    <span class="material-symbols-outlined">share</span>
+                </button>
+            </div>
+            <div class="offcanvas-body p-0">
+                <div class="p-4">
+                    <div id="detailHeroImg" class="detail-hero-img mb-4"></div>
+
+                    <h1 id="detailTitle" class="fw-800 mb-3 h2 dark-mode-text-white" style="font-weight: 800;"></h1>
+
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <div class="stat-badge">
+                            <span class="material-symbols-outlined">local_fire_department</span>
+                            <span id="detailKcal"></span>
+                        </div>
+                        <div class="stat-badge">
+                            <span class="material-symbols-outlined">schedule</span>
+                            <span id="detailTime"></span>
+                        </div>
+                        <div class="stat-badge">
+                            <span class="material-symbols-outlined">star</span>
+                            <span id="detailRating"></span>
+                        </div>
+                    </div>
+
+                    <h2 class="h5 fw-bold mb-3 mt-5">Macros Detallados</h2>
+                    <div class="custom-card-detail mb-5">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="small fw-bold">Proteínas</span>
+                                <span class="small fw-bold" id="detailProtText"></span>
+                            </div>
+                            <div class="progress" style="height: 10px; border-radius: 10px;">
+                                <div id="detailProtBar" class="progress-bar bg-primary"
+                                    style="width: 0%; border-radius: 10px;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="small fw-bold">Carbohidratos</span>
+                                <span class="small fw-bold" id="detailCarbsText"></span>
+                            </div>
+                            <div class="progress" style="height: 10px; border-radius: 10px;">
+                                <div id="detailCarbsBar" class="progress-bar bg-warning"
+                                    style="width: 0%; border-radius: 10px;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="small fw-bold">Grasas</span>
+                                <span class="small fw-bold" id="detailFatsText"></span>
+                            </div>
+                            <div class="progress" style="height: 10px; border-radius: 10px;">
+                                <div id="detailFatsBar" class="progress-bar bg-info"
+                                    style="width: 0%; border-radius: 10px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2 class="h5 fw-bold mb-3 mt-5">Califica esta receta</h2>
+                    <div class="custom-card-detail mb-4">
+                        <div class="d-flex justify-content-center gap-2 star-rating" id="recipeRatingStars">
+                            <span class="material-symbols-outlined rating-star" data-value="1">star</span>
+                            <span class="material-symbols-outlined rating-star" data-value="2">star</span>
+                            <span class="material-symbols-outlined rating-star" data-value="3">star</span>
+                            <span class="material-symbols-outlined rating-star" data-value="4">star</span>
+                            <span class="material-symbols-outlined rating-star" data-value="5">star</span>
+                        </div>
+                        <p class="text-center small mt-2 opacity-75" id="ratingStatusText">Toca una estrella para
+                            calificar</p>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h5 fw-bold m-0">Ingredientes</h2>
+                        <span class="small fw-bold text-brand">1 ración</span>
+                    </div>
+                    <div class="d-grid gap-2 mb-5" id="detailIngredients">
+                        <!-- Se poblará por JS -->
+                    </div>
+
+                    <h2 class="h5 fw-bold mb-3">Preparación</h2>
+                    <div class="d-grid gap-4 mb-5" id="detailSteps">
+                        <!-- Se poblará por JS -->
+                    </div>
+                </div>
+            </div>
+            <div class="offcanvas-footer p-3 bg-white border-top sticky-bottom dark-mode-bg-dark">
+                <button class="btn-add-diary">Añadir a mi diario</button>
+            </div>
+        </div>
+
+        <a href="javascript:void(0)" class="fab-btn" id="openCreator">
+            <span class="material-symbols-outlined fs-2">add</span>
+        </a>
+
+        <!-- RECIPE CREATOR OVERLAY -->
+        <div class="recipe-creator-overlay" id="recipeOverlay">
+            <div class="recipe-creator-container">
+                <!-- Header -->
+                <form id="recipeCreatorForm" hx-post="{% url 'base:crear_receta' %}" hx-swap="none"
+                    hx-on::after-request="if(event.detail.successful) { showToast('Receta creada con éxito', 'success'); document.getElementById('closeCreator').click(); window.location.reload(); }">
+                    {% csrf_token %}
+                    <header class="sticky-top p-3 d-flex align-items-center"
+                        style="background: var(--bg-content); border-bottom: 1px solid rgba(0,0,0,0.05); z-index: 100; flex-shrink: 0;">
+                        <div id="closeCreator" class="d-flex align-items-center justify-content-center"
+                            style="width: 48px; cursor: pointer;">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                        </div>
+                        <h2 class="h6 m-0 fw-bold flex-grow-1 text-center">Creador de Recetas</h2>
+                        <div style="width: 48px;"></div>
+                    </header>
+
+                    <main class="p-4">
+                        <!-- Info section -->
+                        <section class="mb-4">
+                            <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">
+                                Información
+                                General
+                            </h3>
+
+                            <div class="mb-3">
+                                <label class="small fw-bold mb-2 opacity-75">Título de la receta</label>
+                                <input type="text" name="titulo" class="form-control creator-input"
+                                    placeholder="Ej. Ensalada Mediterránea" required>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <label class="small fw-bold mb-2 opacity-75">Tipo de Dieta</label>
+                                    <select name="dieta" class="form-select creator-input" required>
+                                        <option value="OMNI">🥩 Omnívora</option>
+                                        {% for code, name in opciones_dieta.items %}
+                                        <option value="{{ code }}">{{ name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="small fw-bold mb-2 opacity-75">Tipo de Comida</label>
+                                    <select name="categoria" class="form-select creator-input" required>
+                                        {% for cat in categorias_receta %}
+                                        <option value="{{ cat }}" class="text-capitalize">{{ cat }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="small fw-bold mb-2 opacity-75">Dificultad</label>
+                                    <select name="dificultad" class="form-select creator-input" required>
+                                        <option value="Fácil">Fácil</option>
+                                        <option value="Media" selected>Media</option>
+                                        <option value="Difícil">Difícil</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="small fw-bold mb-2 opacity-75">Presupuesto</label>
+                                    <select name="presupuesto" class="form-select creator-input" required>
+                                        <option value="Económico">Económico</option>
+                                        <option value="Medio" selected>Medio</option>
+                                        <option value="Caro">Caro</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-12">
+                                    <label class="small fw-bold mb-2 opacity-75">Tiempo</label>
+                                    <div class="input-group">
+                                        <input type="text" name="tiempo" class="form-control creator-input border-end-0"
+                                            placeholder="20 min" required>
+                                        <span class="input-group-text creator-input border-start-0 bg-transparent">
+                                            <span class="material-symbols-outlined fs-6 opacity-50">schedule</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Macros Section -->
+                        <section class="mb-4">
+                            <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">Nutrición
+                                (por ración)</h3>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label class="x-small fw-bold mb-1 opacity-75">Calorías</label>
+                                    <input type="number" name="calorias" class="form-control creator-input"
+                                        placeholder="0" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="x-small fw-bold mb-1 opacity-75">Proteína (g)</label>
+                                    <input type="number" name="proteinas" class="form-control creator-input"
+                                        placeholder="0" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="x-small fw-bold mb-1 opacity-75">Carbos (g)</label>
+                                    <input type="number" name="carbos" class="form-control creator-input"
+                                        placeholder="0" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="x-small fw-bold mb-1 opacity-75">Grasas (g)</label>
+                                    <input type="number" name="grasas" class="form-control creator-input"
+                                        placeholder="0" required>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Photo section (as URL for now to simplify) -->
+                        <section class="mb-4">
+                            <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">Imagen
+                            </h3>
+                            <div class="mb-3">
+                                <label class="small fw-bold mb-2 opacity-75">URL de la imagen (Opcional)</label>
+                                <input type="url" name="imagen_url" class="form-control creator-input"
+                                    placeholder="https://ejemplo.com/foto.jpg">
+                            </div>
+                        </section>
+
+                        <!-- Ingredients -->
+                        <section class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h3 class="h6 fw-bold m-0 text-uppercase opacity-75" style="letter-spacing: 1px;">
+                                    Ingredientes
+                                </h3>
+                                <div class="small fw-bold" style="color: var(--primary-color);">
+                                    <span class="material-symbols-outlined fs-6">calculate</span> 0 Kcal
+                                </div>
+                            </div>
+
+                            <div id="ingredientsContainer" class="d-flex flex-column gap-2">
+                                <div class="ingredient-row d-flex gap-2 mb-2">
+                                    <input type="text" name="ingredientes_nombres"
+                                        class="form-control creator-input flex-grow-1 py-2" placeholder="Ej. Quinoa">
+                                    <input type="text" name="ingredientes_cantidades"
+                                        class="form-control creator-input text-center py-2" placeholder="Cant."
+                                        style="width: 80px;">
+                                    <button type="button"
+                                        class="btn btn-light text-danger d-flex align-items-center justify-content-center delete-ingredient"
+                                        style="width: 44px; border-radius: 12px; background: var(--bg-page); border: 1px solid rgba(0,0,0,0.05);">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button type="button" id="addIngredientBtn"
+                                class="btn w-100 py-2 mt-2 d-flex align-items-center justify-content-center gap-2 small fw-bold"
+                                style="background: var(--primary-light); color: var(--primary-color); border: 1px dashed var(--primary-color); border-radius: 12px;">
+                                <span class="material-symbols-outlined fs-6">add</span> Añadir ingrediente
+                            </button>
+                        </section>
+
+                        <!-- Steps -->
+                        <section class="mb-4">
+                            <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">
+                                Preparación
+                            </h3>
+                            <div class="rounded-3 border overflow-hidden" style="border-color: rgba(0,0,0,0.05);">
+                                <textarea name="descripcion" class="form-control border-0 creator-input rounded-0"
+                                    rows="6" placeholder="Escribe el paso a paso o ingredientes..."
+                                    style="height: auto; background: transparent !important;"></textarea>
+                            </div>
+                        </section>
+
+                        <div class="pt-2">
+                            <button type="submit"
+                                class="btn-creator-save d-flex align-items-center justify-content-center gap-2">
+                                <span class="material-symbols-outlined">save</span>
+                                Guardar Receta
+                            </button>
+                        </div>
+                    </main>
+                </form>
+            </div>
+        </div>
+
+        <!-- EDIT RECIPE OVERLAY -->
+        <div class="recipe-creator-overlay" id="editRecipeOverlay">
+            <div class="recipe-creator-container">
+                <!-- Header -->
+                <form id="editRecipeForm" onsubmit="submitEditForm(event)">
+                    <header class="sticky-top p-3 d-flex align-items-center"
+                        style="background: var(--bg-content); border-bottom: 1px solid rgba(0,0,0,0.05); z-index: 100;">
+                        <div id="closeEdit" class="d-flex align-items-center justify-content-center"
+                            style="width: 48px; cursor: pointer;">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                        </div>
+                        <h2 class="h6 m-0 fw-bold flex-grow-1 text-center" style="margin-right: 48px !important;">Editar
+                            Receta
+                        </h2>
+                    </header>
+
+                    <main class="p-4">
+                        <!-- Hidden ID -->
+                        <input type="hidden" id="edit_receta_id" name="receta_id">
+
+                        <!-- Info section -->
+                        <section class="mb-4">
+                            <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">
+                                Información
+                                General
+                            </h3>
+
+                            <div class="mb-3">
+                                <label class="small fw-bold mb-2 opacity-75">Título de la receta</label>
+                                <input type="text" id="edit_titulo" name="titulo" class="form-control creator-input"
+                                    required>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <label class="small fw-bold mb-2 opacity-75">Tipo de Dieta</label>
+                                    <select id="edit_dieta" name="dieta" class="form-select creator-input" required>
+                                        {% for code, name in opciones_dieta.items %}
+                                        <option value="{{ code }}">{{ name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="small fw-bold mb-2 opacity-75">Tipo de Comida</label>
+                                    <select id="edit_categoria" name="categoria" class="form-select creator-input"
+                                        required>
+                                        {% for cat in categorias_receta %}
+                                        <option value="{{ cat }}" class="text-capitalize">{{ cat }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="small fw-bold mb-2 opacity-75">Dificultad</label>
+                                    <select id="edit_dificultad" name="dificultad" class="form-select creator-input"
+                                        required>
+                                        <option value="Fácil">Fácil</option>
+                                        <option value="Media">Media</option>
+                                        <option value="Difícil">Difícil</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="small fw-bold mb-2 opacity-75">Presupuesto</label>
+                                    <select id="edit_presupuesto" name="presupuesto" class="form-select creator-input"
+                                        required>
+                                        <option value="Económico">Económico</option>
+                                        <option value="Medio">Medio</option>
+                                        <option value="Caro">Caro</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-12">
+                                    <label class="small fw-bold mb-2 opacity-75">Tiempo</label>
+                                    <div class="input-group">
+                                        <input type="text" id="edit_tiempo" name="tiempo"
+                                            class="form-control creator-input border-end-0" required>
+                                        <span class="input-group-text creator-input border-start-0 bg-transparent">
+                                            <span class="material-symbols-outlined fs-6 opacity-50">schedule</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Macros Section -->
+                        <section class="mb-4">
+                            <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">Nutrición
+                                (por ración)</h3>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label class="x-small fw-bold mb-1 opacity-75">Calorías</label>
+                                    <input type="number" id="edit_calorias" name="calorias"
+                                        class="form-control creator-input" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="x-small fw-bold mb-1 opacity-75">Proteína (g)</label>
+                                    <input type="number" id="edit_proteinas" name="proteinas"
+                                        class="form-control creator-input" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="x-small fw-bold mb-1 opacity-75">Carbos (g)</label>
+                                    <input type="number" id="edit_carbos" name="carbos"
+                                        class="form-control creator-input" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="x-small fw-bold mb-1 opacity-75">Grasas (g)</label>
+                                    <input type="number" id="edit_grasas" name="grasas"
+                                        class="form-control creator-input" required>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Photo section -->
+                        <section class="mb-4">
+                            <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">Imagen
+                            </h3>
+                            <div class="mb-3">
+                                <label class="small fw-bold mb-2 opacity-75">URL de la imagen (Opcional)</label>
+                                <input type="url" id="edit_imagen_url" name="imagen_url"
+                                    class="form-control creator-input">
+                            </div>
+                        </section>
+
+                        <!-- Ingredients -->
+                        <section class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h3 class="h6 fw-bold m-0 text-uppercase opacity-75" style="letter-spacing: 1px;">
+                                    Ingredientes
+                                </h3>
+                            </div>
+
+                            <div id="editIngredientsContainer" class="d-flex flex-column gap-2">
+                                <!-- Populated by JS -->
+                            </div>
+
+                            <button type="button" id="addIngredientBtnEdit"
+                                class="btn w-100 py-2 mt-2 d-flex align-items-center justify-content-center gap-2 small fw-bold"
+                                style="background: var(--primary-light); color: var(--primary-color); border: 1px dashed var(--primary-color); border-radius: 12px;">
+                                <span class="material-symbols-outlined fs-6">add</span> Añadir ingrediente
+                            </button>
+                        </section>
+
+                        <!-- Steps -->
+                        <section class="mb-4">
+                            <h3 class="h6 fw-bold mb-3 text-uppercase opacity-75" style="letter-spacing: 1px;">
+                                Preparación
+                            </h3>
+                            <div class="rounded-3 border overflow-hidden" style="border-color: rgba(0,0,0,0.05);">
+                                <textarea id="edit_descripcion" name="descripcion"
+                                    class="form-control border-0 creator-input rounded-0" rows="6"
+                                    style="height: auto; background: transparent !important;"></textarea>
+                            </div>
+                        </section>
+
+                        <div class="pt-2">
+                            <button type="submit"
+                                class="btn-creator-save d-flex align-items-center justify-content-center gap-2">
+                                <span class="material-symbols-outlined">save</span>
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </main>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            // --- INICIALIZACIÓN DE COMPONENTES (SAFE MODE) ---
+            // Usamos var para permitir re-declaraciones si HTMX recarga el script
+            if (!window.offcanvasInstance) {
+                var offcanvasElement = document.getElementById('recipeDetailOffcanvas');
+                if (offcanvasElement) {
+                    window.offcanvasInstance = bootstrap.Offcanvas.getOrCreateInstance(offcanvasElement);
+                }
+            }
+
+            // --- LÓGICA DE RECETAS ---
+            function deleteRecipe(id, btn) {
+                if (!confirm('¿Estás seguro de que quieres borrar esta receta?')) return;
+                fetch(`/api/borrar_receta/${id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            const col = btn.closest('.col');
+                            col.remove();
+                            if (typeof showToast === 'function') showToast('Receta eliminada', 'success');
+                        } else {
+                            if (typeof showToast === 'function') showToast('Error: ' + data.error, 'error');
+                        }
+                    });
+            }
+
+            function toggleFavorite(recetaId, btn) {
+                fetch(`/api/toggle_favorito/${recetaId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            btn.classList.toggle('active');
+                            var card = btn.closest('.filter-item');
+                            if (card) {
+                                card.dataset.favorite = data.is_favorite ? 'true' : 'false';
+                            }
+                            applyFilters();
+                        }
+                    });
+            }
+
+            // --- OVERLAYS (CREAR Y EDITAR) ---
+            // Usamos asignación a window para evitar errores de Scope con HTMX
+            window.overlayCreator = document.getElementById('recipeOverlay');
+            window.editOverlay = document.getElementById('editRecipeOverlay');
+
+            // Manejo de eventos delegado para evitar duplicados
+            document.addEventListener('click', function (e) {
+                // Abrir Creador
+                const creatorBtn = e.target.closest('#openCreator');
+                if (creatorBtn) {
+                    if (window.overlayCreator) {
+                        window.overlayCreator.classList.add('show');
+                        document.body.classList.add('overlay-active');
+                    }
+                }
+                // Cerrar Creador
+                if (e.target.id === 'closeCreator' || e.target === window.overlayCreator) {
+                    window.overlayCreator.classList.remove('show');
+                    document.body.classList.remove('overlay-active');
+                }
+                // Cerrar Editor
+                if (e.target.id === 'closeEdit' || e.target === window.editOverlay) {
+                    closeEditOverlay();
+                }
+            });
+
+            // --- DETALLE DE RECETA ---
+            var currentRecipeData = null;
+
+            function showRecipeDetail(id, title, kcal, time, rating, img, prot, carbs, fats, description, category) {
+                currentRecipeData = { id, title, kcal, prot, carbs, fats, category };
+                document.getElementById('detailTitle').innerText = title;
+                document.getElementById('detailKcal').innerText = kcal;
+                document.getElementById('detailTime').innerText = time;
+                document.getElementById('detailRating').innerText = rating;
+                document.getElementById('detailHeroImg').style.backgroundImage = `url('${img}')`;
+
+                var protPct = kcal > 0 ? Math.round((prot * 4 / kcal) * 100) + '%' : '0%';
+                var carbsPct = kcal > 0 ? Math.round((carbs * 4 / kcal) * 100) + '%' : '0%';
+                var fatsPct = kcal > 0 ? Math.round((fats * 9 / kcal) * 100) + '%' : '0%';
+
+                document.getElementById('detailProtText').innerText = `${prot}g (${protPct})`;
+                document.getElementById('detailProtBar').style.width = protPct;
+                document.getElementById('detailCarbsText').innerText = `${carbs}g (${carbsPct})`;
+                document.getElementById('detailCarbsBar').style.width = carbsPct;
+                document.getElementById('detailFatsText').innerText = `${fats}g (${fatsPct})`;
+                document.getElementById('detailFatsBar').style.width = fatsPct;
+
+                var stepsText = description || "Sin descripción disponible.";
+                var ingredientsHTML = "";
+
+                if (description && description.includes("INGREDIENTES:")) {
+                    var parts = description.split("INGREDIENTES:");
+                    stepsText = parts[0].trim();
+                    var lines = parts[1].trim().split('\n');
+                    lines.forEach(line => {
+                        if (line.trim().startsWith('-')) {
+                            var ing = line.replace('-', '').trim();
+                            ingredientsHTML += `<div class="custom-card-detail p-3 d-flex justify-content-between align-items-center border-0 shadow-sm mb-2" style="background: rgba(133,200,26,0.05); border-radius:12px;">
+>>>>>>> 1bfdbbe (más avances)
                             <div class="d-flex align-items-center gap-3">
                                 <span class="material-symbols-outlined text-brand">check_circle</span>
                                 <span class="fw-medium text-sm">${ing}</span>
                             </div>
                         </div>`;
+<<<<<<< HEAD
                     }
                 });
             } else {
@@ -1151,3 +1463,409 @@
         }
     </script>
     {% endblock %}
+=======
+                        }
+                    });
+                } else {
+                    ingredientsHTML = `<p class="text-muted small">Ver descripción general.</p>`;
+                }
+
+                document.getElementById('detailIngredients').innerHTML = ingredientsHTML;
+                var stepsBox = document.getElementById('detailSteps');
+                if (stepsBox) stepsBox.innerHTML = `<p class="small text-muted">${stepsText.replace(/\n/g, '<br>')}</p>`;
+
+                // Update stars for current rating
+                updateStarsUI(Math.round(parseFloat(rating)));
+                document.getElementById('ratingStatusText').innerText = 'Toca una estrella para calificar';
+
+                window.offcanvasInstance.show();
+            }
+
+            // --- FILTROS ---
+            function applyFilters() {
+                const activeTab = document.querySelector('#recipe-tabs button.active')?.dataset.tab || 'explorar';
+                const dietVal = document.getElementById('diet-filter-select')?.value || 'todo';
+                const catVal = document.getElementById('category-filter-select')?.value || 'todo';
+
+                const cards = document.querySelectorAll('.filter-item');
+                let visibleCount = 0;
+
+                cards.forEach(card => {
+                    const d = card.dataset;
+                    const cardCategory = (d.category || '').toLowerCase();
+                    const cardType = (d.type || '').toString();
+                    const isFavorite = d.favorite === 'true';
+                    const isUserRecipe = d.userrecipe === 'true';
+
+                    const showByTab = (activeTab === 'explorar') ||
+                        (activeTab === 'mis-recetas' && isUserRecipe) ||
+                        (activeTab === 'favoritos' && isFavorite);
+
+                    const showByDiet = (dietVal === 'todo' || cardType === dietVal);
+                    const showByCat = (catVal === 'todo' || cardCategory === catVal);
+
+                    if (showByTab && showByDiet && showByCat) {
+                        card.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                const noResMsg = document.getElementById('no-results-msg');
+                if (noResMsg) noResMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+            }
+
+            function filterRecipes(btn) {
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList.remove('active');
+                    b.style.backgroundColor = '';
+                    b.style.color = '';
+                });
+                btn.classList.add('active');
+                btn.style.backgroundColor = 'var(--primary-color)';
+                btn.style.color = 'white';
+                applyFilters();
+            }
+
+            // Tab switching
+            document.querySelectorAll('#recipe-tabs button[data-tab]').forEach(tabBtn => {
+                tabBtn.addEventListener('click', function () {
+                    // Remove active from all tabs
+                    document.querySelectorAll('#recipe-tabs button').forEach(b => b.classList.remove('active'));
+                    // Add active to clicked tab
+                    this.classList.add('active');
+                    // Apply filters
+                    applyFilters();
+                });
+            });
+
+            // Add ingredient button
+            var addIngredientBtn = document.getElementById('addIngredientBtn');
+            if (addIngredientBtn) {
+                addIngredientBtn.addEventListener('click', function () {
+                    addIngredientRow('ingredientsContainer');
+                });
+            }
+
+            var addIngredientBtnEdit = document.getElementById('addIngredientBtnEdit');
+            if (addIngredientBtnEdit) {
+                addIngredientBtnEdit.addEventListener('click', function () {
+                    addIngredientRow('editIngredientsContainer');
+                });
+            }
+
+            // --- LÓGICA DE INGREDIENTES DINÁMICOS ---
+            function addIngredientRow(containerId, nombre = '', cantidad = '') {
+                var container = document.getElementById(containerId);
+                if (!container) return;
+                var row = document.createElement('div');
+                row.className = 'ingredient-row d-flex gap-2 mb-2';
+                row.innerHTML = `
+                <input type="text" name="ingredientes_nombres" class="form-control creator-input flex-grow-1 py-2" value="${nombre}" placeholder="Ej. Pollo">
+                <input type="text" name="ingredientes_cantidades" class="form-control creator-input text-center py-2" value="${cantidad}" placeholder="Cant." style="width: 80px;">
+                <button type="button" class="btn btn-light text-danger d-flex align-items-center justify-content-center delete-ingredient" style="width: 44px; border-radius: 12px; background: var(--bg-page); border: 1px solid rgba(0,0,0,0.05);">
+                    <span class="material-symbols-outlined">delete</span>
+                </button>
+            `;
+                container.appendChild(row);
+            }
+
+            function openRecipeDetail(el) {
+                const d = el.dataset;
+                showRecipeDetail(
+                    d.id,
+                    d.title,
+                    d.kcal,
+                    d.time,
+                    d.rating,
+                    d.img,
+                    parseFloat(d.prot),
+                    parseFloat(d.carbs),
+                    parseFloat(d.fats),
+                    d.desc,
+                    d.category
+                );
+            }
+
+            // Escuchador global para borrar ingredientes (Delegación)
+            document.addEventListener('click', function (e) {
+                var btn = e.target.closest('.delete-ingredient-btn') || e.target.closest('.delete-ingredient') || e.target.closest('.delete-ingredient-edit');
+                if (btn) {
+                    var row = btn.closest('.ingredient-row');
+                    if (row) row.remove();
+                }
+            });
+
+            document.querySelector('.btn-add-diary')?.addEventListener('click', function () {
+                if (!currentRecipeData) return;
+
+                fetch("{% url 'base:guardar_comida_api' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nombre: currentRecipeData.title,
+                        calorias: currentRecipeData.kcal,
+                        proteinas: currentRecipeData.prot,
+                        carbos: currentRecipeData.carbs,
+                        grasas: currentRecipeData.fats,
+                        categoria: currentRecipeData.category || 'almuerzo'
+                    })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            if (typeof showToast === 'function') showToast('¡Comida añadida a tu diario!', 'success');
+                            window.offcanvasInstance.hide();
+                        } else {
+                            if (typeof showToast === 'function') showToast('Error al guardar: ' + data.message, 'error');
+                        }
+                    });
+            });
+
+            // --- IA Y EDICIÓN ---
+            function generateRecipeAI(btn) {
+                var originalContent = btn.innerHTML;
+                btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Creando...`;
+                btn.disabled = true;
+
+                fetch('/api/generar_receta_ia/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            var r = data.receta;
+                            var form = document.getElementById('recipeCreatorForm');
+                            form.querySelector('[name="titulo"]').value = r.titulo || '';
+                            form.querySelector('[name="descripcion"]').value = r.descripcion || '';
+                            // ... llenar resto de campos ...
+                            var container = document.getElementById('ingredientsContainer');
+                            container.innerHTML = '';
+                            r.ingredientes.forEach(ing => addIngredientRow('ingredientsContainer', ing.nombre, ing.cantidad));
+                            if (typeof showToast === 'function') showToast('¡Receta generada!', 'success');
+                        }
+                    })
+                    .finally(() => {
+                        btn.innerHTML = originalContent;
+                        btn.disabled = false;
+                    });
+            }
+
+            function openEditOverlay(recetaId) {
+                fetch(`/editar_receta/${recetaId}/`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            var r = data.receta;
+                            document.getElementById('edit_receta_id').value = r.id;
+                            document.getElementById('edit_titulo').value = r.titulo;
+                            document.getElementById('edit_dieta').value = r.tipo_dieta;
+                            document.getElementById('edit_categoria').value = r.categoria || 'explorar';
+                            document.getElementById('edit_tiempo').value = r.tiempo;
+                            var container = document.getElementById('editIngredientsContainer');
+                            container.innerHTML = '';
+                            r.ingredientes.forEach(ing => addIngredientRow('editIngredientsContainer', ing.nombre, ing.cantidad));
+                            window.editOverlay.classList.add('show');
+                            document.body.classList.add('overlay-active');
+                        }
+                    });
+            }
+
+            function closeEditOverlay() {
+                if (window.editOverlay) {
+                    window.editOverlay.classList.remove('show');
+                    document.body.classList.remove('overlay-active');
+                }
+            }
+
+            // --- GENERAR PLAN DIARIO ---
+            function generateAutoPlan() {
+                const section = document.getElementById('dailyPlanSection');
+                const content = document.getElementById('dailyPlanContent');
+
+                section.classList.remove('d-none');
+                content.innerHTML = `
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-success mb-3" role="status" style="width: 3rem; height: 3rem;"></div>
+                        <p class="text-muted fw-bold h5">Diseñando tu plan perfecto...</p>
+                        <p class="small text-muted">Consultando el Chef de IA nunut...</p>
+                    </div>`;
+
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                fetch('/api/generar_plan_ia/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            let html = `
+                            <div class="bg-light dark-mode-bg-dark p-4 rounded-4 mb-4 border d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                                <div class="text-center text-md-start">
+                                    <small class="fw-bold text-muted d-block text-uppercase small">Objetivo del Día</small>
+                                    <span class="fw-bolder h1 text-success m-0">${data.metas.calorias_dia} Kcal</span>
+                                </div>
+                                <div class="d-flex gap-4">
+                                    <div class="text-center">
+                                        <small class="d-block text-muted fw-bold">PROT</small>
+                                        <span class="h4 fw-bolder">${data.metas.proteinas_g}g</span>
+                                    </div>
+                                    <div class="text-center">
+                                        <small class="d-block text-muted fw-bold">CARB</small>
+                                        <span class="h4 fw-bolder">${data.metas.carbohidratos_g}g</span>
+                                    </div>
+                                    <div class="text-center">
+                                        <small class="d-block text-muted fw-bold">GRAS</small>
+                                        <span class="h4 fw-bolder">${data.metas.grasas_g}g</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-4">`;
+
+                            data.plan.forEach(meal => {
+                                html += `
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="card h-100 border-0 shadow-sm overflow-hidden" style="border-radius: 2rem; background: var(--bg-page);">
+                                        <div class="position-relative" style="height: 160px;">
+                                            <img src="${meal.imagen_url}" class="w-100 h-100 object-fit-cover">
+                                            <span class="position-absolute top-0 end-0 m-3 badge bg-dark bg-opacity-75 text-white rounded-pill px-3">${meal.tiempo}</span>
+                                            <span class="position-absolute bottom-0 start-0 m-3 badge bg-success rounded-pill px-2" style="font-size: 11px;">${meal.tipo}</span>
+                                        </div>
+                                        <div class="p-4">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <div class="d-flex gap-1" title="Presupuesto">
+                                                    <span class="small fw-bold text-success">${meal.presupuesto === 'Economico' ? '💰' : meal.presupuesto === 'Caro' ? '💰💰💰' : '💰💰'}</span>
+                                                </div>
+                                                <span class="x-small text-muted fw-bold text-uppercase">${meal.dificultad}</span>
+                                            </div>
+                                            <h5 class="fw-bolder mb-2 line-clamp-2" style="height: 2.8rem;">${meal.titulo}</h5>
+                                            <p class="text-muted small line-clamp-2 mb-3" style="font-size: 0.85rem;">${meal.descripcion}</p>
+                                            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                                                <span class="fw-bolder text-success">${meal.calorias} Kcal</span>
+                                                <button class="btn btn-sm btn-outline-success rounded-pill fw-bold px-3" 
+                                                    onclick='showGeneratedDetail(${JSON.stringify(meal).replace(/'/g, "&#39;")})'>
+                                                    Receta
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`;
+                            });
+                            html += `</div>
+                            <div class="text-center mt-5">
+                                <button class="btn btn-success rounded-pill px-5 fw-bolder py-3 shadow" onclick="window.location.reload()">
+                                    <span class="material-symbols-outlined align-middle me-2">refresh</span>
+                                    Actualizar Grid
+                                </button>
+                            </div>`;
+                            content.innerHTML = html;
+                        } else {
+                            content.innerHTML = `
+                            <div class="text-center py-5">
+                                <span class="material-symbols-outlined text-danger fs-1 mb-3">error</span>
+                                <h5 class="fw-bold">No pudimos generar tu plan</h5>
+                                <p class="text-muted">${data.error}</p>
+                                <button class="btn btn-success rounded-pill px-4 mt-2" onclick="generateAutoPlan()">Reintentar</button>
+                            </div>`;
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        content.innerHTML = `
+                        <div class="text-center py-5">
+                            <span class="material-symbols-outlined text-danger fs-1 mb-3">wifi_off</span>
+                            <h5 class="fw-bold">Error de conexión</h5>
+                            <p class="text-muted">Parece que hay un problema con la API de IA. Intenta de nuevo en unos momentos.</p>
+                        </div>`;
+                    });
+            }
+
+            function showGeneratedDetail(meal) {
+                // Scroll to top to ensure visibility of offcanvas opening
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                // Format ingredients and steps for showRecipeDetail
+                let fullDescription = meal.descripcion;
+                if (meal.ingredientes) {
+                    fullDescription += "\n\nINGREDIENTES:\n" + meal.ingredientes.map(i => "- " + i).join("\n");
+                }
+                if (meal.pasos) {
+                    fullDescription += "\n\nPREPARACIÓN:\n" + meal.pasos;
+                }
+
+                // Reuse existing detail function
+                showRecipeDetail(
+                    meal.titulo,
+                    meal.calorias,
+                    meal.tiempo,
+                    "5.0",
+                    meal.imagen_url,
+                    meal.proteinas,
+                    meal.carbos,
+                    meal.grasas,
+                    fullDescription
+                );
+            }
+
+            // Estrellas de Calificación
+            const stars = document.querySelectorAll('.rating-star');
+            const statusText = document.getElementById('ratingStatusText');
+
+            stars.forEach(star => {
+                star.addEventListener('mouseover', function () {
+                    const val = parseInt(this.dataset.value);
+                    stars.forEach(s => {
+                        if (parseInt(s.dataset.value) <= val) s.classList.add('hover-active');
+                    });
+                });
+
+                star.addEventListener('mouseout', function () {
+                    stars.forEach(s => s.classList.remove('hover-active'));
+                });
+
+                star.addEventListener('click', function () {
+                    const val = parseInt(this.dataset.value);
+                    if (!currentRecipeData || !currentRecipeData.id) return;
+
+                    submitRating(currentRecipeData.id, val);
+                });
+            });
+
+            function submitRating(recetaId, val) {
+                fetch(`/api/calificar_receta/${recetaId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ puntuacion: val })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            updateStarsUI(val);
+                            document.getElementById('detailRating').innerText = data.new_rating;
+                            statusText.innerText = '¡Gracias por calificar!';
+                            if (typeof showToast === 'function') showToast('Calificación guardada', 'success');
+                        }
+                    });
+            }
+
+            function updateStarsUI(val) {
+                stars.forEach(s => {
+                    if (parseInt(s.dataset.value) <= val) s.classList.add('active');
+                    else s.classList.remove('active');
+                });
+            }
+        </script>
+        {% endblock %}
+>>>>>>> 1bfdbbe (más avances)

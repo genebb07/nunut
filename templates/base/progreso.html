@@ -4,303 +4,502 @@
 {% block title %}Mi Progreso | nunut{% endblock %}
 
 {% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+
 <style>
     :root {
-        --primary-color: #85c81a;
+        --primary-lime: #85c81a;
+        --bg-body: var(--bg-page);
+        --card-radius: 32px;
     }
 
-    .text-technical {
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.7rem;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        font-weight: 700;
-        color: var(--text-muted);
+    /* Clases de Utilidad Personalizadas */
+    .fw-black {
+        font-weight: 900;
     }
 
-    .card-progreso {
+    .text-lime {
+        color: var(--primary-lime) !important;
+    }
+
+    .bg-lime {
+        background-color: var(--primary-lime) !important;
+    }
+
+    .card-pro {
         background: var(--bg-content);
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
         border: 1px solid rgba(0, 0, 0, 0.05);
-        border-radius: 1.5rem;
-        overflow: hidden;
-        transition: all 0.3s ease;
+        border-radius: var(--card-radius);
         padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: transform 0.3s ease;
     }
 
-    .dark-mode .card-progreso {
-        border-color: rgba(255, 255, 255, 0.1);
-        background-color: #1a1b15;
+    .dark-mode .card-pro {
+        background: #1a1b15;
+        border-color: rgba(255, 255, 255, 0.05);
     }
 
-    .font-mono {
-        font-family: 'JetBrains Mono', monospace;
+    .rounded-4-pro {
+        border-radius: var(--card-radius) !important;
     }
 
-    .progress-circle {
-        position: relative;
-        width: 60px;
-        height: 60px;
+    .letter-spacing-widest {
+        letter-spacing: 0.1em;
+    }
+
+    .size-12 {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .size-24 {
+        width: 6rem;
+        height: 6rem;
+    }
+
+    .aspect-4-3 {
+        aspect-ratio: 4 / 3;
+    }
+
+    .text-slate-400 {
+        color: #94a3b8;
+    }
+
+    .bg-slate-50 {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    .dark-mode .bg-slate-50 {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    /* SVG Animation */
+    @keyframes drop-fall {
+        0% {
+            transform: translateY(0);
+            opacity: 0;
+        }
+
+        20% {
+            opacity: 1;
+        }
+
+        100% {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+    }
+
+    .animate-drop {
+        animation: drop-fall 2s infinite ease-in;
+    }
+
+    .transition-all {
+        transition: all 0.5s ease-in-out;
+    }
+
+    /* Skin Tones Classes */
+    .skin-normal {
+        fill: #fecaca;
+        transition: fill 1s ease;
+    }
+
+    .skin-dehydrated {
+        fill: #f8d7da !important;
+        transition: fill 1s ease;
+    }
+
+    .guest-lock-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(10px);
+        z-index: 1000;
         display: flex;
         align-items: center;
         justify-content: center;
+        border-radius: var(--card-radius);
     }
 
-    .progress-circle svg {
-        transform: rotate(-90deg);
-        width: 100%;
-        height: 100%;
-    }
-
-    .stat-card-mini {
-        padding: 1.25rem;
-        border-radius: 1.25rem;
-        border: none;
-    }
-
-    .bg-soft-green {
-        background-color: rgba(133, 200, 26, 0.1);
-    }
-
-    .bg-soft-blue {
-        background-color: rgba(56, 189, 248, 0.1);
-    }
-
-    .bg-soft-purple {
-        background-color: rgba(168, 85, 247, 0.1);
-    }
-
-    .chart-container {
-        height: 180px;
-        width: 100%;
-        position: relative;
-    }
-
-    .table-progreso {
-        color: var(--text-main);
-    }
-
-    .table-progreso th {
-        font-size: 0.65rem;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        border: none;
-    }
-
-    .table-progreso td {
-        border-top: 1px solid rgba(0, 0, 0, 0.05);
-    }
-
-    .dark-mode .table-progreso td {
-        border-top-color: rgba(255, 255, 255, 0.05);
+    .dark-mode .guest-lock-overlay {
+        background: rgba(0, 0, 0, 0.6);
     }
 </style>
 
-<div class="row g-4 mt-2">
-    <style>
-        .guest-lock-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            z-index: 1000;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            border-radius: 1.5rem;
-            padding-top: 5rem;
-        }
+<div class="row g-4 mt-2 position-relative">
+    {% if user.username == 'invitado' %}
+    <div class="guest-lock-overlay">
+        <div class="card-pro text-center shadow-lg border-primary border-2"
+            style="max-width: 400px; background: white;">
+            <div
+                class="size-24 mx-auto bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center text-primary mb-4">
+                <span class="material-symbols-outlined display-4">lock</span>
+            </div>
+            <h3 class="fw-black mb-2">Contenido Exclusivo</h3>
+            <p class="text-muted small mb-4">Regístrate para ver tu evolución real y recibir análisis personalizados de
+                la IA.</p>
+            <div class="d-grid gap-2">
+                <a href="{% url 'base:registro' %}" class="btn btn-primary rounded-pill fw-black py-3">CREAR CUENTA
+                    GRATIS</a>
+                <a href="{% url 'base:iniciar_sesion' %}" class="btn btn-link text-muted fw-bold">Ya tengo cuenta</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
-        .dark-mode .guest-lock-overlay {
-            background: rgba(10, 11, 9, 0.6);
-        }
+    <!-- COLUMNA PRINCIPAL -->
+    <div class="col-12 col-lg-8">
+        <!-- AVATAR DINÁMICO IA -->
+        <div class="card-pro text-center position-relative overflow-hidden"
+            style="background: linear-gradient(135deg, var(--bg-content) 0%, rgba(133, 200, 26, 0.05) 100%);">
 
-        .lock-card {
-            background: var(--bg-content);
-            padding: 2rem;
-            border-radius: 2rem;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            max-width: 400px;
-            border: 1px solid var(--primary-color);
-        }
-    </style>
+            <div class="position-absolute top-0 end-0 p-4">
+                <span class="badge bg-white text-dark rounded-pill shadow-sm border px-3 py-2 fw-black"
+                    style="font-size: 0.65rem; color: #94a3b8 !important;">
+                    IA ENGINE v2.0
+                </span>
+            </div>
 
-    <!-- Header de sección -->
-    <div class="col-12 mb-2">
-        <div class="d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center gap-3">
-                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
-                    style="width: 50px; height: 50px;">
-                    <span class="material-symbols-outlined fs-2">analytics</span>
+            <div class="row align-items-center g-4">
+                <div class="col-md-5">
+                    <div class="avatar-container animate__animated animate__fadeIn">
+                        <svg width="220" height="260" viewBox="0 0 240 280" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="120" cy="260" rx="60" ry="10" fill="rgba(0,0,0,0.05)" />
+
+                            <g id="body" class="transition-all">
+                                {% if avatar.cuerpo == 'flaco' %}
+                                <rect x="85" y="100" width="70" height="150" rx="35"
+                                    class="{% if avatar.hidratacion == 'deshidratado' %}skin-dehydrated{% else %}skin-normal{% endif %}" />
+                                {% elif avatar.cuerpo == 'ancho' %}
+                                <rect x="65" y="100" width="110" height="150" rx="45"
+                                    class="{% if avatar.hidratacion == 'deshidratado' %}skin-dehydrated{% else %}skin-normal{% endif %}" />
+                                {% else %}
+                                <rect x="75" y="100" width="90" height="150" rx="40"
+                                    class="{% if avatar.hidratacion == 'deshidratado' %}skin-dehydrated{% else %}skin-normal{% endif %}" />
+                                {% endif %}
+                            </g>
+
+                            <rect x="50" y="120" width="20" height="80" rx="10" transform="rotate(10 50 120)"
+                                class="{% if avatar.hidratacion == 'deshidratado' %}skin-dehydrated{% else %}skin-normal{% endif %}" />
+                            <rect x="170" y="120" width="20" height="80" rx="10" transform="rotate(-10 170 120)"
+                                class="{% if avatar.hidratacion == 'deshidratado' %}skin-dehydrated{% else %}skin-normal{% endif %}" />
+                            <circle cx="120" cy="80" r="50"
+                                class="{% if avatar.hidratacion == 'deshidratado' %}skin-dehydrated{% else %}skin-normal{% endif %}" />
+
+                            <g id="face">
+                                {% if avatar.animo == 'cansado' %}
+                                <path d="M95 85 Q 105 90, 115 85" stroke="#334155" stroke-width="3" fill="none" />
+                                <path d="M125 85 Q 135 90, 145 85" stroke="#334155" stroke-width="3" fill="none" />
+                                <path d="M110 110 L 130 110" stroke="#334155" stroke-width="2" />
+                                {% elif avatar.animo == 'energico' %}
+                                <circle cx="105" cy="80" r="6" fill="#1e293b" />
+                                <circle cx="135" cy="80" r="6" fill="#1e293b" />
+                                <path d="M100 105 Q 120 125, 140 105" stroke="#334155" stroke-width="4" fill="none"
+                                    stroke-linecap="round" />
+                                {% else %}
+                                <circle cx="105" cy="80" r="5" fill="#1e293b" />
+                                <circle cx="135" cy="80" r="5" fill="#1e293b" />
+                                <path d="M105 108 Q 120 115, 135 108" stroke="#334155" stroke-width="3" fill="none"
+                                    stroke-linecap="round" />
+                                {% endif %}
+                            </g>
+
+                            {% if avatar.hidratacion == 'deshidratado' %}
+                            <path d="M165 60 Q 170 70, 165 75" stroke="#38bdf8" stroke-width="2" fill="none"
+                                class="animate-drop" />
+                            {% endif %}
+                        </svg>
+                    </div>
                 </div>
+                <div class="col-md-7 text-md-start">
+                    <h2 class="h4 fw-black mb-1">Tu Estado Metabólico</h2>
+                    <p class="small text-slate-400 fw-bold mb-4">Análisis predictivo basado en tus últimos 7 días</p>
+
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <span
+                            class="badge bg-white text-dark rounded-pill border px-3 py-2 shadow-sm d-flex align-items-center gap-2 fw-black"
+                            style="font-size: 0.7rem;">
+                            <span
+                                class="material-symbols-outlined fs-6 {% if avatar.animo == 'energico' %}text-success{% elif avatar.animo == 'cansado' %}text-danger{% else %}text-warning{% endif %}">
+                                {% if avatar.animo == 'energico' %}bolt{% elif avatar.animo == 'cansado' %}battery_low{% else %}battery_charging_80{% endif %}
+                            </span>
+                            {{ avatar.animo|upper }}
+                        </span>
+                        <span
+                            class="badge bg-white text-dark rounded-pill border px-3 py-2 shadow-sm d-flex align-items-center gap-2 fw-black"
+                            style="font-size: 0.7rem;">
+                            <span
+                                class="material-symbols-outlined fs-6 {% if avatar.hidratacion == 'hidratado' %}text-info{% else %}text-danger{% endif %}">
+                                water_drop
+                            </span>
+                            {{ avatar.hidratacion|upper }}
+                        </span>
+                    </div>
+
+                    <div
+                        class="p-3 bg-white bg-opacity-50 dark-mode-bg-dark rounded-4-pro border border-white border-opacity-20 shadow-sm">
+                        <p class="small mb-0 fw-bold">
+                            {% if avatar.animo == 'cansado' %}
+                            <span class="text-danger">Detecto fatiga muscular.</span> Reduce el volumen de hoy y aumenta
+                            tu hidratación.
+                            {% elif avatar.animo == 'energico' %}
+                            <span class="text-success">Estado óptimo.</span> Tu metabolismo está en fase de quema de
+                            grasa eficiente.
+                            {% else %}
+                            Mantienes un balance estable. Buen trabajo.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COMPOSICIÓN CORPORAL -->
+        <div class="card-pro">
+            <div class="d-flex flex-wrap justify-content-between align-items-end mb-4">
                 <div>
-                    <h1 class="h3 fw-900 mb-0" style="font-weight: 900;">Análisis de Rendimiento</h1>
-                    <p class="text-muted small mb-0 fw-bold">Seguimiento detallado de tus métricas biométricas.</p>
+                    <h2 class="h3 fw-black mb-1">Composición Corporal</h2>
+                    <p class="small text-slate-400 fw-bold mb-0">Tendencia de peso y métricas avanzadas</p>
+                </div>
+                <div class="d-flex gap-1 bg-slate-50 p-1 rounded-pill">
+                    <button class="btn btn-sm bg-white shadow-sm rounded-pill px-3 fw-black"
+                        style="font-size: 0.7rem;">SEMANA</button>
+                    <button class="btn btn-sm text-slate-400 rounded-pill px-3 fw-black"
+                        style="font-size: 0.7rem;">MES</button>
+                    <button class="btn btn-sm text-slate-400 rounded-pill px-3 fw-black"
+                        style="font-size: 0.7rem;">TOTAL</button>
                 </div>
             </div>
-            {% if user.username == 'invitado' %}
-            <div class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold shadow-sm">
-                <i class="fas fa-lock me-2"></i>Vista de Muestra
+
+            <div class="position-relative mb-5" style="height: 200px;">
+                <svg class="w-100 h-100 overflow-visible" preserveAspectRatio="none" viewBox="0 0 800 200">
+                    <defs>
+                        <linearGradient id="limeGradient" x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0%" stop-color="#85c81a" stop-opacity="0.3"></stop>
+                            <stop offset="100%" stop-color="#85c81a" stop-opacity="0"></stop>
+                        </linearGradient>
+                    </defs>
+                    <path d="M0 150 Q 100 130, 200 160 T 400 100 T 600 70 T 800 40 V 200 H 0 Z"
+                        fill="url(#limeGradient)"></path>
+                    <path d="M0 150 Q 100 130, 200 160 T 400 100 T 600 70 T 800 40" fill="none" stroke="#85c81a"
+                        stroke-linecap="round" stroke-width="4"></path>
+                    <circle cx="800" cy="40" fill="#85c81a" r="6" stroke="white" stroke-width="3"></circle>
+                </svg>
+                <div class="position-absolute top-0 end-0 text-end">
+                    <span class="display-5 fw-black text-dark dark-mode-text-white">{{ peso_actual|floatformat:1 }}</span>
+                    <span class="text-slate-400 fw-black">KG</span>
+                    <div class="d-flex align-items-center justify-content-end text-lime fw-black"
+                        style="font-size: 0.75rem;">
+                        <span class="material-symbols-outlined fs-6">{% if avatar.tendencia == 'bajando' %}trending_down{% else %}trending_up{% endif %}</span>
+                        TENDENCIA: {{ avatar.tendencia|upper }}
+                    </div>
+                </div>
             </div>
-            {% endif %}
+
+            <div class="row g-3">
+                <div class="col-6 col-md-3">
+                    <div class="p-3 bg-slate-50 border rounded-4-pro h-100">
+                        <p class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-1"
+                            style="font-size: 0.6rem;">IMC Actual</p>
+                        <p class="h4 fw-black mb-1">{{ imc }}</p>
+                        <span
+                            class="badge rounded-pill {% if imc < 25 %}bg-success{% else %}bg-warning{% endif %} bg-opacity-10 {% if imc < 25 %}text-success{% else %}text-warning{% endif %} fw-black"
+                            style="font-size: 0.6rem;">{{ imc_estado }}</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3 bg-slate-50 border rounded-4-pro h-100">
+                        <p class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-1"
+                            style="font-size: 0.6rem;">% Grasa Est.</p>
+                        <p class="h4 fw-black mb-1">{{ composicion.grasa_pct }}%</p>
+                        <span class="text-slate-400 fw-black" style="font-size: 0.6rem;">IA ANALYZED</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3 bg-slate-50 border rounded-4-pro h-100">
+                        <p class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-1"
+                            style="font-size: 0.6rem;">Músculo</p>
+                        <p class="h4 fw-black mb-1">{{ composicion.musculo_kg }}kg</p>
+                        <span class="text-lime fw-black" style="font-size: 0.6rem;">ESTIMADO</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="p-3 bg-slate-50 border rounded-4-pro h-100">
+                        <p class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-1"
+                            style="font-size: 0.6rem;">Agua Corp.</p>
+                        <p class="h4 fw-black mb-1">{{ composicion.agua_lt }}L</p>
+                        <span class="text-info fw-black" style="font-size: 0.6rem;">HIDRATACIÓN</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+
+        <!-- HIDRATACIÓN Y METABOLISMO -->
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card-pro h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="text-uppercase fw-black letter-spacing-widest small mb-0">Hidratación Semanal</h3>
+                        <span class="material-symbols-outlined text-info">water_drop</span>
+                    </div>
+                    <div class="d-flex align-items-end justify-content-between gap-2" style="height: 128px;">
+                        <div class="d-flex flex-column align-items-center flex-grow-1 gap-2">
+                            <div class="w-100 bg-info bg-opacity-10 rounded-pill position-relative overflow-hidden"
+                                style="height: 96px;">
+                                <div class="position-absolute bottom-0 w-100 bg-info rounded-pill" style="height: 80%;">
+                                </div>
+                            </div>
+                            <span class="fw-black text-slate-400" style="font-size: 0.6rem;">L</span>
+                        </div>
+                        <div class="d-flex flex-column align-items-center flex-grow-1 gap-2">
+                            <div class="w-100 bg-info bg-opacity-10 rounded-pill position-relative overflow-hidden"
+                                style="height: 96px;">
+                                <div class="position-absolute bottom-0 w-100 bg-info rounded-pill"
+                                    style="height: 100%;"></div>
+                            </div>
+                            <span class="fw-black text-slate-400" style="font-size: 0.6rem;">M</span>
+                        </div>
+                        <div class="d-flex flex-column align-items-center flex-grow-1 gap-2">
+                            <div class="w-100 bg-info bg-opacity-10 rounded-pill position-relative overflow-hidden"
+                                style="height: 96px;">
+                                <div class="position-absolute bottom-0 w-100 bg-info rounded-pill" style="height: 60%;">
+                                </div>
+                            </div>
+                            <span class="fw-black text-slate-400" style="font-size: 0.6rem;">X</span>
+                        </div>
+                        <div class="d-flex flex-column align-items-center flex-grow-1 gap-2">
+                            <div class="w-100 bg-info bg-opacity-10 rounded-pill position-relative overflow-hidden"
+                                style="height: 96px;">
+                                <div class="position-absolute bottom-0 w-100 bg-info rounded-pill" style="height: 90%;">
+                                </div>
+                            </div>
+                            <span class="fw-black text-slate-400" style="font-size: 0.6rem;">J</span>
+                        </div>
+                        <div class="d-flex flex-column align-items-center flex-grow-1 gap-2">
+                            <div class="w-100 bg-lime bg-opacity-10 rounded-pill position-relative overflow-hidden border border-lime shadow-sm"
+                                style="height: 96px;">
+                                <div class="position-absolute bottom-0 w-100 bg-lime rounded-pill" style="height: 85%;">
+                                </div>
+                            </div>
+                            <span class="fw-black text-lime" style="font-size: 0.6rem;">V</span>
+                        </div>
+                        <div class="d-flex flex-column align-items-center flex-grow-1 gap-2 opacity-50">
+                            <div class="w-100 bg-secondary rounded-pill" style="height: 96px;"></div>
+                            <span class="fw-black text-slate-400" style="font-size: 0.6rem;">S</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card-pro h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="text-uppercase fw-black letter-spacing-widest small mb-0">Metabolismo</h3>
+                        <span class="material-symbols-outlined text-primary">bolt</span>
+                    </div>
+                    <div class="d-grid gap-3">
+                        <div class="p-3 bg-slate-50 rounded-4-pro">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="fw-black text-slate-400 text-uppercase"
+                                    style="font-size: 0.6rem;">TMB</span>
+                                <span class="fw-black text-primary" style="font-size: 0.6rem;">{{ metabolismo.tmb }}
+                                    kcal</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-primary" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-slate-50 rounded-4-pro">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="fw-black text-slate-400 text-uppercase" style="font-size: 0.6rem;">Gasto
+                                    Total (TDEE)</span>
+                                <span class="fw-black text-warning" style="font-size: 0.6rem;">{{ metabolismo.tdee }}
+                                    kcal</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-warning" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Contenedor con Posibilidad de Bloqueo -->
-    <div class="col-12 position-relative">
-        {% if user.username == 'invitado' %}
-        <div class="guest-lock-overlay">
-            <div class="lock-card">
-                <div class="icon-box bg-primary-subtle text-primary mb-3">
-                    <span class="material-symbols-outlined fs-1">person_add</span>
+    <!-- COLUMNA LATERAL -->
+    <div class="col-12 col-lg-4">
+        <!-- Disciplina Card -->
+        <div class="card-pro bg-dark text-white border-0 shadow-lg" style="background: #0f172a !important;">
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                    <p class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-1"
+                        style="font-size: 0.6rem;">Disciplina</p>
+                    <h3 class="fw-black h4">Consistencia</h3>
                 </div>
-                <h3 class="fw-900 mb-2">Contenido Exclusivo</h3>
-                <p class="text-muted small mb-4">
-                    Al registrar tus datos reales, los cálculos de progreso serán <b>mucho más exactos</b> y
-                    personalizados para ti.
-                </p>
-                <div class="d-grid gap-2">
-                    <a href="{% url 'base:registro' %}" class="btn btn-primary rounded-pill fw-bold py-2">Crear mi
-                        cuenta gratuita</a>
-                    <a href="{% url 'base:iniciar_sesion' %}"
-                        class="btn btn-link text-muted small text-decoration-none">Ya tengo cuenta</a>
+                <div class="bg-warning bg-opacity-20 text-warning p-2 rounded-4 d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined fill-1">local_fire_department</span>
+                    <span class="h4 fw-black mb-0">{{ racha }}</span>
+                </div>
+            </div>
+
+            <div class="mb-4 d-grid gap-3">
+                <div class="bg-white bg-opacity-10 p-3 rounded-4-pro border border-white border-opacity-10">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="small fw-black">Tendencia Mensual</span>
+                        <span class="small fw-black text-lime">PREDICCIÓN IA</span>
+                    </div>
+                    <p class="small mb-0 opacity-75">Tu tendencia actual es {{ proyecciones.tendencia }}.</p>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-3"
+                    style="font-size: 0.6rem;">Edad Nutricional</h4>
+                <div class="d-flex align-items-baseline gap-2">
+                    <span class="display-6 fw-black">{{ edad_nutri }}</span>
+                    <span class="text-slate-400 fw-bold">vs {{ edad_real }} real</span>
                 </div>
             </div>
         </div>
-        {% endif %}
 
-        <div class="row g-4 {% if user.username == 'invitado' %}app-locked{% endif %}">
-            <!-- Evolución de Peso -->
-            <div class="card-progreso mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <span class="text-technical">Evolución de Peso (KG)</span>
-                    <span
-                        class="badge bg-soft-green text-primary border-primary border-opacity-25 px-3 py-2 rounded-pill small fw-bold">7
-                        DÍAS</span>
-                </div>
-
-                <div class="row g-2 mb-4">
-                    <div class="col-4">
-                        <div class="p-3 bg-light dark-mode-bg-dark rounded-4 text-center">
-                            <p class="text-technical mb-1" style="font-size: 0.6rem;">Inicial</p>
-                            <p class="font-mono fw-black mb-0 h5">{{ peso_actual|add:1.5|floatformat:1 }}</p>
-                        </div>
+        <!-- Logros -->
+        <div class="card-pro">
+            <h3 class="text-uppercase fw-black letter-spacing-widest small mb-4">Logros Alcanzados</h3>
+            <div class="d-grid gap-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div
+                        class="size-12 rounded-4-pro bg-lime bg-opacity-10 d-flex align-items-center justify-content-center text-lime flex-shrink-0">
+                        <span class="material-symbols-outlined fs-3">tire_repair</span>
                     </div>
-                    <div class="col-4">
-                        <div class="p-3 bg-light dark-mode-bg-dark rounded-4 text-center border-primary border">
-                            <p class="text-technical mb-1" style="font-size: 0.6rem;">Actual</p>
-                            <p class="font-mono fw-black mb-0 h5 text-primary">{{ peso_actual|floatformat:1 }}</p>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="p-3 bg-light dark-mode-bg-dark rounded-4 text-center">
-                            <p class="text-technical mb-1" style="font-size: 0.6rem;">Meta</p>
-                            <p class="font-mono fw-black mb-0 h5">75.0</p>
-                        </div>
+                    <div>
+                        <p class="small fw-black mb-0">Racha Implacable</p>
+                        <p class="text-uppercase text-slate-400 fw-bold mb-0" style="font-size: 0.6rem;">Has accedido {{
+                            racha }} días seguidos</p>
                     </div>
                 </div>
-
-                <div class="chart-container">
-                    <svg preserveAspectRatio="none" style="width: 100%; height: 100%; overflow: visible;"
-                        viewBox="0 0 400 120">
-                        <defs>
-                            <linearGradient id="progresoFill" x1="0" x2="0" y1="0" y2="1">
-                                <stop offset="0%" stop-color="#85c81a" stop-opacity="0.3"></stop>
-                                <stop offset="100%" stop-color="#85c81a" stop-opacity="0"></stop>
-                            </linearGradient>
-                        </defs>
-                        <path d="M0 100 Q 50 90, 100 70 T 200 65 T 300 45 T 400 35 V 120 H 0 Z"
-                            fill="url(#progresoFill)">
-                        </path>
-                        <path d="M0 100 Q 50 90, 100 70 T 200 65 T 300 45 T 400 35" fill="none" stroke="#85c81a"
-                            stroke-linecap="round" stroke-width="4"></path>
-                        <circle cx="400" cy="35" fill="#85c81a" r="6" stroke="white" stroke-width="3"></circle>
-                    </svg>
-                </div>
-                <div class="d-flex justify-content-between mt-3 px-2">
-                    <span class="text-technical">LUN</span>
-                    <span class="text-technical">MAR</span>
-                    <span class="text-technical">MIÉ</span>
-                    <span class="text-technical">JUE</span>
-                    <span class="text-technical">VIE</span>
-                    <span class="text-technical">SÁB</span>
-                    <span class="text-technical">DOM</span>
-                </div>
-            </div>
-
-            <!-- Composición Corporal Grid -->
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <div class="card-progreso h-100">
-                        <span class="text-technical d-block mb-4">Métricas de Salud</span>
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <div class="stat-card-mini bg-soft-green">
-                                    <span class="material-symbols-outlined text-primary mb-2">monitor_weight</span>
-                                    <p class="text-technical mb-1" style="font-size: 0.6rem;">IMC</p>
-                                    <p class="h4 font-mono fw-black mb-0 text-primary">{{ imc }}</p>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="stat-card-mini bg-soft-blue">
-                                    <span class="material-symbols-outlined text-info mb-2">water_drop</span>
-                                    <p class="text-technical mb-1" style="font-size: 0.6rem;">Agua</p>
-                                    <p class="h4 font-mono fw-black mb-0 text-info">{{ composicion.agua_lt }}L</p>
-                                </div>
-                            </div>
-                        </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div
+                        class="size-12 rounded-4-pro bg-info bg-opacity-10 d-flex align-items-center justify-content-center text-info flex-shrink-0">
+                        <span class="material-symbols-outlined fs-3">mountain_flag</span>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card-progreso h-100">
-                        <span class="text-technical d-block mb-4">Cumplimiento de Macros</span>
-                        <div class="d-flex justify-content-around align-items-center py-2">
-                            <div class="text-center">
-                                <div class="progress-circle mb-2">
-                                    <svg>
-                                        <circle cx="30" cy="30" r="26" fill="transparent" stroke="rgba(0,0,0,0.05)"
-                                            stroke-width="5"></circle>
-                                        <circle cx="30" cy="30" r="26" fill="transparent" stroke="#85c81a"
-                                            stroke-width="5" stroke-dasharray="163.3" stroke-dashoffset="32"></circle>
-                                    </svg>
-                                    <span class="position-absolute font-mono fw-black small">80%</span>
-                                </div>
-                                <span class="text-technical" style="font-size: 0.55rem;">Prot</span>
-                            </div>
-                            <div class="text-center">
-                                <div class="progress-circle mb-2">
-                                    <svg>
-                                        <circle cx="30" cy="30" r="26" fill="transparent" stroke="rgba(0,0,0,0.05)"
-                                            stroke-width="5"></circle>
-                                        <circle cx="30" cy="30" r="26" fill="transparent" stroke="#38bdf8"
-                                            stroke-width="5" stroke-dasharray="163.3" stroke-dashoffset="65"></circle>
-                                    </svg>
-                                    <span class="position-absolute font-mono fw-black small">60%</span>
-                                </div>
-                                <span class="text-technical" style="font-size: 0.55rem;">Carb</span>
-                            </div>
-                            <div class="text-center">
-                                <div class="progress-circle mb-2">
-                                    <svg>
-                                        <circle cx="30" cy="30" r="26" fill="transparent" stroke="rgba(0,0,0,0.05)"
-                                            stroke-width="5"></circle>
-                                        <circle cx="30" cy="30" r="26" fill="transparent" stroke="#fbbf24"
-                                            stroke-width="5" stroke-dasharray="163.3" stroke-dashoffset="20"></circle>
-                                    </svg>
-                                    <span class="position-absolute font-mono fw-black small">88%</span>
-                                </div>
-                                <span class="text-technical" style="font-size: 0.55rem;">Gras</span>
-                            </div>
-                        </div>
+                    <div>
+                        <p class="small fw-black mb-0">Punto de Inflexión</p>
+                        <p class="text-uppercase text-slate-400 fw-bold mb-0" style="font-size: 0.6rem;">Tendencia de
+                            peso consolidada</p>
                     </div>
                 </div>
             </div>
         </div>
 
+<<<<<<< HEAD
         <!-- Barra Lateral -->
         <div class="col-lg-4">
             <div class="card-progreso mb-4">
@@ -347,9 +546,18 @@
                 <div class="progress" style="height: 6px; background-color: rgba(168, 85, 247, 0.2);">
                     <div class="progress-bar" style="width: 75%; background-color: #a855f7;"></div>
                 </div>
+=======
+        <!-- Meta -->
+        <div class="card-pro border-2 bg-lime bg-opacity-10" style="border-color: rgba(133, 200, 26, 0.2) !important;">
+            <p class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-2" style="font-size: 0.6rem;">
+                Próxima Meta</p>
+            <h4 class="fw-black mb-3">Bajar 2kg adicionales</h4>
+            <div class="progress bg-white shadow-sm" style="height: 12px;">
+                <div class="progress-bar bg-lime" style="width: 65%"></div>
+>>>>>>> 1bfdbbe (más avances)
             </div>
+            <p class="small mt-2 mb-0 fw-bold text-muted">Aproximadamente 21 días al ritmo actual.</p>
         </div>
-    </div><!-- Cierre row g-4 -->
-</div><!-- Cierre col-12 position-relative -->
-</div><!-- Cierre row g-4 mt-2 inicial -->
+    </div>
+</div>
 {% endblock %}

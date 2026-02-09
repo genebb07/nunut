@@ -10,7 +10,12 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
+<<<<<<< HEAD
 from django.db.models import Count, Q
+=======
+from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Count, Q, Avg
+>>>>>>> 1bfdbbe (más avances)
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .forms import CustomAuthenticationForm, CustomUserCreationForm
 from .forms import OnboardingForm
@@ -21,25 +26,79 @@ from datetime import date, timedelta, datetime
 def get_base_template(request):
     return 'partial.html' if request.headers.get('HX-Request') else 'base.html'
 
-def obtener_mensaje_racha(dias):
-    """Retorna un mensaje motivador basado en los días de racha"""
-    if dias == 0:
-        return "¡Comienza hoy! 🌱"
-    if dias == 1:
-        return "¡Primer día! Nuevo comienzo 🌱"
+def obtener_mensaje_racha(dias, perfil=None):
+    """Retorna un mensaje motivador basado en los días de racha, género, edad y si es recurrente"""
     
-    mensajes_cortos = [
-        "¡Estás en racha! 🔥",
-        "¡No te detengas! 💪",
-        "¡Excelente constancia! ✨",
-        "¡Vas por buen camino! 🚀",
-        "¡Sigue así, campeón! 👑"
-    ]
-    
+    # Valores por defecto
+    genero = perfil.genero if perfil else 'O'
+    edad = perfil.edad if perfil else 30
+    nombre = perfil.usuario.first_name if (perfil and perfil.usuario.first_name) else "Usuario"
+
+    # Términos adaptados
+    if genero == 'M':
+        terminos = {'campeon': 'Campeona', 'duro': 'dura', 'maestro': 'Maestra', 'rey': 'Reina'}
+    else:
+        terminos = {'campeon': 'Campeón', 'duro': 'duro', 'maestro': 'Maestro', 'rey': 'Rey'}
+
+    # Detección de Usuario Recurrente (Volvió tras perder racha)
+    es_regreso = False
+    if perfil and dias <= 1:
+        from .models import LoginStreak
+        total_logins = LoginStreak.objects.filter(perfil=perfil).count()
+        if total_logins > 5: # Si ha entrado muchas veces antes pero su racha es 1
+            es_regreso = True
+
+    # Mensajes por Nivel de Formalidad (Edad)
+    if edad < 25:
+        # Tono: Joven, energético, emojis, "tu"
+        if dias == 0:
+            return f"¡Vamos {nombre}! Hoy empieza todo. 🔥"
+        if dias == 1:
+            return "¡Qué bueno verte de nuevo! A recuperar el trono. 👑" if es_regreso else "¡Primer día! Dale con todo. 🚀"
+        
+        mensajes_cortos = [
+            "¡Estás on fire! 🔥",
+            "¡Nadie te para! 🚀",
+            f"¡Esa es la actitud, {terminos['campeon'].lower()}! ✨",
+            "¡Rompiéndola! 💪",
+            "¡Sigue así! 💯"
+        ]
+        
+    elif edad > 50:
+        # Tono: Maduro, respetuoso, menos emojis, "usted" o muy formal "tu"
+        if dias == 0:
+            return "Un nuevo comienzo es siempre una oportunidad. Adelante. 🌱"
+        if dias == 1:
+            return "Bienvenido nuevamente. Su constancia es clave." if es_regreso else "Primer paso completado. Excelente decisión. ✨"
+            
+        mensajes_cortos = [
+            "¡Excelente constancia! ✨",
+            "Paso a paso se llega lejos. 🏔️",
+            f"Su disciplina es admirable, {terminos['campeon'].lower()}.",
+            "Manteniendo el buen ritmo. 👏",
+            "La salud es el mejor proyecto. Siga así. 💎"
+        ]
+        
+    else:
+        # Tono: Estándar (25-50 años)
+        if dias == 0:
+            return "¡Hoy es el día! Empieza con fuerza. 💪"
+        if dias == 1:
+            return "¡Bienvenido de vuelta! A construir esa racha de nuevo. 🔄" if es_regreso else "¡Primer día! El inicio de un gran hábito. 🌱"
+
+        mensajes_cortos = [
+            "¡Estás en racha! 🔥",
+            "¡No te detengas! 💪",
+            "¡Excelente consistencia! ✨",
+            "¡Vas por buen camino! 🚀",
+            f"¡Sigue así, {terminos['campeon']}! 👑"
+        ]
+
+    # Hitos Específicos (Override de mensajes cortos)
     if dias >= 30:
-        return f"¡{dias} DÍAS! ¡ERES LEYENDA! 👑"
+        return f"¡{dias} DÍAS! ¡ERES {terminos['rey'].upper()}! 👑"
     if dias >= 21:
-        return f"¡{dias} Días! ¡Hábito de acero! 💎"
+        return f"¡{dias} Días! ¡Hábito de titanio! 💎"
     if dias >= 14:
         return f"¡{dias} Días! ¡Imparable! 🚀"
     if dias >= 7:
@@ -48,34 +107,95 @@ def obtener_mensaje_racha(dias):
     return f"{dias} Días: {random.choice(mensajes_cortos)}"
 
 def obtener_recomendacion_ia(perfil, racha_dias):
-    """Genera un mensaje cálido y motivador del Coach IA nunut"""
+    """Genera un mensaje cálido, dinámico y contextual del Coach IA nunut"""
     if not perfil or perfil.rol == 'GUEST':
         return "¡Hola! Soy nunut, tu coach personal. Regístrate para que pueda acompañarte en este viaje hacia tu mejor versión. Juntos haremos de tu salud una prioridad. ✨"
     
     nombre = perfil.usuario.first_name or perfil.usuario.username
     
-    # Obtener hidratación de hoy
-    from .models import RegistroAgua
+    # 0. Caching (Clave única por usuario + hora para no saturar API pero actualizarse)
+    curr_hour = datetime.now().hour
+    cache_key = f"ia_msg_v2_{perfil.id}_{date.today()}_{curr_hour}"
+    cached_msg = cache.get(cache_key)
+    if cached_msg:
+        return cached_msg
+
+    # 1. Obtener Datos de Contexto
+    from .models import RegistroAgua, RegistroSueno, ComidaDiaria, LoginStreak
+    
+    # Hidratación
     agua_hoy, _ = RegistroAgua.objects.get_or_create(perfil=perfil, fecha=date.today())
     
+    # Sueño (Último registro)
+    sueno_ayer = RegistroSueno.objects.filter(perfil=perfil).order_by('-fecha').first()
+    
+    # Nutrición (Progreso de hoy)
+    comidas_hoy = ComidaDiaria.objects.filter(perfil=perfil, fecha=date.today())
+    cal_consumidas = sum(c.calorias for c in comidas_hoy)
+    # Evitar llamar "generar_informe" si es pesado, pero lo necesitamos para la meta
+    meta_cal = 2000
+    try:
+        informe = perfil.generar_informe_nutricional()
+        meta_cal = informe['plan']['calorias_dia']
+    except: pass
+    
+    nutricion_stats = {
+        'cal_pct': min(round((cal_consumidas / meta_cal) * 100), 100) if meta_cal > 0 else 0
+    }
+
+    # Estado de Retorno (Usuario antiguo que vuelve)
+    es_retorno = False
+    if racha_dias <= 1:
+        total_logins = LoginStreak.objects.filter(perfil=perfil).count()
+        if total_logins > 5: 
+            es_retorno = True
+
     if not perfil.onboarding_completado:
         return f"¡Qué alegría tenerte aquí, {nombre}! 🌱 Soy nunut, tu coach IA. Me encantaría conocerte mejor para sugerirte los mejores alimentos según tu cuerpo. ¿Terminamos tu perfil? ✨"
 
-    # Intentar obtener recomendación Premium vía Gemini
+    # 2. Llamada a Gemini (IA)
     try:
         from .ai_service import generar_recomendacion_premium
-        recomendacion_gemini = generar_recomendacion_premium(perfil, racha_dias, agua_hoy)
+        recomendacion_gemini = generar_recomendacion_premium(
+            perfil=perfil, 
+            racha_dias=racha_dias, 
+            agua_hoy=agua_hoy,
+            sueno_ayer=sueno_ayer,
+            nutricion_hoy=nutricion_stats,
+            es_retorno=es_retorno
+        )
+        
         if recomendacion_gemini:
+            # Guardar en cache por 45 minutos
+            cache.set(cache_key, recomendacion_gemini, 60 * 45)
             return recomendacion_gemini
+            
     except Exception as e:
         print(f"Error cargando Gemini: {e}")
 
-    # Fallback: Lógica Reglas-Base (Cálida)
+    # Fallback: Lógica Reglas-Base (Cálida y Adaptativa)
+    genero = perfil.genero
+    edad = perfil.edad
+    
+    # Ajuste de tono por edad
+    formal = edad > 50
+    joven = edad < 25
+    
+    titulo_usuario = nombre
+    if genero == 'M':
+        titulo_campeon = "campeona" if joven else "guerrera"
+    else:
+        titulo_campeon = "campeón" if joven else "guerrero"
+
     # Lógica de Racha
     if racha_dias == 1:
-        msg_racha = "Hoy es el comienzo de algo grande. 🌱 Cada paso cuenta, y me hace muy feliz verte dar el primero hoy."
+        if perfil.login_streaks.count() > 5: # Volvió
+            msg_racha = f"¡Qué gusto verte regresar, {nombre}! 🌱 A veces hay pausas, lo importante es retomar. Estoy aquí para ti."
+        else:
+            msg_racha = f"Hoy es el comienzo de algo grande, {nombre}. 🌱 Cada paso cuenta, y me hace muy feliz verte dar el primero hoy."
     elif racha_dias >= 7:
-        msg_racha = f"Llevas {racha_dias} días con una constancia admirable. 🔥 Tu cuerpo ya está empezando a agradecer este nuevo ritmo."
+        frase = "Tu cuerpo ya está empezando a agradecer este nuevo ritmo." if not formal else "Su organismo está respondiendo positivamente a esta constancia."
+        msg_racha = f"Llevas {racha_dias} días imparable. 🔥 {frase}"
     else:
         msg_racha = f"¡{racha_dias} días seguidos! 🔥 Mantener la constancia es la llave que abre todas las puertas de tu bienestar."
 
@@ -84,7 +204,7 @@ def obtener_recomendacion_ia(perfil, racha_dias):
     if perfil.objetivo == 'PERDER':
         objetivo_msg = "He notado que estás enfocado en sentirte más ligero. Recuerda que no se trata de comer menos, sino de nutrirte mejor. 🥗"
     elif perfil.objetivo == 'GANAR':
-        objetivo_msg = "Para esos músculos, la proteína y el descanso son tus mejores amigos hoy. ¡Vamos por esa meta! 💪"
+        objetivo_msg = "Para esos músculos, la proteína y el descanso son clave hoy. ¡Vamos por esa meta! 💪"
     else:
         objetivo_msg = "Mantener el equilibrio es un arte, y lo estás haciendo genial. ¡Sigue nutriendo tu energía vital! ✨"
 
@@ -102,6 +222,12 @@ def obtener_recomendacion_ia(perfil, racha_dias):
         f"El agua es combustible vital. {hidratacion_msg} {msg_racha}"
     ]
     
+    # Mensaje especial muy joven o muy mayor
+    if joven and random.random() > 0.7:
+         mensajes.append(f"¡Esa energía está a tope, {titulo_campeon}! ⚡ {msg_racha}")
+    if formal and random.random() > 0.7:
+         mensajes.append(f"Un placer saludarle, {nombre}. {msg_racha}")
+
     return random.choice(mensajes)
 
 @login_required
@@ -207,17 +333,45 @@ def index(request):
         except Exception:
             informe = None
 
+    
+    # Análisis Semanal (Promedios)
+    analisis_semanal = {'calorias': 0, 'sueno': 0}
+    if perfil and not es_invitado:
+        from .models import ComidaDiaria, RegistroSueno
+        fecha_inicio_semana = date.today() - timedelta(days=7)
+        
+        # Calorías promedio
+        comidas_semana = ComidaDiaria.objects.filter(perfil=perfil, fecha__gte=fecha_inicio_semana)
+        if comidas_semana.exists():
+            total_cal = sum(c.calorias for c in comidas_semana)
+            dias_unicos = comidas_semana.values('fecha').distinct().count()
+            analisis_semanal['calorias'] = int(total_cal / max(dias_unicos, 1))
+            
+        # Sueño promedio
+        sueno_semana = RegistroSueno.objects.filter(perfil=perfil, fecha__gte=fecha_inicio_semana)
+        if sueno_semana.exists():
+            total_horas = sum(s.horas_totales for s in sueno_semana)
+            analisis_semanal['sueno'] = round(total_horas / sueno_semana.count(), 1)
+    
+    # Datos de sueño de hoy para el input
+    sueno_hoy = None
+    if perfil and not es_invitado:
+        from .models import RegistroSueno
+        sueno_hoy = RegistroSueno.objects.filter(perfil=perfil, fecha=date.today()).first()
+
     return render(request, 'base/index.html', {
         'base_template': get_base_template(request),
         'perfil_completo': perfil_completo,
         'es_invitado': es_invitado,
         'informe': informe,
         'racha_dias': racha_dias,
-        'mensaje_racha': obtener_mensaje_racha(racha_dias),
+        'mensaje_racha': obtener_mensaje_racha(racha_dias, perfil),
         'recomendacion_ia': obtener_recomendacion_ia(perfil, racha_dias),
         'recetas_sugeridas': recetas_sugeridas,
         'favoritas_ids': favoritas_ids,
         'registro_agua': registro_agua,
+        'analisis_semanal': analisis_semanal,
+        'sueno_hoy': sueno_hoy,
     })
 
 def panel(request):
@@ -250,6 +404,22 @@ def seed_db():
             proteinas=8, carbos=30, grasas=21,
             tipo_dieta="VEGA", categoria="desayuno"
         )
+        Receta.objects.create(
+            titulo="Pollo al Curry con Coco",
+            descripcion="Pechuga de pollo tierna en una salsa cremosa de coco y especias orientales.",
+            imagen_url="https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=500&h=300&fit=crop",
+            calorias=450, tiempo="30 min", rating=4.6,
+            proteinas=35, carbos=12, grasas=28,
+            tipo_dieta="OMNI", categoria="almuerzo"
+        )
+        Receta.objects.create(
+            titulo="Ensalada Caesar Fit",
+            descripcion="Versión saludable con aderezo de yogur griego y pollo a la plancha.",
+            imagen_url="https://images.unsplash.com/photo-1550304943-4f24f54ddde9?w=500&h=300&fit=crop",
+            calorias=320, tiempo="15 min", rating=4.5,
+            proteinas=28, carbos=10, grasas=18,
+            tipo_dieta="OMNI", categoria="cena"
+        )
 
     if not Articulo.objects.exists():
         Articulo.objects.create(
@@ -269,8 +439,10 @@ def seed_db():
 
 def planes(request):
     seed_db()
-    from .models import Receta, RecetaFavorita
+    from .models import Receta, RecetaFavorita, ComidaDiaria
+    from datetime import date, timedelta, datetime
     
+<<<<<<< HEAD
     # 1. Búsqueda Local (Evita llamadas a API si ya tenemos resultados)
     q = request.GET.get('q', '').strip()
     if q:
@@ -287,18 +459,73 @@ def planes(request):
     # - No hemos buscado ese término recientemente (ya_buscado es None)
     # - Y (Es una búsqueda específica q O tenemos menos de 15 recetas en total)
     should_fetch_api = not ya_buscado and (q or len(recetas) < 15)
+=======
+    # 0. Vista activa (Recetario vs Calendario)
+    vista_activa = request.GET.get('view', 'recetario')
+    
+    # 1. Búsqueda Local y Ordenamiento
+    q = request.GET.get('q', '').strip()
+    sort = request.GET.get('sort', '')
+    
+    if q == 'tendencia':
+        recetas = Receta.objects.all().order_by('-rating')[:20]
+    elif q:
+        recetas = Receta.objects.filter(Q(titulo__icontains=q) | Q(descripcion__icontains=q))
+    else:
+        recetas = Receta.objects.all()
+    
+    # Aplicar ordenamiento
+    from django.db.models import Case, When, Value, IntegerField
+    if sort == 'dificultad':
+        recetas = recetas.annotate(
+            diff_level=Case(
+                When(dificultad='Fácil', then=Value(1)),
+                When(dificultad='Facil', then=Value(1)),
+                When(dificultad='Media', then=Value(2)),
+                When(dificultad='Difícil', then=Value(3)),
+                When(dificultad='Dificil', then=Value(3)),
+                default=Value(2),
+                output_field=IntegerField(),
+            )
+        ).order_by('diff_level')
+    elif sort == 'ingredientes':
+        recetas = recetas.order_by('ingredientes_count')
+    elif sort == 'tiempo':
+        recetas = recetas.order_by('tiempo_minutos')
+    else:
+        recetas = recetas.order_by('-id')
+
+    recetas = list(recetas)
+
+    # 2. Lógica de Cache para la API
+    cache_key = f"api_fetched_{q if q else 'default'}"
+    from django.core.cache import cache
+    ya_buscado = cache.get(cache_key)
+
+    # Aumentado el umbral a 40 recetas mínimo
+    should_fetch_api = not ya_buscado and (q or len(recetas) < 40)
+>>>>>>> 1bfdbbe (más avances)
 
     if should_fetch_api:
         try:
             api_key = "40fcdd780cb940a5a6c55c79f3bf4857"
+<<<<<<< HEAD
             query_term = q if q else "healthy"
             
             # Spoonacular
             url = f"https://api.spoonacular.com/recipes/complexSearch?apiKey={api_key}&query={query_term}&addRecipeInformation=true&number=10&addRecipeNutrition=true"
+=======
+            query_term = q if q else "mediterranean"
+            num_api = 30 if not q else 15
+            
+            # Spoonacular
+            url = f"https://api.spoonacular.com/recipes/complexSearch?apiKey={api_key}&query={query_term}&addRecipeInformation=true&number={num_api}&addRecipeNutrition=true"
+>>>>>>> 1bfdbbe (más avances)
             response = requests.get(url, timeout=5)
             
             if response.status_code == 200:
                 data = response.json()
+<<<<<<< HEAD
                 for item in data.get('results', []):
                     # Evitar duplicados consultando directamente la base de datos (más seguro)
                     if not Receta.objects.filter(titulo__iexact=item['title']).exists():
@@ -332,6 +559,63 @@ def planes(request):
                         )
                         recetas.append(nueva_receta)
 
+=======
+                items = data.get('results', [])
+                
+                # Traducción simple de términos comunes si detectamos que vienen de API externa
+                def traducir_fast(txt):
+                    dic = {
+                        'Chicken': 'Pollo', 'Rice': 'Arroz', 'Salad': 'Ensalada', 'Beef': 'Carne', 'Fish': 'Pescado',
+                        'Pasta': 'Pasta', 'Egg': 'Huevo', 'Healthy': 'Saludable', 'Breakfast': 'Desayuno',
+                        'Lunch': 'Almuerzo', 'Dinner': 'Cena', 'Bowl': 'Bowl', 'Soup': 'Sopa', 'Roast': 'Asado',
+                        'Grilled': 'A la plancha', 'Fresh': 'Fresco', 'Quick': 'Rápido', 'Easy': 'Fácil',
+                        'Low Carb': 'Bajo en carbos', 'Keto': 'Keto', 'Vegan': 'Vegano', 'Vegetarian': 'Vegetariano'
+                    }
+                    for k, v in dic.items():
+                        txt = txt.replace(k, v).replace(k.lower(), v.lower())
+                    return txt
+
+                for item in items:
+                    titulo_esp = traducir_fast(item['title'])
+                    if not Receta.objects.filter(titulo__iexact=titulo_esp).exists():
+                        # Extraer Macros
+                        nuts = {n['name']: n for n in item.get('nutrition', {}).get('nutrients', [])}
+                        cal = int(nuts.get('Calories', {}).get('amount', 400))
+                        prot = int(nuts.get('Protein', {}).get('amount', 20))
+                        
+                        # Determinar categoría y dieta
+                        cat = 'explorar'
+                        if 'breakfast' in item.get('dishTypes', []): cat = 'desayuno'
+                        
+                        tipo_dieta = 'OMNI'
+                        if item.get('ketogenic'): tipo_dieta = 'KETO'
+                        elif item.get('vegan'): tipo_dieta = 'VEGA'
+                        elif item.get('vegetarian'): tipo_dieta = 'VEGE'
+
+                        # Extraer tiempo numérico
+                        try:
+                            t_min = int(item.get('readyInMinutes', 30))
+                        except: t_min = 30
+
+                        # PERSISTENCIA: Guardamos en la base de datos
+                        nueva_receta = Receta.objects.create(
+                            titulo=titulo_esp,
+                            descripcion=f"Deliciosa receta de {titulo_esp} adaptada para tu plan nutricional.",
+                            imagen_url=item['image'],
+                            calorias=cal,
+                            tiempo=f"{t_min} min",
+                            tiempo_minutos=t_min,
+                            rating=round(4.0 + (item.get('aggregateLikes', 0) / 1000), 1),
+                            proteinas=prot,
+                            carbos=random.randint(20, 50),
+                            grasas=random.randint(10, 30),
+                            tipo_dieta=tipo_dieta,
+                            categoria=cat,
+                            ingredientes_count=len(item.get('nutrition', {}).get('ingredients', [])) or random.randint(5, 12)
+                        )
+                        recetas.append(nueva_receta)
+
+>>>>>>> 1bfdbbe (más avances)
             # --- FALLBACK THEMEALDB (Solo si seguimos con muy pocas) ---
             if len(recetas) < 8:
                 url_db = f"https://www.themealdb.com/api/json/v1/1/search.php?s={query_term}"
@@ -342,14 +626,23 @@ def planes(request):
                         for m in (meals[:5] if meals else []):
                             if not Receta.objects.filter(titulo__iexact=m['strMeal']).exists():
                                 nueva_receta = Receta.objects.create(
+<<<<<<< HEAD
                                     titulo=m['strMeal'],
                                     descripcion="Deliciosa opción internacional.",
+=======
+                                    titulo=traducir_fast(m['strMeal']),
+                                    descripcion=f"Receta internacional de {traducir_fast(m['strMeal'])} lista para disfrutar.",
+>>>>>>> 1bfdbbe (más avances)
                                     imagen_url=m['strMealThumb'],
                                     calorias=random.randint(400, 600),
                                     tiempo="30 min", rating=4.6,
                                     proteinas=30, carbos=20, grasas=10,
                                     tipo_dieta='OMNI', categoria='explorar'
+<<<<<<< HEAD
                                  )
+=======
+                                )
+>>>>>>> 1bfdbbe (más avances)
                                 recetas.append(nueva_receta)
                 except: pass
             
@@ -364,32 +657,48 @@ def planes(request):
     if request.user.is_authenticated and hasattr(request.user, 'perfil'):
         favoritas_ids = list(RecetaFavorita.objects.filter(perfil=request.user.perfil).values_list('receta_id', flat=True))
 
-    # Inyección de Receta Especial IA
-    if not q or "ai" in q.lower() or "ia" in q.lower():
-        recetas.insert(0, Receta(
-            id=999999,
-            titulo="Bowl Metabólico 'nunut AI'",
-            descripcion="Optimizado por IA para mejorar tu metabolismo basal y control de glucosa.",
-            imagen_url="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=500",
-            calorias=485,
-            tiempo="15 min",
-            rating=5.0,
-            proteinas=32,
-            carbos=14,
-            grasas=22,
-            tipo_dieta='KETO',
-            categoria='tendencia'
-        ))
-
     es_invitado = False
     if request.user.is_authenticated and hasattr(request.user, 'perfil'):
         es_invitado = request.user.perfil.rol == 'GUEST'
+
+    # Opciones dinámicas para filtros
+    from .models import Perfil
+    opciones_dieta = {k: v for k, v in Perfil.OPCIONES_DIETA if k != 'OTRO'}
+    
+    # Categorías únicas presentes en la BD + bases
+    cats_db = list(Receta.objects.values_list('categoria', flat=True).distinct())
+    cats_base = ['desayuno', 'almuerzo', 'cena', 'snack', 'postre']
+    categorias = sorted(list(set(cats_db + cats_base)))
+
+    # --- Lógica de Calendario Semanal ---
+    semana = []
+    if request.user.is_authenticated and not es_invitado:
+        # Usamos la misma lógica que en diario()
+        current_date = date.today()
+        start_of_week = current_date - timedelta(days=current_date.weekday() + 1 if current_date.weekday() != 6 else 0) # Domingo
+        dias_nombres = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB']
+        
+        for i in range(7):
+            d = start_of_week + timedelta(days=i)
+            # Comidas para este día
+            comidas_dia = ComidaDiaria.objects.filter(perfil=request.user.perfil, fecha=d)
+            semana.append({
+                'fecha': d,
+                'dia_num': d.day,
+                'nombre': dias_nombres[i],
+                'is_today': d == date.today(),
+                'comidas': comidas_dia
+            })
 
     return render(request, 'base/planes.html', {
         'base_template': get_base_template(request),
         'recetas': recetas,
         'favoritas_ids': favoritas_ids,
-        'es_invitado': es_invitado
+        'es_invitado': es_invitado,
+        'opciones_dieta': opciones_dieta,
+        'categorias_receta': categorias,
+        'vista_activa': vista_activa,
+        'semana_calendario': semana
     })
 
 @login_required
@@ -510,11 +819,16 @@ def progreso(request):
     desviacion_imc = abs(imc - 22) if imc > 0 else 5
     edad_nutri = round(edad_real + (desviacion_imc * 0.5) - (consistencia * 3))
 
+    from .models import LoginStreak
+    racha = LoginStreak.calcular_racha(perfil)
+
     context = {
         'base_template': get_base_template(request),
         'peso_actual': peso,
         'imc': imc,
         'imc_estado': imc_estado,
+        'avatar': perfil.get_avatar_state(),
+        'racha': racha,
         'composicion': {
             'grasa_kg': grasa_kg,
             'grasa_pct': grasa_pct,
@@ -1112,18 +1426,28 @@ def crear_receta(request):
             
             final_desc = desc + ingredientes_txt
 
+            # Extract numeric time
+            try:
+                t_str = str(tiempo)
+                t_val = int(''.join(filter(str.isdigit, t_str)) or 30)
+            except: t_val = 30
+
             Receta.objects.create(
                 perfil_creador=request.user.perfil,
                 titulo=titulo,
                 tipo_dieta=dieta,
                 tiempo=tiempo,
+                tiempo_minutos=t_val,
                 imagen_url=img_url if img_url else None,
                 descripcion=final_desc,
                 calorias=calorias,
                 proteinas=proteinas,
                 carbos=carbos,
                 grasas=grasas,
-                categoria="personalizada"
+                ingredientes_count=len([n for n in nombres if n.strip()]),
+                categoria=request.POST.get('categoria', 'explorar'),
+                dificultad=request.POST.get('dificultad', 'Media'),
+                presupuesto=request.POST.get('presupuesto', 'Medio')
             )
             
             return JsonResponse({'success': True})
@@ -1180,6 +1504,17 @@ def editar_receta(request, receta_id):
             receta.carbos = int(request.POST.get('carbos') or 0)
             receta.grasas = int(request.POST.get('grasas') or 0)
 
+            # New fields
+            receta.dificultad = request.POST.get('dificultad', receta.dificultad)
+            receta.presupuesto = request.POST.get('presupuesto', receta.presupuesto)
+            receta.categoria = request.POST.get('categoria', receta.categoria)
+            
+            # Extract numeric time
+            try:
+                t_str = str(receta.tiempo)
+                receta.tiempo_minutos = int(''.join(filter(str.isdigit, t_str)) or 30)
+            except: receta.tiempo_minutos = 30
+
             if img_url:
                 receta.imagen_url = img_url
 
@@ -1187,6 +1522,8 @@ def editar_receta(request, receta_id):
             nombres = request.POST.getlist('ingredientes_nombres')
             cantidades = request.POST.getlist('ingredientes_cantidades')
             
+            receta.ingredientes_count = len([n for n in nombres if n.strip()])
+
             ingredientes_txt = ""
             if nombres and len(nombres) > 0:
                 ingredientes_txt = "\n\nINGREDIENTES:\n"
@@ -1266,3 +1603,266 @@ def actualizar_agua(request):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     return JsonResponse({'status': 'error'}, status=400)
+
+# API para obtener consumo de comidas del día
+@login_required
+def comidas_hoy_api(request):
+    from .models import ComidaDiaria
+    from datetime import date
+    
+    try:
+        comidas = ComidaDiaria.objects.filter(
+            perfil=request.user.perfil,
+            fecha=date.today()
+        )
+        
+        total_calorias = sum(c.calorias for c in comidas)
+        total_proteinas = sum(c.proteinas for c in comidas)
+        total_carbos = sum(c.carbos for c in comidas)
+        total_grasas = sum(c.grasas for c in comidas)
+        
+        return JsonResponse({
+            'status': 'success',
+            'consumo': {
+                'calorias': total_calorias,
+                'proteinas': total_proteinas,
+                'carbos': total_carbos,
+                'grasas': total_grasas
+            }
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+@login_required
+def guardar_comida_api(request):
+    if request.method == 'POST':
+        import json
+        from .models import ComidaDiaria
+        from datetime import datetime, date
+        try:
+            data = json.loads(request.body)
+            perfil = request.user.perfil
+            
+            # Hora actual (o la enviada)
+            hora_str = data.get('hora')
+            if hora_str:
+                hora = datetime.strptime(hora_str, '%H:%M').time()
+            else:
+                hora = datetime.now().time()
+            
+            fecha_str = data.get('fecha')
+            if fecha_str:
+                fecha = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+            else:
+                fecha = date.today()
+
+            ComidaDiaria.objects.create(
+                perfil=perfil,
+                nombre=data.get('nombre', 'Comida sin nombre'),
+                calorias=int(data.get('calorias', 0)),
+                proteinas=int(float(data.get('proteinas', 0))),
+                carbos=int(float(data.get('carbos', 0))),
+                grasas=int(float(data.get('grasas', 0))),
+                hora=hora,
+                fecha=fecha,
+                categoria=data.get('categoria', 'almuerzo')
+            )
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+
+# API para guardar registro de sueño
+@login_required
+def guardar_sueno_api(request):
+    if request.method == 'POST':
+        import json
+        from .models import RegistroSueno
+        from datetime import date, datetime, timedelta
+        
+        try:
+            data = json.loads(request.body)
+            horas = float(data.get('horas', 0))
+            calidad = int(data.get('calidad', 3))
+            
+            if horas <= 0 or horas > 24:
+                return JsonResponse({'status': 'error', 'message': 'Horas inválidas'}, status=400)
+            
+            # Calcular hora de acostarse y levantarse (aproximado)
+            # Asumimos que se levantó hoy a las 7 AM
+            hora_levantarse = datetime.now().replace(hour=7, minute=0, second=0, microsecond=0)
+            hora_acostarse = hora_levantarse - timedelta(hours=horas)
+            
+            # Verificar si ya existe registro de hoy
+            registro_existente = RegistroSueno.objects.filter(
+                perfil=request.user.perfil,
+                fecha=date.today()
+            ).first()
+            
+            if registro_existente:
+                # Actualizar existente
+                registro_existente.hora_acostarse = hora_acostarse.time()
+                registro_existente.hora_levantarse = hora_levantarse.time()
+                registro_existente.calidad = calidad
+                registro_existente.save()
+            else:
+                # Crear nuevo
+                RegistroSueno.objects.create(
+                    perfil=request.user.perfil,
+                    hora_acostarse=hora_acostarse.time(),
+                    hora_levantarse=hora_levantarse.time(),
+                    calidad=calidad
+                )
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Sueño registrado correctamente'
+            })
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    
+    return JsonResponse({'status': 'error'}, status=400)
+
+# API para generar y descargar informe PDF
+@login_required
+def generar_informe_pdf(request):
+    from django.http import HttpResponse
+    from reportlab.lib.pagesizes import letter
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.units import inch
+    from datetime import date, timedelta
+    from .models import ComidaDiaria, RegistroAgua, RegistroSueno, RegistroPeso
+    
+    try:
+        # Crear el PDF
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="informe_nunut_{date.today()}.pdf"'
+        
+        # Crear el canvas
+        p = canvas.Canvas(response, pagesize=letter)
+        width, height = letter
+        
+        # Título
+        p.setFont("Helvetica-Bold", 24)
+        p.drawString(1*inch, height - 1*inch, "Informe Nutricional nunut")
+        
+        # Información del usuario
+        p.setFont("Helvetica", 12)
+        y = height - 1.5*inch
+        p.drawString(1*inch, y, f"Usuario: {request.user.first_name or request.user.username}")
+        y -= 0.3*inch
+        p.drawString(1*inch, y, f"Fecha: {date.today().strftime('%d/%m/%Y')}")
+        
+        # Obtener datos de la última semana
+        fecha_inicio = date.today() - timedelta(days=7)
+        
+        # Resumen de calorías
+        y -= 0.6*inch
+        p.setFont("Helvetica-Bold", 14)
+        p.drawString(1*inch, y, "Resumen Semanal")
+        
+        comidas_semana = ComidaDiaria.objects.filter(
+            perfil=request.user.perfil,
+            fecha__gte=fecha_inicio
+        )
+        
+        total_cal = sum(c.calorias for c in comidas_semana)
+        promedio_cal = total_cal / 7 if comidas_semana.exists() else 0
+        
+        y -= 0.4*inch
+        p.setFont("Helvetica", 11)
+        p.drawString(1.2*inch, y, f"Consumo promedio diario: {int(promedio_cal)} kcal")
+        
+        # Hidratación
+        agua_semana = RegistroAgua.objects.filter(
+            perfil=request.user.perfil,
+            fecha__gte=fecha_inicio
+        )
+        promedio_agua = sum(r.cantidad_vasos for r in agua_semana) / 7 if agua_semana.exists() else 0
+        
+        y -= 0.3*inch
+        p.drawString(1.2*inch, y, f"Hidratación promedio: {promedio_agua:.1f} vasos/día")
+        
+        # Sueño
+        sueno_semana = RegistroSueno.objects.filter(
+            perfil=request.user.perfil,
+            fecha__gte=fecha_inicio
+        )
+        promedio_sueno = sum(r.horas_totales for r in sueno_semana) / 7 if sueno_semana.exists() else 0
+        
+        y -= 0.3*inch
+        p.drawString(1.2*inch, y, f"Sueño promedio: {promedio_sueno:.1f} horas/noche")
+        
+        # Peso
+        peso_actual = request.user.perfil.obtener_peso_actual()
+        if peso_actual:
+            y -= 0.3*inch
+            p.drawString(1.2*inch, y, f"Peso actual: {peso_actual} kg")
+        
+        # Plan nutricional
+        if hasattr(request.user, 'perfil'):
+            try:
+                informe = request.user.perfil.generar_informe_nutricional()
+                y -= 0.6*inch
+                p.setFont("Helvetica-Bold", 14)
+                p.drawString(1*inch, y, "Plan Nutricional Recomendado")
+                
+                y -= 0.4*inch
+                p.setFont("Helvetica", 11)
+                p.drawString(1.2*inch, y, f"Calorías diarias: {informe['plan']['calorias_dia']} kcal")
+                y -= 0.3*inch
+                p.drawString(1.2*inch, y, f"Proteínas: {informe['plan']['proteinas_g']}g ({informe['porcentajes']['prot_pct']}%)")
+                y -= 0.3*inch
+                p.drawString(1.2*inch, y, f"Carbohidratos: {informe['plan']['carbohidratos_g']}g ({informe['porcentajes']['carbs_pct']}%)")
+                y -= 0.3*inch
+                p.drawString(1.2*inch, y, f"Grasas: {informe['plan']['grasas_g']}g ({informe['porcentajes']['grasa_pct']}%)")
+            except:
+                pass
+        
+        # Footer
+        p.setFont("Helvetica-Oblique", 9)
+        p.drawString(1*inch, 0.5*inch, "Generado por nunut - Tu compañero de vida saludable")
+        
+        # Finalizar PDF
+        p.showPage()
+        p.save()
+        
+        return response
+        
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@csrf_exempt
+def calificar_receta(request, receta_id):
+    if request.method == 'POST' and request.user.is_authenticated:
+        try:
+            import json
+            data = json.loads(request.body)
+            puntuacion = int(data.get('puntuacion', 0))
+            
+            if 1 <= puntuacion <= 5:
+                from .models import CalificacionReceta, Receta
+                calif, created = CalificacionReceta.objects.update_or_create(
+                    perfil=request.user.perfil,
+                    receta_id=receta_id,
+                    defaults={'puntuacion': puntuacion}
+                )
+                
+                # Recalcular rating promedio
+                receta = calif.receta
+                from django.db.models import Avg
+                stats = CalificacionReceta.objects.filter(receta=receta).aggregate(Avg('puntuacion'))
+                nuevo_promedio = stats['puntuacion__avg']
+                
+                if nuevo_promedio:
+                    receta.rating = round(nuevo_promedio, 1)
+                    receta.save()
+                
+                return JsonResponse({
+                    'status': 'success', 
+                    'new_rating': float(receta.rating),
+                    'message': '¡Gracias por calificar!'
+                })
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido o no autenticado'}, status=403)

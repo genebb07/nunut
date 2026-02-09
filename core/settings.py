@@ -180,4 +180,8 @@ CACHES = {
     }
 }
 
+<<<<<<< HEAD
 GEMINI_API_KEY = 'AIzaSyADWeF-zRcei2kAygr-rHopo1l65eBwKTM'
+=======
+GEMINI_API_KEY = 'AIzaSyAdojTtr7saPHfZcxAF5WI-x_c-7pJUaAI'
+>>>>>>> 1bfdbbe (más avances)
