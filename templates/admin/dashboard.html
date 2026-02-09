@@ -1,254 +1,426 @@
-{% extends 'base.html' %}
+{% extends "admin/base_site.html" %}
 {% load static %}
 
-{% block title %}Admin Panel | nunut{% endblock %}
+{% block title %}Panel de Control | nunut Admin{% endblock %}
 
-{% block content %}
+{% block extrahead %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-    .admin-card {
-        border: 1px solid rgba(0, 0, 0, 0.05);
-        border-radius: 1.5rem;
-        background: var(--bg-content);
-        padding: 1.5rem;
-        transition: var(--transition-fluid);
+    :root {
+        --admin-primary: #85c81a;
+        --admin-secondary: #00cec9;
+        --admin-bg: #f4f7f6;
+        --admin-card: rgba(255, 255, 255, 0.8);
+    }
+
+    body {
+        font-family: 'Outfit', sans-serif;
+        background: var(--admin-bg);
+        background-image: radial-gradient(circle at 20% 20%, rgba(133, 200, 26, 0.05) 0%, transparent 40%), radial-gradient(circle at 80% 80%, rgba(0, 206, 201, 0.05) 0%, transparent 40%);
+        background-attachment: fixed;
+    }
+
+    #content {
+        background: transparent !important;
+    }
+
+    .glass-card {
+        background: var(--admin-card);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 24px;
+        padding: 1.75rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
         height: 100%;
+        border-bottom: 4px solid transparent;
     }
 
-    .admin-card:hover {
+    .glass-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.1);
+        border-bottom-color: var(--admin-primary);
     }
 
-    .stat-value {
-        font-size: 2.5rem;
-        font-weight: 900;
-        color: var(--text-main);
-    }
-
-    .stat-label {
-        font-size: 0.9rem;
-        font-weight: 700;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-
-    .admin-icon-box {
-        width: 50px;
-        height: 50px;
-        border-radius: 12px;
-        display: flex;
+    .stat-pill {
+        display: inline-flex;
         align-items: center;
-        justify-content: center;
+        padding: 0.4rem 1rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
         margin-bottom: 1rem;
     }
 
-    .table-custom {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0 0.5rem;
+    .fw-black {
+        font-weight: 900;
     }
 
-    .table-custom th {
-        font-weight: 800;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        padding: 0.75rem 1rem;
+    .mini-chart {
+        height: 60px;
     }
 
-    .table-custom td {
-        background: var(--bg-content);
+    .main-chart-container {
+        height: 400px;
+    }
+
+    .user-list-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
         padding: 1rem;
-        vertical-align: middle;
-        font-weight: 600;
+        border-radius: 16px;
+        transition: background 0.2s;
+        border: 1px solid transparent;
     }
 
-    .table-custom tr td:first-child {
-        border-top-left-radius: 12px;
-        border-bottom-left-radius: 12px;
+    .user-list-item:hover {
+        background: rgba(133, 200, 26, 0.05);
+        border-color: rgba(133, 200, 26, 0.1);
     }
 
-    .table-custom tr td:last-child {
-        border-top-right-radius: 12px;
-        border-bottom-right-radius: 12px;
+    .user-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: var(--admin-primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-size: 1.2rem;
     }
 
-    .dark-mode .table-custom td {
-        background: rgba(255, 255, 255, 0.03);
+    .badge-status {
+        font-size: 0.65rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-weight: 800;
     }
 
-    .chart-container {
-        position: relative;
-        height: 300px;
-        width: 100%;
+    .curation-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.8rem;
+        border-radius: 16px;
+        margin-bottom: 0.75rem;
+    }
+
+    .curation-img {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        object-fit: cover;
+    }
+
+    .x-small {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        transition: all 0.2s;
     }
 </style>
+{% endblock %}
 
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-5">
-        <div>
-            <h1 class="h3 fw-black m-0">Panel de Administración</h1>
-            <p class="text-muted fw-bold mb-0">Visión general del sistema y métricas</p>
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="row align-items-center mb-5">
+        <div class="col-md-8">
+            <h1 class="fw-black m-0" style="font-size: 2.5rem; color: #1e272e;">Dashboard <span
+                    style="color: var(--admin-primary);">nunut</span></h1>
+            <p class="text-muted fw-bold">Análisis de rendimiento y gestión de comunidad en tiempo real.</p>
         </div>
-        <div class="d-flex gap-3">
-            <div class="dropdown">
-                <button class="btn btn-white shadow-sm border rounded-pill px-3 fw-bold d-flex align-items-center gap-2"
-                    type="button" data-bs-toggle="dropdown">
-                    <span class="material-symbols-outlined text-muted">date_range</span>
-                    Últimos 30 días
-                </button>
+        <div class="col-md-4 text-md-end">
+            <div class="d-inline-flex align-items-center gap-2 bg-white px-4 py-2 rounded-pill shadow-sm">
+                <span class="material-symbols-outlined text-primary">calendar_today</span>
+                <span class="fw-bold">{{ stats.hoy|date:"d M, Y" }}</span>
             </div>
-            <a href="{% url 'base:admin_registro' %}" class="btn btn-dark rounded-pill px-4 fw-bold">
-                <span class="material-symbols-outlined fs-6 align-middle me-1">person_add</span>
-                Nuevo Admin
-            </a>
         </div>
     </div>
 
-    <!-- Stats Grid -->
-    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-4 mb-5">
-        <div class="col">
-            <div class="admin-card">
-                <div class="admin-icon-box bg-primary-subtle text-primary">
-                    <span class="material-symbols-outlined">group</span>
-                </div>
-                <div class="stat-value">{{ total_users }}</div>
-                <div class="stat-label">Usuarios Totales</div>
+    <!-- KPI Section -->
+    <div class="row g-4 mb-5">
+        <div class="col-6 col-lg-3">
+            <div class="glass-card text-center">
+                <div class="stat-pill mb-2" style="background: rgba(133, 200, 26, 0.1); color: var(--admin-primary);">
+                    Crecimiento: {{ stats.growth_rate|floatformat:1 }}%</div>
+                <div class="display-6 fw-black mb-1">{{ stats.total_users }}</div>
+                <div class="small fw-bold text-muted text-uppercase">Usuarios Registrados</div>
+                <div class="mini-chart mt-3"><canvas id="miniGrowthChart"></canvas></div>
             </div>
         </div>
-        <div class="col">
-            <div class="admin-card">
-                <div class="admin-icon-box bg-success-subtle text-success">
-                    <span class="material-symbols-outlined">restaurant_menu</span>
+        <div class="col-6 col-lg-3">
+            <div class="glass-card text-center">
+                <div class="stat-pill mb-2" style="background: rgba(0, 206, 201, 0.1); color: #00cec9;">Onboarding: {{
+                    stats.tasa_onboarding|floatformat:1 }}%</div>
+                <div class="display-6 fw-black mb-1">{{ stats.active_7d }}</div>
+                <div class="small fw-bold text-muted text-uppercase">Activos (7d)</div>
+                <div class="mt-4 progress rounded-pill" style="height: 8px;">
+                    <div class="progress-bar bg-primary" style="width: {{ stats.tasa_onboarding|default:0 }}%"></div>
                 </div>
-                <div class="stat-value">{{ total_recipes }}</div>
-                <div class="stat-label">Recetas Activas</div>
             </div>
         </div>
-        <div class="col">
-            <div class="admin-card">
-                <div class="admin-icon-box bg-warning-subtle text-warning">
-                    <span class="material-symbols-outlined">article</span>
-                </div>
-                <div class="stat-value">{{ total_articles }}</div>
-                <div class="stat-label">Artículos Publicados</div>
+        <div class="col-6 col-lg-3">
+            <div class="glass-card text-center">
+                <div class="stat-pill mb-2" style="background: rgba(108, 92, 231, 0.1); color: #6c5ce7;">Sticky factor:
+                    {{ charts.retencion_3d }}</div>
+                <div class="display-6 fw-black mb-1">{{ stats.active_30d }}</div>
+                <div class="small fw-bold text-muted text-uppercase">Activos (30d)</div>
+                <div class="mini-chart mt-3"><canvas id="miniRetentionChart"></canvas></div>
             </div>
         </div>
-        <div class="col">
-            <div class="admin-card">
-                <div class="admin-icon-box bg-info-subtle text-info">
-                    <span class="material-symbols-outlined">trending_up</span>
-                </div>
-                <div class="stat-value">+12%</div>
-                <div class="stat-label">Crecimiento Mensual</div>
+        <div class="col-6 col-lg-3">
+            <div class="glass-card text-center">
+                <div class="stat-pill mb-2" style="background: rgba(253, 121, 168, 0.1); color: #fd79a8;">Staff Acceso:
+                    {{ stats.total_staff }}</div>
+                <div class="display-6 fw-black mb-1">{{ stats.total_staff }}</div>
+                <div class="small fw-bold text-muted text-uppercase">Administradores</div>
+                <div class="mt-3"><span
+                        class="material-symbols-outlined display-5 text-muted">admin_panel_settings</span></div>
             </div>
         </div>
     </div>
 
     <div class="row g-4 mb-5">
-        <!-- Main Chart -->
         <div class="col-lg-8">
-            <div class="admin-card">
+            <div class="glass-card h-100">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3 class="h6 fw-bold m-0 text-uppercase text-muted">Actividad de Usuarios</h3>
+                    <h3 class="h6 fw-bold m-0 text-uppercase">Crecimiento de la Comunidad</h3><span
+                        class="badge bg-light text-dark rounded-pill fw-bold border">Diario</span>
                 </div>
-                <div class="chart-container">
-                    <canvas id="userGrowthChart"></canvas>
-                </div>
+                <div style="height: 350px;"><canvas id="mainEvolutionChart"></canvas></div>
             </div>
         </div>
-
-        <!-- Recent Users -->
         <div class="col-lg-4">
-            <div class="admin-card">
-                <h3 class="h6 fw-bold mb-4 text-uppercase text-muted">Nuevos Usuarios</h3>
-                <div class="d-flex flex-col gap-3">
-                    {% for user in recent_users %}
-                    <div class="d-flex align-items-center gap-3 pb-3 border-bottom"
-                        style="border-color: rgba(0,0,0,0.05) !important">
-                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center fw-bold text-muted border"
-                            style="width: 40px; height: 40px; font-size: 0.9rem;">
-                            {{ user.username.0|upper }}
-                        </div>
+            <div class="glass-card h-100">
+                <h3 class="h6 fw-bold mb-4 text-uppercase">Alcance Geográfico</h3>
+                <div class="d-flex flex-column gap-3">
+                    {% for pais in charts.dist_paises|slice:":5" %}
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-pill bg-primary p-1"
+                            style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: white; font-weight: 800;">
+                            {{ forloop.counter }}</div>
                         <div class="flex-grow-1">
-                            <h4 class="h6 fw-bold m-0">{{ user.username }}</h4>
-                            <p class="x-small text-muted mb-0">{{ user.date_joined|date:"d M Y" }}</p>
+                            <div class="d-flex justify-content-between mb-1"><span class="small fw-bold">{{
+                                    pais.localidad }}</span><span class="small fw-bold">{{ pais.count }}</span></div>
+                            <div class="progress rounded-pill" style="height: 4px;">
+                                <div class="progress-bar bg-primary" style="width: {{ pais.count|default:0 }}0%"></div>
+                            </div>
                         </div>
                     </div>
-                    {% empty %}
-                    <p class="text-muted small">No hay usuarios recientes.</p>
+                    {% endfor %}
+                </div>
+                <hr class="my-4">
+                <div class="text-center">
+                    <p class="small text-muted mb-3">Distribución por Género</p>
+                    <div style="height: 150px;"><canvas id="genderPieChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Row: Analysis & Users -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-4">
+            <div class="glass-card">
+                <h3 class="h6 fw-bold mb-4 text-uppercase">Rango de Edad</h3>
+                <div style="height: 250px;"><canvas id="ageBarChart"></canvas></div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="glass-card">
+                <h3 class="h6 fw-bold mb-4 text-uppercase">Objetivos de Usuario</h3>
+                <div style="height: 250px;"><canvas id="objectivesDoughnutChart"></canvas></div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="glass-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="h6 fw-bold m-0 text-uppercase">Nuevos Usuarios</h3><a href="/admin/auth/user/"
+                        class="x-small text-decoration-none" style="color: var(--admin-primary);">Gestionar</a>
+                </div>
+                <div class="d-flex flex-column gap-3">
+                    {% for u in recent_users_list %}
+                    <div class="user-list-item">
+                        <div class="user-avatar">{{ u.username.0|upper }}</div>
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div class="fw-bold text-truncate">{{ u.username }}</div>
+                            <div class="x-small text-muted">{{ u.email }}</div>
+                        </div>
+                        <div><span
+                                class="badge-status {% if u.is_active %}bg-success-subtle text-success border border-success-subtle{% else %}bg-danger-subtle text-danger border border-danger-subtle{% endif %}">{% if u.is_active %}Activo{% else %}Inactivo{% endif %}</span></div>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Models Table -->
-    <div class="admin-card">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="h6 fw-bold m-0 text-uppercase text-muted">Contenido Reciente</h3>
-            <button class="btn btn-sm btn-light fw-bold">Ver Todo</button>
+    <!-- Third Row: Curation & Feedback -->
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="glass-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="h6 fw-bold m-0 text-uppercase">Feedback & Sugerencias</h3><span
+                        class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-3">{{ sugerencias|length }}
+                        Pendientes</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle border-0">
+                        <thead class="bg-light">
+                            <tr class="x-small">
+                                <th>Usuario</th>
+                                <th>Asunto</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sug in sugerencias %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">{{ sug.perfil.usuario.username }}</div>
+                                </td>
+                                <td>{{ sug.asunto|truncatechars:30 }}</td>
+                                <td class="text-muted">{{ sug.fecha|date:"d/m H:i" }}</td>
+                                <td><span
+                                        class="badge text-uppercase x-small {% if sug.estado == 'PENDIENTE' %}bg-info{% elif sug.estado == 'REVISION' %}bg-warning{% else %}bg-success{% endif %}">{{
+                                        sug.estado }}</span></td>
+                                <td><button class="btn btn-action btn-outline-primary"
+                                        onclick="responderSugerencia('{{ sug.id }}')"><span
+                                            class="material-symbols-outlined fs-6">reply</span></button></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted small">No hay sugerencias por
+                                    revisar.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-        <div class="table-responsive">
-            <table class="table-custom">
-                <thead>
-                    <tr>
-                        <th>Título</th>
-                        <th>Tipo</th>
-                        <th>Fecha</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in recent_content %}
-                    <tr>
-                        <td>{{ item.titulo }}</td>
-                        <td>
-                            {% if item.type == 'recipe' %}
-                            <span class="badge bg-success-subtle text-success rounded-pill">Receta</span>
-                            {% else %}
-                            <span class="badge bg-info-subtle text-info rounded-pill">Artículo</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-muted small">Hace 2 días</td>
-                        <td><span class="badge bg-light text-dark border">Publicado</span></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="col-lg-5">
+            <div class="glass-card mb-4"
+                style="background: linear-gradient(135deg, #1e272e 0%, #2f3640 100%); color: white;">
+                <div class="d-flex align-items-center gap-2 mb-3"><span
+                        class="material-symbols-outlined text-primary">auto_awesome</span>
+                    <h3 class="h6 fw-bold m-0 text-uppercase">Curación AI (Pendientes)</h3>
+                </div>
+                {% if recetas_pendientes %}
+                {% for rec in recetas_pendientes %}
+                <div class="curation-item" style="background: rgba(255,255,255,0.05);">
+                    <img src="{{ rec.imagen_url|default:'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=200&h=200&fit=crop' }}"
+                        class="curation-img">
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="fw-bold text-truncate">{{ rec.titulo }}</div>
+                        <div class="x-small text-muted mb-2">{{ rec.tipo_dieta }} • {{ rec.calorias }} kcal</div>
+                        <div class="d-flex gap-2"><button class="btn btn-primary btn-sm rounded-pill fw-bold x-small"
+                                onclick="curarContenido('{{ rec.id }}', 'aprobar')">Aprobar</button><button
+                                class="btn btn-outline-light btn-sm rounded-pill fw-bold x-small"
+                                onclick="curarContenido('{{ rec.id }}', 'rechazar')">Borrar</button></div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}<div class="text-center py-4">
+                    <p class="small text-white-50">No hay contenido generado por IA esperando revisión.</p>
+                </div>{% endif %}
+            </div>
         </div>
     </div>
-
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Modal para responder sugerencias -->
+<div class="modal fade" id="responseModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-card p-0 overflow-hidden">
+            <div class="modal-header border-0 p-4">
+                <h5 class="modal-title fw-black">Responder Sugerencia</h5><button type="button" class="btn-close"
+                    data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="responseForm"><input type="hidden" id="sugerenciaId">
+                    <div class="mb-4"><label class="small fw-bold text-muted text-uppercase mb-2">Estado</label><select
+                            id="sugerenciaStatus" class="form-select rounded-4">
+                            <option value="PENDIENTE">Pendiente</option>
+                            <option value="REVISION">En Revisión</option>
+                            <option value="IMPLEMENTADO">Implementado</option>
+                            <option value="DESCARTADO">Descartado</option>
+                        </select></div>
+                    <div class="mb-4"><label class="small fw-bold text-muted text-uppercase mb-2">Respuesta
+                            Admin</label><textarea id="adminNote" class="form-control rounded-4" rows="4"
+                            placeholder="Escribe aquí tu respuesta para el usuario..."></textarea></div><button
+                        type="submit" class="btn btn-primary w-100 py-3 rounded-4 fw-black">Guardar Cambios</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JSON Data for Charts -->
+{{ charts.evolucion|json_script:"evolution-data" }}
+{{ charts.dist_genero|json_script:"gender-data" }}
+{{ charts.dist_edad|json_script:"age-data" }}
+{{ charts.dist_objetivos|json_script:"objectives-data" }}
+
 <script>
-    const ctx = document.getElementById('userGrowthChart').getContext('2d');
-    const chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-            datasets: [{
-                label: 'Usuarios Activos',
-                data: [12, 19, 3, 5, 2, 3],
-                borderColor: '#85c81a',
-                backgroundColor: 'rgba(133, 200, 26, 0.1)',
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                y: { grid: { borderDash: [5, 5] }, beginAtZero: true },
-                x: { grid: { display: false } }
-            }
-        }
+    const getJsonData = (id) => { try { return JSON.parse(document.getElementById(id).textContent); } catch (e) { return null; } };
+    const chartSettings = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } };
+
+    const evoData = getJsonData('evolution-data');
+    if (evoData) { new Chart(document.getElementById('mainEvolutionChart'), { type: 'line', data: { labels: evoData.map(d => d.dia), datasets: [{ label: 'Nuevos Usuarios', data: evoData.map(d => d.total), borderColor: '#85c81a', backgroundColor: 'rgba(133, 200, 26, 0.1)', fill: true, tension: 0.4 }] }, options: { ...chartSettings, plugins: { legend: { display: true, position: 'top' } }, scales: { x: { display: true }, y: { display: true } } } }); }
+
+    const genderDataRaw = getJsonData('gender-data');
+    if (genderDataRaw) {
+        const h = genderDataRaw.find(g => g.genero === 'H')?.count || 0;
+        const m = genderDataRaw.find(g => g.genero === 'M')?.count || 0;
+        new Chart(document.getElementById('genderPieChart'), { type: 'pie', data: { labels: ['Hombre', 'Mujer', 'Otros'], datasets: [{ data: [h, m, 0], backgroundColor: ['#0984e3', '#fd79a8', '#dfe6e9'] }] }, options: chartSettings });
+    }
+
+    const ageDataRaw = getJsonData('age-data');
+    if (ageDataRaw) { new Chart(document.getElementById('ageBarChart'), { type: 'bar', data: { labels: ['18-25', '26-35', '36-50', '50+'], datasets: [{ data: [ageDataRaw.e18_25, ageDataRaw.e26_35, ageDataRaw.e36_50, ageDataRaw.e50plus], backgroundColor: '#85c81a', borderRadius: 10 }] }, options: { ...chartSettings, scales: { x: { display: true }, y: { display: true } } } }); }
+
+    const objDataRaw = getJsonData('objectives-data');
+    if (objDataRaw) {
+        const lose = objDataRaw.find(o => o.objetivo === 'PERDER')?.count || 0;
+        const ga = objDataRaw.find(o => o.objetivo === 'GANAR')?.count || 0;
+        const ma = objDataRaw.find(o => o.objetivo === 'MANTENER')?.count || 0;
+        new Chart(document.getElementById('objectivesDoughnutChart'), { type: 'doughnut', data: { labels: ['Perder', 'Ganar', 'Mantener'], datasets: [{ data: [lose, ga, ma], backgroundColor: ['#ff7675', '#00b894', '#00cec9'] }] }, options: { ...chartSettings, cutout: '70%' } });
+    }
+
+    function responderSugerencia(id) { document.getElementById('sugerenciaId').value = id; new bootstrap.Modal(document.getElementById('responseModal')).show(); }
+
+    document.getElementById('responseForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const id = document.getElementById('sugerenciaId').value;
+        const status = document.getElementById('sugerenciaStatus').value;
+        const note = document.getElementById('adminNote').value;
+        fetch(`/admin_api/responder_sugerencia/${id}/`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/x-www-form-urlencoded' }, body: `estado=${status}&respuesta_admin=${note}` })
+            .then(res => res.json()).then(data => { if (data.status === 'success') location.reload(); else alert('Error: ' + data.message); });
     });
+
+    function curarContenido(recetaId, accion) {
+        if (!confirm('¿Seguro quieres ' + accion + ' esta receta?')) return;
+        fetch(`/admin_api/curar_receta/${recetaId}/`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/x-www-form-urlencoded' }, body: `accion=${accion}` })
+            .then(res => res.json()).then(data => { if (data.status === 'success') location.reload(); });
+    }
 </script>
 {% endblock %}

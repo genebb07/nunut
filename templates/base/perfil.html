@@ -21,7 +21,7 @@
                         <span class="material-symbols-outlined text-brand">visibility_off</span>
                         <span class="fw-bold small">Privacidad Estricta</span>
                     </div>
-                    <p class="x-small text-muted mb-0">NutriPro no comparte tus métricas físicas con terceros ni
+                    <p class="x-small text-muted mb-0">nunut no comparte tus métricas físicas con terceros ni
                         anunciantes.</p>
                 </div>
                 <div class="bg-light p-3 rounded-4 dark-mode-bg-dark">
@@ -582,8 +582,7 @@
 
                 <div class="sidebar-extra">
                     <span class="badge bg-brand-soft text-green px-3 py-2 small shadow-sm mb-3">
-                        {% if user.perfil.somatotipo %} {{ user.perfil.get_somatotipo_display }} {% else %} Optimización
-                        Activa {% endif %}
+                        {% if user.perfil.somatotipo %} {{ user.perfil.get_somatotipo_display }} {% else %} Optimización Activa {% endif %}
                     </span>
 
                     <div class="d-grid gap-2 mt-2">
@@ -699,11 +698,8 @@
                             </div>
                             <h3 class="fw-black mb-1">{{ imc|default:"—" }}</h3>
                             <div class="d-flex justify-content-between align-items-end">
-                                <span class="x-small fw-black text-brand"> {% if imc %} {% if imc < 18.5 %} BAJO PESO {%
-                                        elif imc < 25 %} NORMAL {% elif imc < 30 %} SOBREPESO {% else %} OBESIDAD {%
-                                        endif %} {% else %} SIN DATOS {% endif %} </span>
-                                        <span class="x-small text-muted" id="muscle-mass-display"
-                                            title="Masa Muscular Estimada"></span>
+                                <span class="x-small fw-black text-brand"> {% if imc %} {% if imc < 18.5 %} BAJO PESO {% elif imc < 25 %} NORMAL {% elif imc < 30 %} SOBREPESO {% else %} OBESIDAD {% endif %} {% else %} SIN DATOS {% endif %} </span>
+                                <span class="x-small text-muted" id="muscle-mass-display" title="Masa Muscular Estimada"></span>
                             </div>
                         </div>
                     </div>
@@ -794,6 +790,29 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Suggestion Box -->
+            <div class="premium-card p-4 mb-4"
+                style="background: linear-gradient(135deg, rgba(133, 200, 26, 0.05), rgba(0, 206, 201, 0.05)); border: 1px dashed var(--brand-primary);">
+                <h5 class="fw-black mb-3 d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-brand">feedback</span> Buzón de Sugerencias
+                </h5>
+                <p class="small text-muted mb-3 fw-bold">¿Tienes alguna idea para mejorar nunut? Tu feedback es vital
+                    para nosotros.</p>
+                <div id="suggestion-form">
+                    <input type="text" id="sug-asunto" class="form-control custom-input mb-2"
+                        placeholder="Asunto (opcional)">
+                    <textarea id="sug-mensaje" class="form-control custom-input mb-3" rows="3"
+                        placeholder="Escribe tu mensaje aquí..."></textarea>
+                    <button class="btn btn-premium w-100 fw-bold py-2" onclick="enviarSugerencia()">Enviar
+                        Comentarios</button>
+                </div>
+                <div id="suggestion-thanks" class="text-center py-3 d-none">
+                    <span class="material-symbols-outlined display-5 text-brand mb-2">check_circle</span>
+                    <p class="fw-bold mb-1">¡Gracias por tu aporte!</p>
+                    <p class="small text-muted mb-0">Nuestro equipo revisará tu sugerencia pronto.</p>
+                </div>
+            </div>
         </div>
 
         <!-- Settings & Subscription -->
@@ -826,9 +845,7 @@
                             <span class="fw-bold small">Modo oscuro</span>
                         </div>
                         <div class="form-check form-switch mb-0">
-                            <input id="perfil-dark-mode-toggle" class="form-check-input" type="checkbox" {% if
-                                user.perfil.modo_oscuro %}checked {% endif %} onclick="toggleTheme()"
-                                aria-label="Alternar modo oscuro">
+                            <input id="perfil-dark-mode-toggle" class="form-check-input" type="checkbox" {% if user.perfil.modo_oscuro %}checked {% endif %} onclick="toggleTheme()" aria-label="Alternar modo oscuro">
                         </div>
                     </div>
 
@@ -839,7 +856,7 @@
                             <div class="bg-success bg-opacity-10 p-2 rounded-circle text-brand">
                                 <span class="material-symbols-outlined">shield</span>
                             </div>
-                            <span class="fw-bold small">Privacidad</span>
+                            <span class="fw-bold small">Políticas de Privacidad</span>
                         </div>
                         <span class="material-symbols-outlined text-muted">chevron_right</span>
                     </a>
@@ -1139,7 +1156,7 @@
                 <div class="mb-5">
                     <p class="x-small text-muted mb-3 ps-1">Describe condiciones específicas, lesiones o recomendaciones
                         de tu médico tratante.</p>
-                    {{ form.notas_medicas }} 
+                    {{ form.notas_medicas }}
                 </div>
 
                 <div class="mt-5 d-flex gap-3 justify-content-end sticky-bottom py-3 border-top dark-mode-bg-dark"
@@ -1269,6 +1286,35 @@
             cardManual.classList.remove('active');
             cardCalc.classList.add('active');
         }
+    }
+
+    function enviarSugerencia() {
+        const asunto = document.getElementById('sug-asunto').value;
+        const mensaje = document.getElementById('sug-mensaje').value;
+
+        if (!mensaje) {
+            showToast("Por favor escribe un mensaje", "error");
+            return;
+        }
+
+        fetch('/api/enviar_sugerencia/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ asunto: asunto, mensaje: mensaje })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('suggestion-form').classList.add('d-none');
+                    document.getElementById('suggestion-thanks').classList.remove('d-none');
+                    showToast("¡Sugerencia enviada!", "success");
+                } else {
+                    showToast("Error al enviar", "error");
+                }
+            });
     }
 </script>
 

@@ -243,6 +243,7 @@ class Receta(models.Model):
     presupuesto = models.CharField(max_length=20, default='Medio') # Económico, Medio, Caro
     dificultad = models.CharField(max_length=20, default='Media') # Fácil, Media, Difícil
     ingredientes_count = models.IntegerField(default=0)
+    esta_aprobada = models.BooleanField(default=True)
     def __str__(self): return self.titulo
 
 class RecetaFavorita(models.Model):
@@ -327,3 +328,30 @@ class RegistroAgua(models.Model):
         if peso and peso > 0:
             self.meta_vasos = max(8, round(float(peso) * 0.14))
             self.save()
+
+class Sugerencia(models.Model):
+    ESTADOS = [
+        ('PENDIENTE', 'Pendiente'),
+        ('REVISION', 'En Revisión'),
+        ('IMPLEMENTADO', 'Implementado'),
+        ('DESCARTADO', 'Descartado'),
+    ]
+    perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name='sugerencias')
+    asunto = models.CharField(max_length=200, blank=True)
+    mensaje = models.TextField()
+    calificacion = models.PositiveSmallIntegerField(default=5, choices=[(i, str(i)) for i in range(1, 6)])
+    fecha = models.DateTimeField(auto_now_add=True)
+    estado = models.CharField(max_length=15, choices=ESTADOS, default='PENDIENTE')
+    respuesta_admin = models.TextField(blank=True, null=True)
+    
+    def __str__(self):
+        return f"Sugerencia de {self.perfil.usuario.username} - {self.estado}"
+
+class LogActividad(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    accion = models.CharField(max_length=255)
+    detalles = models.TextField(blank=True)
+    fecha = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.usuario.username if self.usuario else 'Sistema'} - {self.accion} ({self.fecha})"

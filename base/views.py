@@ -10,12 +10,8 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
-<<<<<<< HEAD
-from django.db.models import Count, Q
-=======
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Count, Q, Avg
->>>>>>> 1bfdbbe (más avances)
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .forms import CustomAuthenticationForm, CustomUserCreationForm
 from .forms import OnboardingForm
@@ -230,8 +226,113 @@ def obtener_recomendacion_ia(perfil, racha_dias):
 
     return random.choice(mensajes)
 
+def _get_admin_dashboard_data(request):
+    seed_db()
+    from .models import Receta, Articulo, Perfil, LoginStreak, Sugerencia, LogActividad, RecetaFavorita, ArticuloGuardado
+    from django.db.models.functions import TruncDay
+    from django.utils import timezone
+    from django.db.models import Count, Q, Avg
+    
+    # 1. Contadores de Usuarios
+    total_users_all = User.objects.count()
+    total_registrados = User.objects.exclude(username='invitado').count()
+    
+    # Crecimiento detallado
+    now = timezone.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    yesterday_start = today_start - timedelta(days=1)
+    
+    this_week_start = today_start - timedelta(days=now.weekday())
+    last_week_start = this_week_start - timedelta(days=7)
+    
+    this_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    last_month_start = (this_month_start - timedelta(days=1)).replace(day=1)
+    
+    this_year_start = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+    last_year_start = this_year_start.replace(year=now.year - 1)
+
+    def get_count_growth(this_start, prev_start, end_limit=None):
+        if end_limit is None: end_limit = now
+        current = User.objects.exclude(username='invitado').filter(date_joined__gte=this_start).count()
+        previous = User.objects.exclude(username='invitado').filter(date_joined__gte=prev_start, date_joined__lt=this_start).count()
+        growth = ((current - previous) / max(previous, 1)) * 100
+        return round(growth, 1)
+
+    crecimiento_data = {
+        'dia': get_count_growth(today_start, yesterday_start),
+        'semana': get_count_growth(this_week_start, last_week_start),
+        'mes': get_count_growth(this_month_start, last_month_start),
+        'ano': get_count_growth(this_year_start, last_year_start),
+    }
+
+    # Usuarios Activos (7d/30d)
+    seven_days_ago = date.today() - timedelta(days=7)
+    thirty_days_ago = date.today() - timedelta(days=30)
+    active_7d = LoginStreak.objects.filter(fecha__gte=seven_days_ago).values('perfil').distinct().count()
+    active_30d = LoginStreak.objects.filter(fecha__gte=thirty_days_ago).values('perfil').distinct().count()
+    
+    total_staff = User.objects.filter(Q(is_staff=True) | Q(perfil__rol='ADMIN')).distinct().count()
+    
+    # 2. Distribución y Mapas
+    dist_paises = list(Perfil.objects.exclude(usuario__username='invitado').values('localidad').annotate(count=Count('id')).order_by('-count'))
+    dist_genero = list(Perfil.objects.exclude(usuario__username='invitado').values('genero').annotate(count=Count('id')))
+    
+    perfiles = Perfil.objects.exclude(usuario__username='invitado').filter(fecha_nacimiento__isnull=False)
+    edades = [p.edad for p in perfiles]
+    dist_edad = {
+        'e18_25': len([e for e in edades if 18 <= e <= 25]),
+        'e26_35': len([e for e in edades if 26 <= e <= 35]),
+        'e36_50': len([e for e in edades if 36 <= e <= 50]),
+        'e50plus': len([e for e in edades if e > 50]),
+    }
+    
+    # 3. Gráficos de Evolución
+    registros_evolucion = User.objects.exclude(username='invitado').annotate(day=TruncDay('date_joined')).values('day').annotate(count=Count('id')).order_by('day')
+    evolucion_data = {
+        'labels': [r['day'].strftime('%d %b') for r in registros_evolucion],
+        'values': [r['count'] for r in registros_evolucion]
+    }
+    
+    dist_objetivos = list(Perfil.objects.exclude(usuario__username='invitado').values('objetivo').annotate(count=Count('id')))
+    sugerencias_recientes = Sugerencia.objects.order_by('-fecha')[:10]
+    recetas_pendientes = Receta.objects.filter(esta_aprobada=False)
+    
+    recent_users_list = []
+    for u in User.objects.exclude(username='invitado').order_by('-date_joined')[:8]:
+        recent_users_list.append({
+            'username': u.username,
+            'email': u.email if request.user.is_superuser else f"ID: {u.id}",
+            'date_joined': u.date_joined,
+            'is_active': u.is_active
+        })
+
+    return {
+        'stats': {
+            'total_users': total_registrados,
+            'crecimiento': crecimiento_data,
+            'active_7d': active_7d,
+            'active_30d': active_30d,
+            'total_staff': total_staff,
+        },
+        'charts': {
+            'dist_paises': dist_paises,
+            'dist_genero': list(dist_genero),
+            'dist_edad': dist_edad,
+            'evolucion': evolucion_data,
+            'dist_objetivos': list(dist_objetivos),
+        },
+        'sugerencias': sugerencias_recientes,
+        'recetas_pendientes': recetas_pendientes,
+        'recent_users': recent_users_list,
+    }
+
 @login_required
 def index(request):
+    if request.user.is_staff:
+        context = _get_admin_dashboard_data(request)
+        context['base_template'] = get_base_template(request)
+        context['es_admin_view'] = True
+        return render(request, 'base/index.html', context)
     es_invitado = False
     if request.user.is_authenticated and hasattr(request.user, 'perfil'):
         es_invitado = request.user.perfil.rol == 'GUEST'
@@ -442,27 +543,6 @@ def planes(request):
     from .models import Receta, RecetaFavorita, ComidaDiaria
     from datetime import date, timedelta, datetime
     
-<<<<<<< HEAD
-    # 1. Búsqueda Local (Evita llamadas a API si ya tenemos resultados)
-    q = request.GET.get('q', '').strip()
-    if q:
-        recetas = list(Receta.objects.filter(Q(titulo__icontains=q) | Q(descripcion__icontains=q)))
-    else:
-        recetas = list(Receta.objects.all())
-
-    # 2. Lógica de Cache para la API
-    # Usamos el cache para no repetir búsquedas en la API externas en un corto tiempo
-    cache_key = f"api_fetched_{q if q else 'default'}"
-    ya_buscado = cache.get(cache_key)
-
-    # Solo buscamos en la API si: 
-    # - No hemos buscado ese término recientemente (ya_buscado es None)
-    # - Y (Es una búsqueda específica q O tenemos menos de 15 recetas en total)
-    should_fetch_api = not ya_buscado and (q or len(recetas) < 15)
-=======
-    # 0. Vista activa (Recetario vs Calendario)
-    vista_activa = request.GET.get('view', 'recetario')
-    
     # 1. Búsqueda Local y Ordenamiento
     q = request.GET.get('q', '').strip()
     sort = request.GET.get('sort', '')
@@ -504,62 +584,19 @@ def planes(request):
 
     # Aumentado el umbral a 40 recetas mínimo
     should_fetch_api = not ya_buscado and (q or len(recetas) < 40)
->>>>>>> 1bfdbbe (más avances)
 
     if should_fetch_api:
         try:
             api_key = "40fcdd780cb940a5a6c55c79f3bf4857"
-<<<<<<< HEAD
-            query_term = q if q else "healthy"
-            
-            # Spoonacular
-            url = f"https://api.spoonacular.com/recipes/complexSearch?apiKey={api_key}&query={query_term}&addRecipeInformation=true&number=10&addRecipeNutrition=true"
-=======
             query_term = q if q else "mediterranean"
             num_api = 30 if not q else 15
             
             # Spoonacular
             url = f"https://api.spoonacular.com/recipes/complexSearch?apiKey={api_key}&query={query_term}&addRecipeInformation=true&number={num_api}&addRecipeNutrition=true"
->>>>>>> 1bfdbbe (más avances)
             response = requests.get(url, timeout=5)
             
             if response.status_code == 200:
                 data = response.json()
-<<<<<<< HEAD
-                for item in data.get('results', []):
-                    # Evitar duplicados consultando directamente la base de datos (más seguro)
-                    if not Receta.objects.filter(titulo__iexact=item['title']).exists():
-                        # Extraer Macros
-                        nuts = {n['name']: n for n in item.get('nutrition', {}).get('nutrients', [])}
-                        cal = int(nuts.get('Calories', {}).get('amount', 400))
-                        prot = int(nuts.get('Protein', {}).get('amount', 20))
-                        
-                        # Determinar categoría y dieta
-                        cat = 'explorar'
-                        if 'breakfast' in item.get('dishTypes', []): cat = 'desayuno'
-                        
-                        tipo_dieta = 'OMNI'
-                        if item.get('ketogenic'): tipo_dieta = 'KETO'
-                        elif item.get('vegan'): tipo_dieta = 'VEGA'
-                        elif item.get('vegetarian'): tipo_dieta = 'VEGE'
-
-                        # PERSISTENCIA: Guardamos en la base de datos
-                        nueva_receta = Receta.objects.create(
-                            titulo=item['title'],
-                            descripcion=f"Receta de {query_term} para tu plan saludable.",
-                            imagen_url=item['image'],
-                            calorias=cal,
-                            tiempo=f"{item.get('readyInMinutes', 30)} min",
-                            rating=round(4.0 + (item.get('aggregateLikes', 0) / 1000), 1),
-                            proteinas=prot,
-                            carbos=random.randint(20, 50),
-                            grasas=random.randint(10, 30),
-                            tipo_dieta=tipo_dieta,
-                            categoria=cat
-                        )
-                        recetas.append(nueva_receta)
-
-=======
                 items = data.get('results', [])
                 
                 # Traducción simple de términos comunes si detectamos que vienen de API externa
@@ -614,8 +651,6 @@ def planes(request):
                             ingredientes_count=len(item.get('nutrition', {}).get('ingredients', [])) or random.randint(5, 12)
                         )
                         recetas.append(nueva_receta)
-
->>>>>>> 1bfdbbe (más avances)
             # --- FALLBACK THEMEALDB (Solo si seguimos con muy pocas) ---
             if len(recetas) < 8:
                 url_db = f"https://www.themealdb.com/api/json/v1/1/search.php?s={query_term}"
@@ -626,23 +661,14 @@ def planes(request):
                         for m in (meals[:5] if meals else []):
                             if not Receta.objects.filter(titulo__iexact=m['strMeal']).exists():
                                 nueva_receta = Receta.objects.create(
-<<<<<<< HEAD
-                                    titulo=m['strMeal'],
-                                    descripcion="Deliciosa opción internacional.",
-=======
                                     titulo=traducir_fast(m['strMeal']),
                                     descripcion=f"Receta internacional de {traducir_fast(m['strMeal'])} lista para disfrutar.",
->>>>>>> 1bfdbbe (más avances)
                                     imagen_url=m['strMealThumb'],
                                     calorias=random.randint(400, 600),
                                     tiempo="30 min", rating=4.6,
                                     proteinas=30, carbos=20, grasas=10,
                                     tipo_dieta='OMNI', categoria='explorar'
-<<<<<<< HEAD
-                                 )
-=======
                                 )
->>>>>>> 1bfdbbe (más avances)
                                 recetas.append(nueva_receta)
                 except: pass
             
@@ -1282,7 +1308,7 @@ def perfiles_api(request):
     for perfil in page_obj.object_list:
         results.append({
             'usuario': perfil.usuario.username,
-            'email': perfil.usuario.email,
+            'email': perfil.usuario.email if request.user.is_superuser else f"ID: {perfil.id}",
             'localidad': perfil.localidad,
             'altura': str(perfil.altura) if perfil.altura else None,
             'nivel_actividad': perfil.nivel_actividad,
@@ -1342,30 +1368,76 @@ def calcular_macros_api(request):
 
 @user_passes_test(lambda u: u.is_staff, login_url='base:index')
 def admin_dashboard(request):
-    seed_db()
-    from .models import Receta, Articulo
-    
-    # Stats
-    total_users = User.objects.count()
-    total_recipes = Receta.objects.count()
-    total_articles = Articulo.objects.count()
-    
-    # Recent users
-    recent_users = User.objects.order_by('-date_joined')[:5]
-    
-    # Recent content (Basic combination)
-    recent_recipes = [{'titulo': r.titulo, 'type': 'recipe'} for r in Receta.objects.all().order_by('-id')[:3]]
-    recent_articles = [{'titulo': a.titulo, 'type': 'article'} for a in Articulo.objects.all().order_by('-id')[:2]]
-    recent_content = recent_recipes + recent_articles
-    
-    return render(request, 'admin/dashboard.html', {
-        'base_template': get_base_template(request),
-        'total_users': total_users,
-        'total_recipes': total_recipes,
-        'total_articles': total_articles,
-        'recent_users': recent_users,
-        'recent_content': recent_content
-    })
+    context = _get_admin_dashboard_data(request)
+    context['base_template'] = get_base_template(request)
+    return render(request, 'admin/dashboard.html', context)
+
+@login_required
+def enviar_sugerencia(request):
+    if request.method == 'POST':
+        import json
+        try:
+            data = json.loads(request.body)
+            from .models import Sugerencia
+            Sugerencia.objects.create(
+                perfil=request.user.perfil,
+                asunto=data.get('asunto', 'Sugerencia General'),
+                mensaje=data.get('mensaje', ''),
+                calificacion=data.get('calificacion', 5)
+            )
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error'}, status=400)
+
+@user_passes_test(lambda u: u.is_staff)
+def responder_sugerencia(request, sugerencia_id):
+    if request.method == 'POST':
+        import json
+        try:
+            data = json.loads(request.body)
+            from .models import Sugerencia, LogActividad
+            sug = Sugerencia.objects.get(id=sugerencia_id)
+            sug.respuesta_admin = data.get('respuesta')
+            sug.estado = data.get('estado', 'REVISION')
+            sug.save()
+            
+            LogActividad.objects.create(
+                usuario=request.user,
+                accion=f"Respondió a sugerencia #{sug.id}",
+                detalles=f"Estado: {sug.estado}"
+            )
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error'}, status=400)
+
+@user_passes_test(lambda u: u.is_staff)
+def curar_receta(request, receta_id):
+    if request.method == 'POST':
+        from .models import Receta, LogActividad
+        try:
+            receta = Receta.objects.get(id=receta_id)
+            accion = request.POST.get('accion') # 'aprobar' o 'rechazar'
+            
+            if accion == 'aprobar':
+                receta.esta_aprobada = True
+                receta.save()
+                LogActividad.objects.create(
+                    usuario=request.user,
+                    accion=f"Aprobó receta: {receta.titulo}"
+                )
+            elif accion == 'rechazar':
+                LogActividad.objects.create(
+                    usuario=request.user,
+                    accion=f"Rechazó receta: {receta.titulo}"
+                )
+                receta.delete()
+                
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error'}, status=400)
 
 def admin_registro(request):
     # Only allow if already admin or via secret checking logic (here implemented via form code)

@@ -38,4 +38,7 @@ urlpatterns = [
     path('api/generar_receta_ia/', gemini_views.generar_receta_ia, name='generar_receta_ia'),
     path('api/generar_plan_ia/', gemini_views.generar_plan_ia, name='generar_plan_ia'),
     path('api/calificar_receta/<int:receta_id>/', views.calificar_receta, name='calificar_receta'),
+    path('api/enviar_sugerencia/', views.enviar_sugerencia, name='enviar_sugerencia'),
+    path('api/responder_sugerencia/<int:sugerencia_id>/', views.responder_sugerencia, name='responder_sugerencia'),
+    path('api/curar_receta/<int:receta_id>/', views.curar_receta, name='curar_receta'),
 ]
