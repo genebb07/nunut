@@ -413,24 +413,21 @@
         </div>
         <div class="col-md-3">
             <div class="glass-card text-center p-3">
-                <div class="stat-pill mb-2" style="background: rgba(0, 206, 201, 0.1); color: #00cec9;">Semana: {{
-                    stats.crecimiento.semana }}%</div>
+                <div class="stat-pill mb-2" style="background: rgba(0, 206, 201, 0.1); color: #00cec9;">Semana: {{ stats.crecimiento.semana }}%</div>
                 <div class="h2 fw-black mb-0">{{ stats.active_7d }}</div>
                 <div class="x-small text-muted">Activos (7d)</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="glass-card text-center p-3">
-                <div class="stat-pill mb-2" style="background: rgba(108, 92, 231, 0.1); color: #6c5ce7;">Mes: {{
-                    stats.crecimiento.mes }}%</div>
+                <div class="stat-pill mb-2" style="background: rgba(108, 92, 231, 0.1); color: #6c5ce7;">Mes: {{ stats.crecimiento.mes }}%</div>
                 <div class="h2 fw-black mb-0">{{ stats.active_30d }}</div>
                 <div class="x-small text-muted">Activos (30d)</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="glass-card text-center p-3">
-                <div class="stat-pill mb-2" style="background: rgba(253, 121, 168, 0.1); color: #fd79a8;">Año: {{
-                    stats.crecimiento.ano }}%</div>
+                <div class="stat-pill mb-2" style="background: rgba(253, 121, 168, 0.1); color: #fd79a8;">Año: {{ stats.crecimiento.ano }}%</div>
                 <div class="h2 fw-black mb-0">{{ stats.total_staff }}</div>
                 <div class="x-small text-muted">Administradores</div>
             </div>
@@ -458,8 +455,7 @@
                             style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--primary-dark-elite); font-weight: 800;">
                             {{ forloop.counter }}</div>
                         <div class="flex-grow-1">
-                            <div class="d-flex justify-content-between mb-1"><span class="small fw-bold">{{
-                                    pais.localidad }}</span><span class="small fw-bold">{{ pais.count }}</span></div>
+                            <div class="d-flex justify-content-between mb-1"><span class="small fw-bold">{{ pais.localidad }}</span><span class="small fw-bold">{{ pais.count }}</span></div>
                             <div class="progress rounded-pill" style="height: 4px; background: rgba(0,0,0,0.05);">
                                 <div class="progress-bar bg-primary-elite" style="width: {{ pais.count }}0%"></div>
                             </div>
@@ -790,13 +786,10 @@
                         onclick="updateWater(1)"><span class="material-symbols-outlined fs-5">add</span></button>
                 </div>
                 <div class="text-center">
-                    <h4 class="h2 fw-900 mb-0"><span id="water-liters">{{
-                            registro_agua.litros|default:"0.0"|floatformat:1 }}</span><small class="text-muted h6">/
+                    <h4 class="h2 fw-900 mb-0"><span id="water-liters">{{ registro_agua.litros|default:"0.0"|floatformat:1 }}</span><small class="text-muted h6">/
                             <span id="meta-liters-display">{{ registro_agua.meta_litros|default:"2.0" }}</span>
                             Lts</small></h4>
-                    <p class="text-xs-bold text-muted mb-0">Vasos: <span id="current-vasos-display">{{
-                            registro_agua.cantidad_vasos|default:"0" }}</span> / <span id="meta-vasos-display">{{
-                            registro_agua.meta_vasos|default:"8" }}</span></p>
+                    <p class="text-xs-bold text-muted mb-0">Vasos: <span id="current-vasos-display">{{ registro_agua.cantidad_vasos|default:"0" }}</span> / <span id="meta-vasos-display">{{ registro_agua.meta_vasos|default:"8" }}</span></p>
                 </div>
                 {% if es_invitado %}
             </div>{% endif %}
@@ -848,7 +841,7 @@
                     <label class="small fw-bold mb-3 text-muted text-uppercase d-block"
                         style="letter-spacing: 1px;">Nivel de Energía</label>
                     <div class="d-flex justify-content-between gap-1 p-1 rounded-4 bg-light border"> {% for i in "12345"|make_list %}<input type="radio" class="btn-check" name="energy-level"
-                            id="energy-{{ i }}" value="{{ i }}" {% if sueno_hoy.calidad|slugify==i %}checked{% elif not sueno_hoy and i=="3" %}checked{% endif %} /><label
+                            id="energy-{{ i }}" value="{{ i }}" {% if sueno_hoy.calidad|slugify == i %}checked{% elif not sueno_hoy and i == "3" %}checked{% endif %} /><label
                             class="btn btn-sm btn-outline-light border-0 flex-grow-1 py-2 rounded-3 text-dark fw-bold energy-btn"
                             for="energy-{{ i }}" onclick="selectEnergy(this)"><span class="d-block fs-3 mb-1">{% if i == "1" %}😴{% elif i == "2" %}😪{% elif i == "3" %}😐{% elif i == "4" %}😊{% elif i == "5" %}🚀{% endif %}</span><span class="d-block x-small lh-1 opacity-75">{% if i == "1" %}Baja{% elif i == "2" %}Leve{% elif i == "3" %}Normal{% elif i == "4" %}Bien{% elif i == "5" %}Excelente{% endif %}</span></label>{% endfor %}
                     </div>
@@ -914,7 +907,7 @@
     const pageData = document.getElementById('page-data').dataset;
     window.appState = {
         isGuest: pageData.isGuest === 'true',
-        isAdmin: {{ request.user.is_staff | yesno: "true,false" }},
+        isAdmin: {{ request.user.is_staff|yesno:"true,false" }},
     csrfToken: pageData.csrfToken,
         hasReport: pageData.hasReport === 'true',
             goals: { cals: parseInt(pageData.goalCals), prot: parseInt(pageData.goalProt), carb: parseInt(pageData.goalCarb), fat: parseInt(pageData.goalFat) }
