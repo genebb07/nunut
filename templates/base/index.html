@@ -385,161 +385,208 @@
 {% block content %}
 
 {% if es_admin_view %}
-<div class="container-fluid admin-font">
-    <div class="row align-items-center mb-5 mt-2">
-        <div class="col-md-8">
-            <h1 class="fw-black m-0" style="font-size: 2.2rem;">Panel Superior <span
-                    style="color: var(--primary-elite);">nunut</span></h1>
-            <p class="text-muted fw-bold">Gestión de comunidad y curación IA en tiempo real.</p>
-        </div>
-        <div class="col-md-4 text-md-end">
+<div class="row align-items-center mb-5 mt-2 animate-fade">
+    <div class="col-md-7">
+        <h1 class="fw-black m-0 display-5" style="letter-spacing: -1px;">Panel <span class="text-info">Premium</span>
+            <span style="color: var(--primary-elite);">nunut</span>
+        </h1>
+        <p class="text-muted fw-bold mb-0">Gestión de comunidad y curación IA <span class="text-info ps-1">● Activo
+                ahora</span></p>
+    </div>
+    <div class="col-md-5 text-md-end mt-3 mt-md-0">
+        <div class="d-inline-flex flex-column align-items-end">
             <div
-                class="d-inline-flex align-items-center gap-2 bg-white dark-mode-bg-dark px-4 py-2 rounded-pill shadow-sm border">
-                <span class="material-symbols-outlined text-primary">analytics</span>
-                <span class="fw-bold small">{% now "d M, Y" %}</span>
+                class="d-flex align-items-center gap-2 bg-white dark-mode-bg-dark px-4 py-2 rounded-4 shadow-sm border mb-2">
+                <span class="material-symbols-outlined text-info">calendar_today</span>
+                <span class="fw-bold small">{% now "l, d F Y" %}</span>
+            </div>
+            <div class="d-flex align-items-center gap-2 text-info small fw-black text-uppercase letter-spacing-widest">
+                <span class="material-symbols-outlined fs-6 anim-pulse">sensors</span> Conexión Estable
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Growth Stats Section -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="glass-card text-center p-3">
-                <div class="stat-pill mb-2" style="background: rgba(133, 200, 26, 0.1); color: var(--primary-elite);">
-                    Hoy: {{ stats.crecimiento.dia }}%</div>
-                <div class="h2 fw-black mb-0">{{ stats.total_users }}</div>
-                <div class="x-small text-muted">Usuarios Registrados</div>
+<div class="row g-3 mb-5">
+    <div class="col-6 col-md-3">
+        <div class="glass-card text-center p-4 border-info">
+            <div class="stat-pill mb-3" style="background: rgba(133, 200, 26, 0.1); color: var(--primary-elite);">
+                <span class="material-symbols-outlined fs-6 me-1">group</span> Usuarios
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="glass-card text-center p-3">
-                <div class="stat-pill mb-2" style="background: rgba(0, 206, 201, 0.1); color: #00cec9;">Semana: {{
-                    stats.crecimiento.semana }}%</div>
-                <div class="h2 fw-black mb-0">{{ stats.active_7d }}</div>
-                <div class="x-small text-muted">Activos (7d)</div>
+            <div class="h2 fw-black mb-1 d-flex align-items-center justify-content-center gap-2">{{ stats.total_users }}
+                <span class="material-symbols-outlined text-success fs-5">trending_up</span>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="glass-card text-center p-3">
-                <div class="stat-pill mb-2" style="background: rgba(108, 92, 231, 0.1); color: #6c5ce7;">Mes: {{
-                    stats.crecimiento.mes }}%</div>
-                <div class="h2 fw-black mb-0">{{ stats.active_30d }}</div>
-                <div class="x-small text-muted">Activos (30d)</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="glass-card text-center p-3">
-                <div class="stat-pill mb-2" style="background: rgba(253, 121, 168, 0.1); color: #fd79a8;">Año: {{
-                    stats.crecimiento.ano }}%</div>
-                <div class="h2 fw-black mb-0">{{ stats.total_staff }}</div>
-                <div class="x-small text-muted">Administradores</div>
-            </div>
+            <div class="text-xs-bold text-muted">Total Registrados</div>
         </div>
     </div>
+    <div class="col-6 col-md-3">
+        <div class="glass-card text-center p-4 border-info">
+            <div class="stat-pill mb-3" style="background: rgba(0, 206, 201, 0.1); color: #00cec9;">
+                <span class="material-symbols-outlined fs-6 me-1">bolt</span> Activos
+            </div>
+            <div class="h2 fw-black mb-1">{{ stats.active_7d }}</div>
+            <div class="text-xs-bold text-muted">Últimos 7 días</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="glass-card text-center p-4 border-info">
+            <div class="stat-pill mb-3" style="background: rgba(108, 92, 231, 0.1); color: #6c5ce7;">
+                <span class="material-symbols-outlined fs-6 me-1">visibility</span> Alcance
+            </div>
+            <div class="h2 fw-black mb-1">{{ stats.active_30d }}</div>
+            <div class="text-xs-bold text-muted">Últimos 30 días</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="glass-card text-center p-4 border-info">
+            <div class="stat-pill mb-3" style="background: rgba(253, 121, 168, 0.1); color: #fd79a8;">
+                <span class="material-symbols-outlined fs-6 me-1">admin_panel_settings</span> Equipo
+            </div>
+            <div class="h2 fw-black mb-1">{{ stats.total_staff }}</div>
+            <div class="text-xs-bold text-muted">Admin & Staff</div>
+        </div>
+    </div>
+</div>
 
-    <div class="row g-4 mb-4">
-        <div class="col-lg-8">
-            <div class="glass-card h-100">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3 class="h6 fw-bold m-0 text-uppercase">Evolución de la Comunidad</h3>
-                    <span class="badge bg-primary-elite bg-opacity-10 text-success rounded-pill px-3">En Tiempo
-                        Real</span>
+<div class="row g-4 mb-5">
+    <div class="col-lg-8">
+        <div class="glass-card h-100 border-0 shadow-lg position-relative overflow-hidden">
+            <div class="position-absolute top-0 end-0 p-4">
+                <span class="text-info fw-black small text-uppercase">Crecimiento Comunidad</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="h5 fw-black m-0">Evolución Usuarios</h3>
+                    <p class="small text-muted mb-0">Nuevos registros por día</p>
                 </div>
-                <div style="height: 300px;"><canvas id="adminEvolutionChart"></canvas></div>
             </div>
+            <div style="height: 320px;"><canvas id="adminEvolutionChart"></canvas></div>
         </div>
-        <div class="col-lg-4">
-            <div class="glass-card h-100">
-                <h3 class="h6 fw-bold mb-4 text-uppercase">Alcance Geográfico</h3>
-                <div class="d-flex flex-column gap-3">
-                    {% for pais in charts.dist_paises|slice:":5" %}
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="rounded-circle bg-primary-elite bg-opacity-20 p-2"
-                            style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--primary-dark-elite); font-weight: 800;">
-                            {{ forloop.counter }}</div>
-                        <div class="flex-grow-1">
-                            <div class="d-flex justify-content-between mb-1"><span class="small fw-bold">{{
-                                    pais.localidad }}</span><span class="small fw-bold">{{ pais.count }}</span></div>
-                            <div class="progress rounded-pill" style="height: 4px; background: rgba(0,0,0,0.05);">
-                                <div class="progress-bar bg-primary-elite" style="width: {{ pais.count }}0%"></div>
-                            </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="glass-card h-100 border-0 shadow-lg">
+            <h3 class="h5 fw-black mb-1">Alcance Geográfico</h3>
+            <p class="small text-muted mb-4">Concentración por país</p>
+            <div class="d-flex flex-column gap-3">
+                {% for pais in charts.dist_paises|slice:":5" %}
+                <div
+                    class="d-flex align-items-center gap-3 p-2 rounded-4 bg-light dark-mode-bg-dark border border-white border-opacity-10">
+                    <div class="rounded-circle bg-info bg-opacity-20 p-2 d-flex align-items-center justify-content-center fw-black text-info"
+                        style="width: 38px; height: 38px; font-size: 14px;">
+                        {{ forloop.counter }}</div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="small fw-black">{{ pais.localidad }}</span>
+                            <span class="small fw-black text-info">{{ pais.count }}</span>
+                        </div>
+                        <div class="progress rounded-pill bg-white dark-mode-bg-secondary" style="height: 6px;">
+                            <div class="progress-bar bg-info shadow-sm" style="width: {{ pais.count }}0%"></div>
                         </div>
                     </div>
-                    {% endfor %}
                 </div>
-                <hr class="my-4 opacity-10">
-                <div class="text-center">
-                    <p class="x-small text-muted mb-3">Distribución por Género</p>
-                    <div style="height: 120px;"><canvas id="adminGenderChart"></canvas></div>
-                </div>
+                {% endfor %}
+            </div>
+            <div class="mt-4 p-3 rounded-4 bg-info bg-opacity-10 border border-info border-opacity-20">
+                <p class="x-small text-info fw-black mb-0 d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined fs-6">info</span> Predominancia Venezuela Detectada
+                </p>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="row g-4 mb-4">
-        <div class="col-lg-4">
-            <div class="glass-card">
-                <h3 class="h6 fw-bold mb-4 text-uppercase">Rango de Edad</h3>
-                <div style="height: 220px;"><canvas id="adminAgeChart"></canvas></div>
-            </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="glass-card">
-                <h3 class="h6 fw-bold mb-4 text-uppercase">Objetivos de Usuario</h3>
-                <div style="height: 220px;"><canvas id="adminObjectivesChart"></canvas></div>
-            </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="glass-card">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3 class="h6 fw-bold m-0 text-uppercase">Gestión IA (Pendientes)</h3>
-                </div>
-                <div class="d-flex flex-column gap-2 overflow-auto" style="max-height: 220px;">
-                    {% for rec in recetas_pendientes %}
-                    <div class="curation-item bg-light dark-mode-bg-dark border border-opacity-10">
-                        <img src="{{ rec.imagen_url|default:'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=100' }}"
-                            class="curation-img">
-                        <div class="flex-grow-1 overflow-hidden">
-                            <div class="fw-bold text-truncate small">{{ rec.titulo }}</div>
-                            <div class="x-small text-muted mb-2">{{ rec.tipo_dieta }}</div>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-primary-elite btn-sm rounded-pill py-0 px-2 x-small text-white"
-                                    style="background: var(--primary-elite); border: none;"
-                                    onclick="curarAdmin('{{ rec.id }}', 'aprobar')">OK</button>
-                                <button class="btn btn-outline-danger btn-sm rounded-pill py-0 px-2 x-small"
-                                    onclick="curarAdmin('{{ rec.id }}', 'rechazar')">X</button>
-                            </div>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <div class="text-center py-4">
-                        <p class="small text-muted italic">Todo curado ✨</p>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
+<div class="row g-4 mb-5">
+    <div class="col-lg-3">
+        <div class="glass-card text-center h-100">
+            <h3 class="h6 fw-black mb-4 text-uppercase text-info">Distribución Género</h3>
+            <div style="height: 180px;"><canvas id="adminGenderChart"></canvas></div>
+            <div class="mt-3 small fw-bold text-muted">Base de Usuarios Real</div>
         </div>
     </div>
-
-    <div class="glass-card">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="h6 fw-bold m-0 text-uppercase">Actividad Reciente</h3>
-            <span class="x-small text-muted">Últimos registrados</span>
+    <div class="col-lg-3">
+        <div class="glass-card h-100">
+            <h3 class="h6 fw-black mb-4 text-uppercase text-info">Rango de Edad</h3>
+            <div style="height: 180px;"><canvas id="adminAgeChart"></canvas></div>
+            <div class="mt-3 x-small text-center fw-bold text-muted">Promedio: 28 años</div>
         </div>
-        <div class="row g-2">
-            {% for u in recent_users %}
-            <div class="col-md-3">
-                <div class="user-list-item border border-opacity-10 bg-light bg-opacity-50">
-                    <div class="user-avatar">{{ u.username.0|upper }}</div>
+    </div>
+    <div class="col-lg-3">
+        <div class="glass-card h-100">
+            <h3 class="h6 fw-black mb-4 text-uppercase text-info">Principales Objetivos</h3>
+            <div style="height: 180px;"><canvas id="adminObjectivesChart"></canvas></div>
+            <div class="mt-3 x-small text-center fw-bold text-muted">Tendencia Nutricional</div>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="card-custom h-100 p-4 border-0 position-relative overflow-hidden shadow-lg animate-pulse-slow"
+            style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); min-height: 300px;">
+            <div class="position-absolute top-0 end-0 p-3">
+                <span class="badge bg-info bg-opacity-20 text-info border-info border-opacity-40 fw-black x-small">NUNUT
+                    AI</span>
+            </div>
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <div class="bg-info bg-opacity-20 p-2 rounded-circle">
+                    <span class="material-symbols-outlined text-info fs-4">auto_awesome</span>
+                </div>
+                <h3 class="h6 fw-black m-0 text-white">Curación IA</h3>
+            </div>
+            <div class="d-flex flex-column gap-2 overflow-auto" style="max-height: 240px;">
+                {% for rec in recetas_pendientes %}
+                <div class="curation-item bg-white bg-opacity-5 border border-white border-opacity-10 p-2 rounded-4">
+                    <img src="{{ rec.imagen_url|default:'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=100' }}"
+                        class="curation-img" style="width: 40px; height: 40px;">
                     <div class="flex-grow-1 overflow-hidden">
-                        <div class="fw-bold text-truncate small">{{ u.username }}</div>
-                        <div class="x-small text-muted">{{ u.date_joined|date:"d/m H:i" }}</div>
+                        <div class="fw-bold text-truncate text-white" style="font-size: 0.75rem;">{{ rec.titulo }}</div>
+                        <div class="d-flex gap-2 mt-1">
+                            <button class="btn btn-info btn-sm rounded-pill py-0 px-2 x-small fw-black"
+                                onclick="curarAdmin('{{ rec.id }}', 'aprobar')">APROBAR</button>
+                            <button class="btn btn-outline-danger btn-sm rounded-pill py-0 px-2 x-small fw-black"
+                                onclick="curarAdmin('{{ rec.id }}', 'rechazar')">ELIMINAR</button>
+                        </div>
                     </div>
                 </div>
+                {% empty %}
+                <div class="text-center py-5">
+                    <span class="material-symbols-outlined text-info display-4 opacity-25 mb-2">check_circle</span>
+                    <p class="small text-info opacity-75 fw-bold">Sistema al día</p>
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
     </div>
+</div>
+
+<div class="glass-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="h6 fw-bold m-0 text-uppercase">Actividad Reciente</h3>
+        <span class="x-small text-muted">Últimos registrados</span>
+    </div>
+    <div class="row g-3">
+        {% for u in recent_users %}
+        <div class="col-md-4 col-lg-2">
+            <div
+                class="glass-card p-3 border-0 bg-white dark-mode-bg-dark shadow-sm d-flex flex-column align-items-center text-center h-100">
+                <div class="rounded-circle bg-info bg-opacity-10 text-info d-flex align-items-center justify-content-center mb-2"
+                    style="width: 45px; height: 45px; font-weight: 800; font-size: 1.2rem;">
+                    {{ u.email.0|upper }}
+                </div>
+                <div class="w-100 overflow-hidden">
+                    <div class="fw-bold text-truncate x-small mb-1" title="{{ u.email }}" style="font-size: 0.7rem;">{{
+                        u.email }}</div>
+                    <div class="text-muted" style="font-size: 0.6rem;">{{ u.date_joined|date:"d M, H:i" }}</div>
+                </div>
+                <div class="mt-2 text-center">
+                    <span
+                        class="badge {% if u.is_active %}bg-success{% else %}bg-secondary{% endif %} rounded-pill p-1 px-2"
+                        style="font-size: 0.5rem;">
+                        {% if u.is_active %}ACTIVO{% else %}INACTIVO{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 </div>
 {% else %}
 <div class="d-flex align-items-center justify-content-between mb-5 mt-2">
@@ -719,7 +766,8 @@
                                 class="material-symbols-outlined fs-6 {% if receta.id in favoritas_ids %}text-primary{% else %}text-muted{% endif %}">favorite</span>
                         </button>
                         <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-50">
-                            <span class="text-white fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">{{  receta.get_tipo_dieta_display|upper }}</span>
+                            <span class="text-white fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">{{
+                                receta.get_tipo_dieta_display|upper }}</span>
                         </div>
                     </div>
                     <div class="p-3">
@@ -757,7 +805,8 @@
             </div>
             <div class="position-relative mb-3" style="z-index: 2;">
                 <p class="small text-white opacity-90 mb-0 ps-2 italic lh-base"
-                    style="font-size: 0.85rem; font-weight: 500; border-left: 2px solid var(--primary);">{{ recomendacion_ia }}</p>
+                    style="font-size: 0.85rem; font-weight: 500; border-left: 2px solid var(--primary);">{{
+                    recomendacion_ia }}</p>
             </div>
             <div class="d-flex gap-2 mb-0" style="z-index: 2; position: relative;"><span
                     class="badge rounded-pill bg-primary bg-opacity-20 text-white x-small fw-bold border border-white border-opacity-10"
@@ -789,10 +838,14 @@
                         onclick="updateWater(1)"><span class="material-symbols-outlined fs-5">add</span></button>
                 </div>
                 <div class="text-center">
-                    <h4 class="h2 fw-900 mb-0"><span id="water-liters">{{registro_agua.litros|default:"0.0"|floatformat:1 }}</span><small class="text-muted h6">/
+                    <h4 class="h2 fw-900 mb-0"><span
+                            id="water-liters">{{registro_agua.litros|default:"0.0"|floatformat:1 }}</span><small
+                            class="text-muted h6">/
                             <span id="meta-liters-display">{{ registro_agua.meta_litros|default:"2.0" }}</span>
                             Lts</small></h4>
-                    <p class="text-xs-bold text-muted mb-0">Vasos: <span id="current-vasos-display">{{ registro_agua.cantidad_vasos|default:"0" }}</span> / <span id="meta-vasos-display">{{ registro_agua.meta_vasos|default:"8" }}</span></p>
+                    <p class="text-xs-bold text-muted mb-0">Vasos: <span id="current-vasos-display">{{
+                            registro_agua.cantidad_vasos|default:"0" }}</span> / <span id="meta-vasos-display">{{
+                            registro_agua.meta_vasos|default:"8" }}</span></p>
                 </div>
                 {% if es_invitado %}
             </div>{% endif %}
@@ -843,14 +896,22 @@
                 <div class="mb-4 text-center">
                     <label class="small fw-bold mb-3 text-muted text-uppercase d-block"
                         style="letter-spacing: 1px;">Nivel de Energía</label>
-                    <div class="d-flex justify-content-between gap-1 p-1 rounded-4 bg-light border"> {% for i in "12345"|make_list %}<input type="radio" class="btn-check" name="energy-level"
-                            id="energy-{{ i }}" value="{{ i }}" {% if sueno_hoy.calidad|slugify ==  i %}checked{% elif not sueno_hoy and i == "3" %}checked{% endif %} /><label
+                    <div class="d-flex justify-content-between gap-1 p-1 rounded-4 bg-light border"> {% for i in
+                        "12345"|make_list %}<input type="radio" class="btn-check" name="energy-level"
+                            id="energy-{{ i }}" value="{{ i }}" {% if sueno_hoy.calidad|slugify==i %}checked{% elif not
+                            sueno_hoy and i=="3" %}checked{% endif %} /><label
                             class="btn btn-sm btn-outline-light border-0 flex-grow-1 py-2 rounded-3 text-dark fw-bold energy-btn"
-                            for="energy-{{ i }}" onclick="selectEnergy(this)"><span class="d-block fs-3 mb-1">{% if i == "1" %}😴{% elif i == "2" %}😪{% elif i == "3" %}😐{% elif i == "4" %}😊{% elif i == "5" %}🚀{% endif %}</span><span class="d-block x-small lh-1 opacity-75">{% if i == "1" %}Baja{% elif i == "2" %}Leve{% elif i == "3" %}Normal{% elif i == "4" %}Bien{% elif i == "5" %}Excelente{% endif %}</span></label>{% endfor %}
+                            for="energy-{{ i }}" onclick="selectEnergy(this)"><span class="d-block fs-3 mb-1">{% if i ==
+                                "1" %}😴{% elif i == "2" %}😪{% elif i == "3" %}😐{% elif i == "4" %}😊{% elif i == "5"
+                                %}🚀{% endif %}</span>
+                            <span class="d-block x-small lh-1 opacity-75">{% if i == "1" %}Baja{% elif i == "2" %}Leve{%
+                                elif i == "3" %}Normal{% elif i == "4" %}Bien{% elif i == "5" %}Excelente{% endif
+                                %}</span></label>{% endfor %}
                     </div>
                 </div>
                 <div class="text-center">
-                    <p class="small text-muted mb-3 fst-italic" id="sleep-status">{% if sueno_hoy %}¡Registro de hoy guardado!{% else %}Registra tu sueño de anoche{% endif %}</p>
+                    <p class="small text-muted mb-3 fst-italic" id="sleep-status">{% if sueno_hoy %}¡Registro de hoy
+                        guardado!{% else %}Registra tu sueño de anoche{% endif %}</p>
                     <button
                         class="btn btn-success w-100 py-3 rounded-4 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2"
                         style="background: var(--primary-elite); border: none;" onclick="saveSleep()"><span
@@ -910,7 +971,7 @@
     const pageData = document.getElementById('page-data').dataset;
     window.appState = {
         isGuest: pageData.isGuest === 'true',
-        isAdmin: {{ request.user.is_staff|yesno:"true,false" }},
+        isAdmin: {{ request.user.is_staff | yesno: "true,false" }},
     csrfToken: pageData.csrfToken,
         hasReport: pageData.hasReport === 'true',
             goals: { cals: parseInt(pageData.goalCals), prot: parseInt(pageData.goalProt), carb: parseInt(pageData.goalCarb), fat: parseInt(pageData.goalFat) }
@@ -1022,7 +1083,7 @@
             const pBtn = document.querySelector('.profile-trigger');
             pBtn.href = "javascript:void(0)";
             if (pBtn.getAttribute('hx-get')) pBtn.removeAttribute('hx-get');
-            pBtn.onclick = (e) => { e.preventDefault(); showToast('Modo Admin Activo ⚡', 'info'); };
+            pBtn.onclick = (e) => { e.preventDefault(); handleLogout(); };
         }
         if (window.loadDailyConsumption) window.loadDailyConsumption();
         if (window.renderGlasses) window.renderGlasses();
@@ -1037,39 +1098,120 @@
     };
 
     window.initAdminCharts = function () {
-        if (!document.getElementById('adminEvolutionChart')) return;
-        const evoData = JSON.parse(document.getElementById('evolution-json').textContent);
-        new Chart(document.getElementById('adminEvolutionChart'), {
-            type: 'line',
-            data: { labels: evoData.labels, datasets: [{ label: 'Nuevos Usuarios', data: evoData.values, borderColor: '#85c81a', backgroundColor: 'rgba(133, 200, 26, 0.1)', fill: true, tension: 0.4 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
+        const isDarkMode = document.body.classList.contains('dark-mode');
+        const textColor = isDarkMode ? '#a0a0a0' : '#4b5563';
+        const gridColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
 
-        const genData = JSON.parse(document.getElementById('gender-json').textContent);
-        const h = genData.find(g => g.genero === 'H')?.count || 0;
-        const m = genData.find(g => g.genero === 'M')?.count || 0;
-        new Chart(document.getElementById('adminGenderChart'), {
-            type: 'pie',
-            data: { labels: ['Hombre', 'Mujer'], datasets: [{ data: [h, m], backgroundColor: ['#0984e3', '#fd79a8'] }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
+        if (document.getElementById('adminEvolutionChart')) {
+            const evoData = JSON.parse(document.getElementById('evolution-json').textContent);
+            new Chart(document.getElementById('adminEvolutionChart'), {
+                type: 'line',
+                data: {
+                    labels: evoData.labels,
+                    datasets: [{
+                        label: 'Nuevos Usuarios',
+                        data: evoData.values,
+                        borderColor: '#00cec9',
+                        backgroundColor: 'rgba(0, 206, 201, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#00cec9',
+                        pointBorderColor: '#fff',
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, labels: { color: textColor, font: { weight: '800', size: 10 } } },
+                        tooltip: { backgroundColor: '#1e293b', titleFont: { weight: '800' }, padding: 12, borderRadius: 12 }
+                    },
+                    scales: {
+                        y: { grid: { color: gridColor }, ticks: { color: textColor } },
+                        x: { grid: { display: false }, ticks: { color: textColor } }
+                    }
+                }
+            });
+        }
 
-        const ageData = JSON.parse(document.getElementById('age-json').textContent);
-        new Chart(document.getElementById('adminAgeChart'), {
-            type: 'bar',
-            data: { labels: ['18-25', '26-35', '36-50', '50+'], datasets: [{ data: [ageData.e18_25, ageData.e26_35, ageData.e36_50, ageData.e50plus], backgroundColor: '#85c81a', borderRadius: 10 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
+        if (document.getElementById('adminGenderChart')) {
+            const genData = JSON.parse(document.getElementById('gender-json').textContent);
+            const h = genData.find(g => g.genero === 'H')?.count || 0;
+            const m = genData.find(g => g.genero === 'M')?.count || 0;
+            new Chart(document.getElementById('adminGenderChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Hombres', 'Mujeres'],
+                    datasets: [{
+                        data: [h, m],
+                        backgroundColor: ['#0984e3', '#fd79a8'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: { display: true, position: 'bottom', labels: { color: textColor, padding: 20, usePointStyle: true, font: { weight: 'bold' } } }
+                    }
+                }
+            });
+        }
 
-        const objData = JSON.parse(document.getElementById('objectives-json').textContent);
-        const lose = objData.find(o => o.objetivo === 'PERDER')?.count || 0;
-        const ga = objData.find(o => o.objetivo === 'GANAR')?.count || 0;
-        const ma = objData.find(o => o.objetivo === 'MANTENER')?.count || 0;
-        new Chart(document.getElementById('adminObjectivesChart'), {
-            type: 'doughnut',
-            data: { labels: ['Perder', 'Ganar', 'Mantener'], datasets: [{ data: [lose, ga, ma], backgroundColor: ['#ff7675', '#00b894', '#00cec9'] }] },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false } } }
-        });
+        if (document.getElementById('adminAgeChart')) {
+            const ageData = JSON.parse(document.getElementById('age-json').textContent);
+            new Chart(document.getElementById('adminAgeChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['18-25', '26-35', '36-50', '50+'],
+                    datasets: [{
+                        label: 'Usuarios',
+                        data: [ageData.e18_25, ageData.e26_35, ageData.e36_50, ageData.e50plus],
+                        backgroundColor: '#85c81a',
+                        borderRadius: 8,
+                        hoverBackgroundColor: '#00cec9'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } },
+                        x: { grid: { display: false }, ticks: { color: textColor } }
+                    }
+                }
+            });
+        }
+
+        if (document.getElementById('adminObjectivesChart')) {
+            const objData = JSON.parse(document.getElementById('objectives-json').textContent);
+            const lose = objData.find(o => o.objetivo === 'PERDER')?.count || 0;
+            const ga = objData.find(o => o.objetivo === 'GANAR')?.count || 0;
+            const ma = objData.find(o => o.objetivo === 'MANTENER')?.count || 0;
+            new Chart(document.getElementById('adminObjectivesChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['Perder Peso', 'Ganar Masa', 'Mantener'],
+                    datasets: [{
+                        data: [lose, ga, ma],
+                        backgroundColor: ['#ff7675', '#00b894', '#00cec9'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'bottom', labels: { color: textColor, padding: 15, usePointStyle: true } }
+                    }
+                }
+            });
+        }
     };
 </script>
 

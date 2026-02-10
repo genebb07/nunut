@@ -582,7 +582,8 @@
 
                 <div class="sidebar-extra">
                     <span class="badge bg-brand-soft text-green px-3 py-2 small shadow-sm mb-3">
-                        {% if user.perfil.somatotipo %} {{ user.perfil.get_somatotipo_display }} {% else %} Optimización Activa {% endif %}
+                        {% if user.perfil.somatotipo %} {{ user.perfil.get_somatotipo_display }} {% else %} Optimización
+                        Activa {% endif %}
                     </span>
 
                     <div class="d-grid gap-2 mt-2">
@@ -698,8 +699,11 @@
                             </div>
                             <h3 class="fw-black mb-1">{{ imc|default:"—" }}</h3>
                             <div class="d-flex justify-content-between align-items-end">
-                                <span class="x-small fw-black text-brand"> {% if imc %} {% if imc < 18.5 %} BAJO PESO {% elif imc < 25 %} NORMAL {% elif imc < 30 %} SOBREPESO {% else %} OBESIDAD {% endif %} {% else %} SIN DATOS {% endif %} </span>
-                                <span class="x-small text-muted" id="muscle-mass-display" title="Masa Muscular Estimada"></span>
+                                <span class="x-small fw-black text-brand"> {% if imc %} {% if imc < 18.5 %} BAJO PESO {%
+                                        elif imc < 25 %} NORMAL {% elif imc < 30 %} SOBREPESO {% else %} OBESIDAD {%
+                                        endif %} {% else %} SIN DATOS {% endif %} </span>
+                                        <span class="x-small text-muted" id="muscle-mass-display"
+                                            title="Masa Muscular Estimada"></span>
                             </div>
                         </div>
                     </div>
@@ -794,25 +798,55 @@
             <!-- Suggestion Box -->
             <div class="premium-card p-4 mb-4"
                 style="background: linear-gradient(135deg, rgba(133, 200, 26, 0.05), rgba(0, 206, 201, 0.05)); border: 1px dashed var(--brand-primary);">
-                <h5 class="fw-black mb-3 d-flex align-items-center gap-2">
-                    <span class="material-symbols-outlined text-brand">feedback</span> Buzón de Sugerencias
-                </h5>
-                <p class="small text-muted mb-3 fw-bold">¿Tienes alguna idea para mejorar nunut? Tu feedback es vital
-                    para nosotros.</p>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="fw-black mb-0 d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined text-brand">feedback</span> Buzón de Sugerencias
+                    </h5>
+                    <span class="badge bg-brand text-white rounded-pill px-3 py-1 fw-bold animate-pulse-slow"
+                        style="font-size: 0.65rem;">FASE BETA</span>
+                </div>
+
+                <div class="bg-brand-soft p-3 rounded-4 mb-4 border border-brand border-opacity-10 text-center">
+                    <p class="small text-brand fw-bold mb-0">✨ Estamos en fase de crecimiento. Tu opinión es el motor
+                        que impulsa nuestra evolución.</p>
+                </div>
+
                 <div id="suggestion-form">
+                    <div class="mb-3 text-center">
+                        <label class="small fw-black text-muted text-uppercase mb-2 d-block">¿Cómo calificarías tu
+                            experiencia?</label>
+                        <div class="d-flex justify-content-center gap-2" id="star-rating">
+                            {% for i in "12345"|make_list %}
+                            <span class="material-symbols-outlined cursor-pointer star-item text-muted"
+                                onclick="setRating({{ i }})" onmouseover="hoverRating({{ i }})"
+                                onmouseout="resetRating()" data-value="{{ i }}"
+                                style="font-size: 32px; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);">star</span>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" id="sug-rating" value="5">
+                    </div>
+
                     <input type="text" id="sug-asunto" class="form-control custom-input mb-2"
                         placeholder="Asunto (opcional)">
                     <textarea id="sug-mensaje" class="form-control custom-input mb-3" rows="3"
-                        placeholder="Escribe tu mensaje aquí..."></textarea>
-                    <button class="btn btn-premium w-100 fw-bold py-2" onclick="enviarSugerencia()">Enviar
-                        Comentarios</button>
+                        placeholder="Escribe tu mensaje o sugerencia aquí..."></textarea>
+                    <button class="btn btn-premium w-100 fw-bold py-2 shadow-sm" onclick="enviarSugerencia()">
+                        <span class="material-symbols-outlined me-1"
+                            style="font-size: 18px; vertical-align: middle;">send</span>
+                        Enviar Comentarios
+                    </button>
                 </div>
-                <div id="suggestion-thanks" class="text-center py-3 d-none">
-                    <span class="material-symbols-outlined display-5 text-brand mb-2">check_circle</span>
-                    <p class="fw-bold mb-1">¡Gracias por tu aporte!</p>
-                    <p class="small text-muted mb-0">Nuestro equipo revisará tu sugerencia pronto.</p>
+                <div id="suggestion-thanks" class="text-center py-4 d-none">
+                    <div class="bg-brand bg-opacity-10 p-4 rounded-circle d-inline-flex mb-3">
+                        <span class="material-symbols-outlined display-5 text-brand">favorite</span>
+                    </div>
+                    <p class="fw-black mb-1 h5">¡Gracias por tu aporte!</p>
+                    <p class="small text-muted mb-0 fw-bold">Nuestro equipo revisará tu mensaje minuciosamente.</p>
+                    <button class="btn btn-link text-brand btn-sm mt-3 fw-bold text-decoration-none"
+                        onclick="location.reload()">Enviar otro mensaje</button>
                 </div>
             </div>
+
         </div>
 
         <!-- Settings & Subscription -->
@@ -843,7 +877,9 @@
                             <span class="fw-bold small">Modo oscuro</span>
                         </div>
                         <div class="form-check form-switch mb-0">
-                            <input id="perfil-dark-mode-toggle" class="form-check-input" type="checkbox" {% if user.perfil.modo_oscuro %}checked {% endif %} onclick="toggleTheme()" aria-label="Alternar modo oscuro">
+                            <input id="perfil-dark-mode-toggle" class="form-check-input" type="checkbox" {% if
+                                user.perfil.modo_oscuro %}checked {% endif %} onclick="toggleTheme()"
+                                aria-label="Alternar modo oscuro">
                         </div>
                     </div>
 
@@ -1286,9 +1322,42 @@
         }
     }
 
+    let currentRating = 5;
+
+    function setRating(val) {
+        currentRating = val;
+        document.getElementById('sug-rating').value = val;
+        updateStars(val);
+    }
+
+    function hoverRating(val) {
+        updateStars(val);
+    }
+
+    function resetRating() {
+        updateStars(currentRating);
+    }
+
+    function updateStars(val) {
+        const stars = document.querySelectorAll('.star-item');
+        stars.forEach(star => {
+            const starValue = parseInt(star.getAttribute('data-value'));
+            if (starValue <= val) {
+                star.classList.remove('text-muted');
+                star.classList.add('text-warning');
+                star.style.transform = "scale(1.2)";
+            } else {
+                star.classList.add('text-muted');
+                star.classList.remove('text-warning');
+                star.style.transform = "scale(1)";
+            }
+        });
+    }
+
     function enviarSugerencia() {
         const asunto = document.getElementById('sug-asunto').value;
         const mensaje = document.getElementById('sug-mensaje').value;
+        const rating = document.getElementById('sug-rating').value;
 
         if (!mensaje) {
             showToast("Por favor escribe un mensaje", "error");
@@ -1301,19 +1370,28 @@
                 'Content-Type': 'application/json',
                 'X-CSRFToken': '{{ csrf_token }}'
             },
-            body: JSON.stringify({ asunto: asunto, mensaje: mensaje })
+            body: JSON.stringify({
+                asunto: asunto,
+                mensaje: mensaje,
+                calificacion: parseInt(rating)
+            })
         })
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
                     document.getElementById('suggestion-form').classList.add('d-none');
                     document.getElementById('suggestion-thanks').classList.remove('d-none');
-                    showToast("¡Sugerencia enviada!", "success");
+                    showToast("¡Gracias por tu feedback!", "success");
                 } else {
-                    showToast("Error al enviar", "error");
+                    showToast("Error al enviar: " + (data.message || "desconocido"), "error");
                 }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast("Error de conexión", "error");
             });
     }
+
 </script>
 
 <style>

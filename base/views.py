@@ -273,9 +273,25 @@ def _get_admin_dashboard_data(request):
     
     total_staff = User.objects.filter(Q(is_staff=True) | Q(perfil__rol='ADMIN')).distinct().count()
     
-    # 2. Distribución y Mapas
-    dist_paises = list(Perfil.objects.exclude(usuario__username='invitado').values('localidad').annotate(count=Count('id')).order_by('-count'))
-    dist_genero = list(Perfil.objects.exclude(usuario__username='invitado').values('genero').annotate(count=Count('id')))
+    # 2. Distribución y Mapas - Agrupar Venezuela
+    from django.db.models import Case, When, Value, CharField
+    perfiles_qs = Perfil.objects.exclude(usuario__username='invitado')
+    
+    # Lista de estados/ciudades de Venezuela para normalización
+    vzla_keywords = ['venezuela', 'caracas', 'zulia', 'maracaibo', 'valencia', 'aragua', 'lara', 'bolivar', 'anzoategui', 'tachira', 'miranda']
+    
+    dist_paises_raw = list(perfiles_qs.values('localidad').annotate(count=Count('id')).order_by('-count'))
+    dist_paises_map = {}
+    
+    for item in dist_paises_raw:
+        loc = (item['localidad'] or "").lower()
+        is_vzla = any(k in loc for k in vzla_keywords) or not loc
+        country = "Venezuela" if is_vzla else item['localidad']
+        dist_paises_map[country] = dist_paises_map.get(country, 0) + item['count']
+    
+    dist_paises = sorted([{'localidad': k, 'count': v} for k, v in dist_paises_map.items()], key=lambda x: x['count'], reverse=True)
+    
+    dist_genero = list(perfiles_qs.values('genero').annotate(count=Count('id')))
     
     perfiles = Perfil.objects.exclude(usuario__username='invitado').filter(fecha_nacimiento__isnull=False)
     edades = [p.edad for p in perfiles]
@@ -286,11 +302,34 @@ def _get_admin_dashboard_data(request):
         'e50plus': len([e for e in edades if e > 50]),
     }
     
-    # 3. Gráficos de Evolución
-    registros_evolucion = User.objects.exclude(username='invitado').annotate(day=TruncDay('date_joined')).values('day').annotate(count=Count('id')).order_by('day')
+    # 3. Gráficos de Evolución Dinámicos
+    periodo_evo = request.GET.get('evo_period', 'mes')
+    from django.db.models.functions import TruncDay, TruncMonth
+    
+    if periodo_evo == 'semana':
+        start_evo = now - timedelta(days=7)
+        trunc_evo = TruncDay
+        label_fmt = '%d %b'
+    elif periodo_evo == 'ano':
+        start_evo = now - timedelta(days=365)
+        trunc_evo = TruncMonth
+        label_fmt = '%b %Y'
+    else: # mes
+        start_evo = now - timedelta(days=30)
+        trunc_evo = TruncDay
+        label_fmt = '%d %b'
+
+    registros_evolucion = User.objects.exclude(username='invitado')\
+        .filter(date_joined__gte=start_evo)\
+        .annotate(period=trunc_evo('date_joined'))\
+        .values('period')\
+        .annotate(count=Count('id'))\
+        .order_by('period')
+        
     evolucion_data = {
-        'labels': [r['day'].strftime('%d %b') for r in registros_evolucion],
-        'values': [r['count'] for r in registros_evolucion]
+        'labels': [r['period'].strftime(label_fmt) for r in registros_evolucion],
+        'values': [r['count'] for r in registros_evolucion],
+        'current_period': periodo_evo
     }
     
     dist_objetivos = list(Perfil.objects.exclude(usuario__username='invitado').values('objetivo').annotate(count=Count('id')))
@@ -313,11 +352,15 @@ def _get_admin_dashboard_data(request):
     
     recetas_pendientes = Receta.objects.filter(esta_aprobada=False)
     
+    avg_edad = round(sum(edades) / len(edades), 1) if edades else 0
+    retencion = round((active_30d / max(total_registrados, 1)) * 100, 1)
+
     recent_users_list = []
-    for u in User.objects.exclude(username='invitado').order_by('-date_joined')[:8]:
+    # Privacidad: Solo últimos 5 y ocultar username (usar email)
+    for u in User.objects.exclude(username='invitado').order_by('-date_joined')[:5]:
         recent_users_list.append({
-            'username': u.username,
-            'email': u.email if request.user.is_superuser else f"ID: {u.id}",
+            'username': "Usuario " + str(u.id),
+            'email': u.email,
             'date_joined': u.date_joined,
             'is_active': u.is_active
         })
@@ -329,6 +372,8 @@ def _get_admin_dashboard_data(request):
             'active_7d': active_7d,
             'active_30d': active_30d,
             'total_staff': total_staff,
+            'avg_edad': avg_edad,
+            'retencion': retencion,
         },
         'charts': {
             'dist_paises': dist_paises,
@@ -339,6 +384,7 @@ def _get_admin_dashboard_data(request):
         },
         'sugerencias': sugerencias_recientes,
         'recetas_pendientes': recetas_pendientes,
+        'recent_users': recent_users_list,
         'recent_users': recent_users_list,
         'filtros_sug': {
             'estado': status_filter,
@@ -352,7 +398,7 @@ def index(request):
         context = _get_admin_dashboard_data(request)
         context['base_template'] = get_base_template(request)
         context['es_admin_view'] = True
-        return render(request, 'base/index.html', context)
+        return render(request, 'admin/dashboard.html', context)
     es_invitado = False
     if request.user.is_authenticated and hasattr(request.user, 'perfil'):
         es_invitado = request.user.perfil.rol == 'GUEST'
@@ -820,6 +866,37 @@ def diario(request):
     return render(request, 'base/diario.html', context)
 
 def progreso(request):
+    if request.user.is_staff:
+        # VISTA DE ADMIN PARA PROGRESO: Estadísticas Globales de la App
+        from .models import Perfil, ComidaDiaria, RegistroAgua, RegistroSueno, Receta
+        from django.db.models import Count, Avg, Sum
+        
+        total_perfiles = Perfil.objects.exclude(usuario__username='invitado').count()
+        promedio_imc = Perfil.objects.exclude(usuario__username='invitado').aggregate(avg_grasa=Avg('porcentaje_grasa'))
+        
+        # Estadísticas de uso de la app
+        today = date.today()
+        comidas_hoy = ComidaDiaria.objects.filter(fecha=today).count()
+        total_vasos_hoy = RegistroAgua.objects.filter(fecha=today).aggregate(total=Sum('cantidad_vasos'))['total'] or 0
+        agua_hoy = round(total_vasos_hoy * 0.25, 1)
+        suenos_7d = RegistroSueno.objects.filter(fecha__gte=today - timedelta(days=7))
+        sueno_avg = sum(s.horas_totales for s in suenos_7d) / max(suenos_7d.count(), 1)
+        
+        dist_objetivos = list(Perfil.objects.exclude(usuario__username='invitado').values('objetivo').annotate(count=Count('id')))
+        
+        return render(request, 'base/progreso.html', {
+            'base_template': get_base_template(request),
+            'es_admin_view': True,
+            'app_stats': {
+                'total_users': total_perfiles,
+                'comidas_registradas_hoy': comidas_hoy,
+                'litros_agua_hoy': round(agua_hoy, 1),
+                'promedio_sueno_7d': round(sueno_avg, 1),
+                'recetas_totales': Receta.objects.count(),
+                'objetivos': dist_objetivos
+            }
+        })
+
     perfil = request.user.perfil
     peso = float(perfil.obtener_peso_actual())
     altura_m = float(perfil.altura) / 100 if perfil.altura else 0
@@ -843,10 +920,13 @@ def progreso(request):
     hueso_kg = round(peso * 0.15, 1) # El esqueleto humano es ~15% del peso total
     
     # 3. Metabolismo & Energía
-    info_nutri = perfil.generar_informe_nutricional()
-    tmb = info_nutri['datos_base']['tmb_pura']
-    tdee = info_nutri['datos_base']['mantenimiento']
-    calorias_obj = info_nutri['plan']['calorias_dia']
+    try:
+        info_nutri = perfil.generar_informe_nutricional()
+        tmb = info_nutri['datos_base']['tmb_pura']
+        tdee = info_nutri['datos_base']['mantenimiento']
+        calorias_obj = info_nutri['plan']['calorias_dia']
+    except:
+        tmb = tdee = calorias_obj = 0
     
     # 4. Proyecciones IA (Matemáticas Futuras)
     deficit_superavit = calorias_obj - tdee
@@ -2040,8 +2120,49 @@ def cambiar_contrasena(request):
             user = form.save()
             update_session_auth_hash(request, user)
             messages.success(request, 'Tu contraseña ha sido actualizada exitosamente.')
-        else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"{error}")
     return redirect('base:gestionar_cuenta')
+
+@login_required
+def agregar_al_calendario(request):
+    if request.method == 'POST':
+        import json
+        try:
+            data = json.loads(request.body)
+            receta_ids = data.get('receta_ids', [])
+            fecha_str = data.get('fecha', str(date.today()))
+            fecha = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+            
+            from .models import Receta, ComidaDiaria
+            
+            for rid in receta_ids:
+                receta = Receta.objects.get(id=rid)
+                ComidaDiaria.objects.create(
+                    perfil=request.user.perfil,
+                    nombre=receta.titulo,
+                    calorias=receta.calorias,
+                    proteinas=receta.proteinas,
+                    carbos=receta.carbos,
+                    grasas=receta.grasas,
+                    hora=datetime.now().time(),
+                    fecha=fecha,
+                    categoria=receta.categoria if receta.categoria in ['desayuno', 'almuerzo', 'cena', 'snack', 'postre'] else 'almuerzo',
+                    imagen_url=receta.imagen_url
+                )
+            
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+
+@login_required
+def quitar_del_calendario(request, comida_id):
+    if request.method == 'POST':
+        from .models import ComidaDiaria
+        try:
+            comida = ComidaDiaria.objects.get(id=comida_id, perfil=request.user.perfil)
+            comida.delete()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+

@@ -47,4 +47,7 @@ urlpatterns = [
     path('cambiar_contrasena/', views.cambiar_contrasena, name='cambiar_contrasena'),
     path('api/marcar_leido_sugerencia/<int:sugerencia_id>/', views.marcar_leido_sugerencia, name='marcar_leido_sugerencia'),
     path('api/archivar_sugerencia/<int:sugerencia_id>/', views.archivar_sugerencia, name='archivar_sugerencia'),
+    path('api/agregar_al_calendario/', views.agregar_al_calendario, name='agregar_al_calendario'),
+    path('api/quitar_del_calendario/<int:comida_id>/', views.quitar_del_calendario, name='quitar_del_calendario'),
 ]
+

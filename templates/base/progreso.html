@@ -132,29 +132,131 @@
     }
 </style>
 
-<div class="row g-4 mt-2 position-relative">
-    {% if user.username == 'invitado' %}
-    <div class="guest-lock-overlay">
-        <div class="card-pro text-center shadow-lg border-primary border-2"
-            style="max-width: 400px; background: white;">
-            <div
-                class="size-24 mx-auto bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center text-primary mb-4">
-                <span class="material-symbols-outlined display-4">lock</span>
+{% if es_admin_view %}
+<div class="col-12 mt-4 animate-fade">
+    <div class="d-flex align-items-center gap-3 mb-5">
+        <div class="bg-info bg-opacity-10 p-3 rounded-4">
+            <span class="material-symbols-outlined text-info display-5">analytics</span>
+        </div>
+        <div>
+            <h1 class="fw-black m-0 h2">Estadísticas de <span class="text-info">Rendimiento</span></h1>
+            <p class="text-muted fw-bold mb-0">Análisis global de la plataforma nunut</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Stats Grid -->
+        <div class="col-lg-8">
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="card-pro h-100 border-info border-opacity-20">
+                        <h3 class="h6 fw-black text-uppercase text-info letter-spacing-widest mb-4">Interacción Diaria
+                        </h3>
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <span class="fw-bold">Comidas Registradas</span>
+                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">{{
+                                app_stats.comidas_registradas_hoy }} hoy</span>
+                        </div>
+                        <div class="progress rounded-pill bg-light" style="height: 10px;">
+                            <div class="progress-bar bg-success shadow-sm" style="width: 75%;"></div>
+                        </div>
+                        <p class="x-small text-muted mt-3 mb-0">Métrica basada en registros del día actual.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card-pro h-100 border-info border-opacity-20">
+                        <h3 class="h6 fw-black text-uppercase text-info letter-spacing-widest mb-4">Consumo de Recursos
+                        </h3>
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <span class="fw-bold">Hidratación Global</span>
+                            <span class="text-info fw-black h4 mb-0">{{ app_stats.litros_agua_hoy }} <small
+                                    class="text-muted" style="font-size: 0.6rem;">LITROS</small></span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <span class="fw-bold">Descanso Promedio</span>
+                            <span class="text-warning fw-black h4 mb-0">{{ app_stats.promedio_sueno_7d }} <small
+                                    class="text-muted" style="font-size: 0.6rem;">HORAS</small></span>
+                        </div>
+                        <p class="x-small text-muted mt-3 mb-0">Basado en el promedio de los últimos 7 días.</p>
+                    </div>
+                </div>
             </div>
-            <h3 class="fw-black mb-2">Contenido Exclusivo</h3>
-            <p class="text-muted small mb-4">Regístrate para ver tu evolución real y recibir análisis personalizados de
-                la IA.</p>
-            <div class="d-grid gap-2">
-                <a href="{% url 'base:registro' %}" class="btn btn-primary rounded-pill fw-black py-3">CREAR CUENTA
-                    GRATIS</a>
-                <a href="{% url 'base:iniciar_sesion' %}" class="btn btn-link text-muted fw-bold">Ya tengo cuenta</a>
+
+            <div
+                class="card-pro border-0 shadow-lg p-5 text-center bg-dark text-white overflow-hidden position-relative">
+                <div class="position-absolute top-0 start-0 w-100 h-100 bg-info opacity-5"
+                    style="background: radial-gradient(circle, var(--primary-lime) 0%, transparent 70%);"></div>
+                <h3 class="h4 fw-black mb-2">Base de Conocimiento</h3>
+                <p class="text-slate-400 mb-4 px-lg-5">Actualmente contamos con <span class="text-info">{{
+                        app_stats.recetas_totales }} recetas curadas</span> que alimentan nuestro motor de IA para
+                    recomendaciones personalizadas.</p>
+                <div class="d-flex justify-content-center gap-4">
+                    <div class="text-center">
+                        <div class="h2 fw-black text-lime mb-0">100%</div>
+                        <div class="x-small text-uppercase fw-bold letter-spacing-widest opacity-50">Disponibilidad
+                        </div>
+                    </div>
+                    <div class="vr opacity-20"></div>
+                    <div class="text-center">
+                        <div class="h2 fw-black text-info mb-0">IA</div>
+                        <div class="x-small text-uppercase fw-bold letter-spacing-widest opacity-50">Optimizado</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card-pro h-100 bg-white dark-mode-bg-dark border-0 shadow-lg">
+                <h3 class="h5 fw-black mb-1">Tendencia de Objetivos</h3>
+                <p class="small text-muted mb-4">Distribución de metas de usuario</p>
+                <div class="d-flex flex-column gap-3">
+                    {% for obj in app_stats.objetivos %}
+                    <div
+                        class="p-3 rounded-4 bg-light dark-mode-bg-secondary border border-white border-opacity-10 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-black small text-uppercase" style="font-size: 0.65rem;">
+                                {% if obj.objetivo == 'PERDER' %}Bajar Peso{% elif obj.objetivo == 'GANAR' %}Masa
+                                Muscular{% else %}Salud/Mantener{% endif %}
+                            </span>
+                            <span class="badge bg-info bg-opacity-20 text-info rounded-pill px-2 py-1"
+                                style="font-size: 0.6rem;">{{ obj.count }}</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-info" style="width: {{ obj.count }}0%;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="mt-5 p-4 rounded-4 bg-info bg-opacity-10 text-info text-center">
+                    <span class="material-symbols-outlined display-6 mb-2">info</span>
+                    <p class="fw-bold mb-0">Data consolidada de {{ app_stats.total_users }} perfiles activos.</p>
+                </div>
             </div>
         </div>
     </div>
-    {% endif %}
-
+</div>
+{% elif user.username == 'invitado' %}
+<div class="guest-lock-overlay">
+    <div class="card-pro text-center shadow-lg border-primary border-2" style="max-width: 400px; background: white;">
+        <div
+            class="size-24 mx-auto bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center text-primary mb-4">
+            <span class="material-symbols-outlined display-4">lock</span>
+        </div>
+        <h3 class="fw-black mb-2">Contenido Exclusivo</h3>
+        <p class="text-muted small mb-4">Regístrate para ver tu evolución real y recibir análisis personalizados de
+            la IA.</p>
+        <div class="d-grid gap-2">
+            <a href="{% url 'base:registro' %}" class="btn btn-primary rounded-pill fw-black py-3">CREAR CUENTA
+                GRATIS</a>
+            <a href="{% url 'base:iniciar_sesion' %}" class="btn btn-link text-muted fw-bold">Ya tengo cuenta</a>
+        </div>
+    </div>
+</div>
+<div class="col-12 col-lg-8">
+    {% else %}
     <!-- COLUMNA PRINCIPAL -->
     <div class="col-12 col-lg-8">
+        {% endif %}
         <!-- AVATAR DINÁMICO IA -->
         <div class="card-pro text-center position-relative overflow-hidden"
             style="background: linear-gradient(135deg, var(--bg-content) 0%, rgba(133, 200, 26, 0.05) 100%);">
@@ -624,6 +726,7 @@
         </div>
     </div>
 
+    {% if not es_admin_view %}
     <!-- COLUMNA LATERAL -->
     <div class="col-12 col-lg-4">
         <!-- Disciplina Card -->
@@ -748,6 +851,7 @@
             <p class="small mt-2 mb-0 fw-bold text-muted">Aproximadamente 21 días al ritmo actual.</p>
         </div>
     </div>
+    {% endif %}
 </div>
 </div>
 {% endblock %}
