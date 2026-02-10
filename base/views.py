@@ -786,21 +786,32 @@ def planes(request):
 
     # --- Lógica de Calendario Semanal ---
     semana = []
+    selected_date_str = request.GET.get('date')
+    selected_date = None
+    if selected_date_str:
+        try:
+            selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
+        except: pass
+
     if request.user.is_authenticated and not es_invitado:
         # Usamos la misma lógica que en diario()
         current_date = date.today()
-        start_of_week = current_date - timedelta(days=current_date.weekday() + 1 if current_date.weekday() != 6 else 0) # Domingo
+        start_of_week = current_date # Empezamos hoy
         dias_nombres = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB']
         
         for i in range(7):
             d = start_of_week + timedelta(days=i)
             # Comidas para este día
             comidas_dia = ComidaDiaria.objects.filter(perfil=request.user.perfil, fecha=d)
+            
+            # El día está activo si es el seleccionado por URL, o si no hay selección y es hoy
+            is_active = (selected_date == d) if selected_date else (d == date.today())
+            
             semana.append({
                 'fecha': d,
                 'dia_num': d.day,
-                'nombre': dias_nombres[i],
-                'is_today': d == date.today(),
+                'nombre': dias_nombres[(d.weekday() + 1) % 7],
+                'is_active': is_active,
                 'comidas': comidas_dia
             })
 
@@ -812,7 +823,8 @@ def planes(request):
         'opciones_dieta': opciones_dieta,
         'categorias_receta': categorias,
         'vista_activa': vista_activa,
-        'semana_calendario': semana
+        'semana_calendario': semana,
+        'fecha_seleccionada': selected_date_str
     })
 
 @login_required

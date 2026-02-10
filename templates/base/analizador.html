@@ -496,7 +496,32 @@
     let currentAnalysis = null;
     let selectedDate = null;
 
-    // Live Transcription (UX Feedback)
+    // Tab Persistence
+    document.querySelectorAll('button[data-bs-toggle="pill"]').forEach(pill => {
+        pill.addEventListener('shown.bs.tab', (e) => {
+            const tabId = e.target.getAttribute('data-bs-target').replace('#', '');
+            const url = new URL(window.location);
+            url.searchParams.set('tab', tabId);
+            window.history.replaceState({}, '', url);
+        });
+    });
+
+    window.addEventListener('load', () => {
+        const params = new URLSearchParams(window.location.search);
+        const tab = params.get('tab');
+        if (tab) {
+            const triggerEl = document.querySelector(`button[data-bs-target="#${tab}"]`);
+            if (triggerEl) {
+                if (typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+                    const tabTrigger = new bootstrap.Tab(triggerEl);
+                    tabTrigger.show();
+                } else {
+                    triggerEl.click();
+                }
+            }
+        }
+    });
+
     // Live Transcription (UX Feedback)
     let recognition = null;
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
