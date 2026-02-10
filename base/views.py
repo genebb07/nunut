@@ -2132,11 +2132,58 @@ def agregar_al_calendario(request):
             receta_ids = data.get('receta_ids', [])
             fecha_str = data.get('fecha', str(date.today()))
             fecha = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+            force = data.get('force', False)
             
             from .models import Receta, ComidaDiaria
             
+            perfil = request.user.perfil
+            
+            # Obtener meta de calorías (por defecto 2000)
+            meta_calorias = 2000 
+            try:
+                informe = perfil.generar_informe_nutricional()
+                if informe and 'plan' in informe:
+                    meta_calorias = informe['plan'].get('calorias_dia', 2000)
+            except: pass
+            
+            # Calcular calorías ya consumidas en ese día
+            comidas_dia = ComidaDiaria.objects.filter(perfil=perfil, fecha=fecha)
+            calorias_actuales = sum(c.calorias for c in comidas_dia)
+            
+            warnings = []
+            recetas_objs = []
+            calorias_a_agregar = 0
+            
+            # Primero cargamos las recetas para validar duplicados
+            duplicates = []
             for rid in receta_ids:
-                receta = Receta.objects.get(id=rid)
+                try:
+                    r = Receta.objects.get(id=rid)
+                    recetas_objs.append(r)
+                    
+                    # Check duplicado
+                    if ComidaDiaria.objects.filter(perfil=perfil, fecha=fecha, nombre__iexact=r.titulo).exists():
+                         duplicates.append(f"'{r.titulo}' ya está en tu plan del {fecha.strftime('%d/%m')}")
+                    
+                    calorias_a_agregar += r.calorias
+                except Receta.DoesNotExist:
+                    continue
+            
+            # Si hay duplicados y no forzamos, pedimos confirmación
+            if duplicates and not force:
+                return JsonResponse({
+                    'success': False,
+                    'requires_confirmation': True,
+                    'message': "Detección de duplicados:\n" + "\n".join(duplicates) + "\n\n¿Deseas añadirla de todos modos?"
+                })
+
+            # Check límite de calorías (esto siempre alerta, no bloquea)
+            if calorias_actuales + calorias_a_agregar > meta_calorias:
+                exceso = (calorias_actuales + calorias_a_agregar) - meta_calorias
+                warnings.append(f"¡Cuidado! Con esto superarás tu meta diaria por {exceso} kcal.")
+
+            # Crear registros
+            for receta in recetas_objs:
                 ComidaDiaria.objects.create(
                     perfil=request.user.perfil,
                     nombre=receta.titulo,
@@ -2150,7 +2197,22 @@ def agregar_al_calendario(request):
                     imagen_url=receta.imagen_url
                 )
             
-            return JsonResponse({'success': True})
+            # Mensaje motivacional aleatorio
+            frases = [
+                "¡Excelente elección! Tu cuerpo te lo agradecerá 🌱",
+                "¡Sigue así! Cada comida saludable cuenta 💪",
+                "¡Delicioso y nutritivo! Vas por buen camino 🚀",
+                "¡Bien hecho! Cuidar de ti es lo más importante ❤️",
+                "¡Añadido! Disfruta de tu comida sana 🥗"
+            ]
+            import random
+            motivational_msg = random.choice(frases)
+            
+            return JsonResponse({
+                'success': True,
+                'warnings': warnings,
+                'message': motivational_msg
+            })
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)

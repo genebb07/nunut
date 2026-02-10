@@ -700,14 +700,11 @@
 
                         <div class="d-flex flex-wrap gap-1 mb-3">
                             <span class="macro-pill"
-                                style="background: var(--macro-protein); color: var(--macro-protein-text);">P: {{
-                                receta.proteinas }}g</span>
+                                style="background: var(--macro-protein); color: var(--macro-protein-text);">P: {{  receta.proteinas }}g</span>
                             <span class="macro-pill"
-                                style="background: var(--macro-carbs); color: var(--macro-carbs-text);">C: {{
-                                receta.carbos }}g</span>
+                                style="background: var(--macro-carbs); color: var(--macro-carbs-text);">C: {{ receta.carbos }}g</span>
                             <span class="macro-pill"
-                                style="background: var(--macro-fats); color: var(--macro-fats-text);">G: {{
-                                receta.grasas }}g</span>
+                                style="background: var(--macro-fats); color: var(--macro-fats-text);">G: {{ receta.grasas }}g</span>
                         </div>
 
                         <div
@@ -747,8 +744,7 @@
                 <div class="d-flex flex-column gap-2 flex-grow-1">
                     {% for comida in dia.comidas %}
                     <div class="bg-light p-2 rounded position-relative group border border-transparent">
-                        <div class="fw-bold text-dark text-truncate pe-3" style="font-size: 0.85rem;">{{ comida.nombre
-                            }}</div>
+                        <div class="fw-bold text-dark text-truncate pe-3" style="font-size: 0.85rem;">{{ comida.nombre }}</div>
                         <small class="text-muted fw-bold" style="font-size: 0.7rem;">{{ comida.calorias }} kcal</small>
                         <button type="button" onclick="removeFromCalendar({{ comida.id }}, this)"
                             class="btn btn-sm text-danger p-0 position-absolute top-0 end-0 me-1 mt-1"
@@ -1290,21 +1286,53 @@
 
         const datesText = dates.length === 1 ? dates[0] : `${dates.length} días`;
         if (confirm(`¿Añadir "${title}" a ${datesText}?`)) {
-            // Add to each selected date
-            const promises = dates.map(fecha => {
-                return fetch('/api/agregar_al_calendario/', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ receta_ids: [id], fecha: fecha })
+            // Helper to make request
+            const makeRequest = (datesToProcess, force = false) => {
+                const promises = datesToProcess.map(fecha => {
+                    return fetch('/api/agregar_al_calendario/', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ receta_ids: [id], fecha: fecha, force: force })
+                    }).then(res => res.json());
                 });
-            });
 
-            Promise.all(promises).then(() => {
-                location.reload();
-            });
+                Promise.all(promises).then(results => {
+                    let allWarnings = [];
+                    let lastMessage = "";
+                    let retryItems = [];
+
+                    results.forEach((data, index) => {
+                        if (data.requires_confirmation) {
+                            retryItems.push({ date: datesToProcess[index], msg: data.message });
+                        } else {
+                            if (data.warnings && data.warnings.length > 0) allWarnings.push(...data.warnings);
+                            if (data.message) lastMessage = data.message;
+                        }
+                    });
+
+                    if (retryItems.length > 0) {
+                        const msg = "⚠️ Conflictos detectados:\n" + retryItems.map(i => i.msg).join("\n") + "\n\n¿Añadir igualmente?";
+                        if (confirm(msg)) {
+                            // Retry ONLY the ones that required confirmation
+                            const retryDates = retryItems.map(i => i.date);
+                            makeRequest(retryDates, true);
+                            return;
+                        }
+                    }
+
+                    let finalMsg = lastMessage || "¡Guardado con éxito!";
+                    if (allWarnings.length > 0) {
+                        finalMsg += "\n\n⚠️ Avisos:\n" + [...new Set(allWarnings)].join("\n");
+                    }
+                    alert(finalMsg);
+                    location.reload();
+                });
+            };
+            
+            makeRequest(dates, false);
         }
     }
 
@@ -1347,11 +1375,30 @@
     function confirmAddRecipe(id, title, forceDate) {
         const targetDate = forceDate || selectedDate || new Date().toISOString().split('T')[0];
         if (confirm(`¿Añadir "${title}" al ${targetDate}?`)) {
-            fetch('/api/agregar_al_calendario/', {
-                method: 'POST',
-                headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' },
-                body: JSON.stringify({ receta_ids: [id], fecha: targetDate })
-            }).then(res => { location.reload(); });
+            const makeRequest = (force = false) => {
+                fetch('/api/agregar_al_calendario/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ receta_ids: [id], fecha: targetDate, force: force })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.requires_confirmation) {
+                            if (confirm(data.message)) {
+                                makeRequest(true);
+                            }
+                            return;
+                        }
+
+                        let msg = data.message || "¡Añadido!";
+                        if (data.warnings && data.warnings.length > 0) {
+                            msg += "\n\n⚠️ Atención:\n" + data.warnings.join("\n");
+                        }
+                        alert(msg);
+                        location.reload();
+                    });
+            };
+            makeRequest(false);
         }
     }
     function removeFromCalendar(id, btn) {
@@ -1399,11 +1446,30 @@
         const ids = window.currentAiPlan.map(m => m.id);
         const today = new Date().toISOString().split('T')[0];
         if (confirm('¿Añadir plan a hoy?')) {
-            fetch('/api/agregar_al_calendario/', {
-                method: 'POST',
-                headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' },
-                body: JSON.stringify({ receta_ids: ids, fecha: today })
-            }).then(r => location.reload());
+            const makeRequest = (force = false) => {
+                fetch('/api/agregar_al_calendario/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ receta_ids: ids, fecha: today, force: force })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.requires_confirmation) {
+                            if (confirm(data.message)) {
+                                makeRequest(true);
+                            }
+                            return;
+                        }
+
+                        let msg = data.message || "¡Plan añadido!";
+                        if (data.warnings && data.warnings.length > 0) {
+                            msg += "\n\n⚠️ Atención:\n" + data.warnings.join("\n");
+                        }
+                        alert(msg);
+                        location.reload();
+                    });
+            };
+            makeRequest(false);
         }
     }
 
