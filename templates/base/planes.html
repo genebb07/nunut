@@ -4,898 +4,695 @@
 {% block title %}Explorador de Recetas | nunut{% endblock %}
 
 {% block content %}
+<!-- Google Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+    rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+
+<!-- Custom CSS (Bootstrap overrides to match the premium design) -->
 <style>
     :root {
         --primary-color: #85c81a;
         --primary-dark: #74b016;
-        --primary-light: rgba(133, 200, 26, 0.1);
-        --primary-glow: rgba(133, 200, 26, 0.3);
-
-        --glass-bg: rgba(255, 255, 255, 0.7);
-        --glass-border: rgba(255, 255, 255, 0.2);
-        --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-
-        --macro-protein: #38bdf8;
-        --macro-carbs: #fbbf24;
-        --macro-fats: #ef4444;
-
-        --card-radius: 24px;
-        --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    }
-
-    .dark-mode {
-        --glass-bg: rgba(20, 25, 30, 0.8);
-        --glass-border: rgba(255, 255, 255, 0.05);
-        --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-    }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
-
-    ::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background: rgba(0, 0, 0, 0.1);
-        border-radius: 10px;
-    }
-
-    .dark-mode ::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.1);
+        --bg-light: #f7f8f6;
+        --heart-active: #ff4d4d;
+        --macro-protein: #e3f2fd;
+        --macro-protein-text: #1976d2;
+        --macro-carbs: #fff3e0;
+        --macro-carbs-text: #f57c00;
+        --macro-fats: #fffde7;
+        --macro-fats-text: #fbc02d;
     }
 
     body {
-        background-color: var(--bg-page);
-        font-family: 'Outfit', sans-serif;
+        font-family: 'Manrope', sans-serif;
+        background-color: var(--bg-light);
     }
 
-    .premium-header {
-        position: relative;
-        padding-bottom: 2rem;
+    /* Container centering fix */
+    .main-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
     }
 
-    .search-input-container {
-        position: relative;
-        max-width: 500px;
-        width: 100%;
-    }
-
-    .search-input {
-        background: var(--glass-bg);
-        backdrop-filter: blur(12px);
-        border: 1.5px solid var(--glass-border);
-        border-radius: 20px;
-        padding: 0.8rem 1rem 0.8rem 3.5rem;
-        font-weight: 500;
-        transition: var(--transition-base);
-        box-shadow: var(--glass-shadow);
-        color: var(--text-main);
-    }
-
-    .search-input:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 4px var(--primary-light);
-        transform: scale(1.02);
-    }
-
-    .nav-tabs-premium {
-        display: flex;
-        gap: 0.5rem;
-        background: var(--glass-bg);
-        backdrop-filter: blur(8px);
-        padding: 6px;
-        border-radius: 20px;
-        border: 1px solid var(--glass-border);
-        box-shadow: var(--glass-shadow);
-        width: fit-content;
-        margin: 0 auto 2rem auto;
-    }
-
-    .nav-tabs-premium button {
+    /* Card Hover Effects */
+    .recipe-card-container {
+        transition: all 0.3s ease-in-out;
         border: none;
-        background: transparent;
-        padding: 10px 24px;
-        border-radius: 15px;
-        font-weight: 800;
-        font-size: 0.85rem;
-        color: var(--text-muted);
-        transition: var(--transition-base);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .nav-tabs-premium button.active {
-        background: var(--primary-color);
-        color: white !important;
-        box-shadow: 0 10px 25px var(--primary-glow);
-        transform: translateY(-2px);
-    }
-
-    .btn-ai-sparkle {
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-        color: white !important;
-        border: none;
-        padding: 12px 28px;
-        border-radius: 18px;
-        font-weight: 800;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        transition: var(--transition-bounce);
-        box-shadow: 0 10px 25px var(--primary-glow);
-    }
-
-    .btn-ai-sparkle:hover {
-        transform: translateY(-4px) scale(1.05);
-        box-shadow: 0 15px 35px var(--primary-glow);
-    }
-
-    .recipe-card {
-        background: var(--glass-bg);
-        backdrop-filter: blur(10px);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--card-radius);
+        border-radius: 16px;
+        background: white;
         overflow: hidden;
-        transition: var(--transition-bounce);
-        position: relative;
         height: 100%;
         display: flex;
         flex-direction: column;
-        box-shadow: var(--glass-shadow);
     }
 
-    .recipe-card:hover {
-        transform: translateY(-15px) scale(1.02);
-        box-shadow: 0 40px 80px rgba(0, 0, 0, 0.15);
-        border-color: var(--primary-color);
+    .recipe-card-container:hover .recipe-img {
+        transform: scale(1.1);
     }
 
-    .dark-mode .recipe-card:hover {
-        box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
-        border-color: var(--primary-color);
-    }
-
-    .recipe-img-wrapper {
-        position: relative;
-        aspect-ratio: 16/11;
-        overflow: hidden;
-    }
-
-    .recipe-img-main {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 1.2s cubic-bezier(0.165, 0.84, 0.44, 1);
-    }
-
-    .recipe-card:hover .recipe-img-main {
-        transform: scale(1.15);
-    }
-
-    .fav-btn-bubble {
+    /* Favorite Button */
+    .favorite-btn {
         position: absolute;
-        top: 15px;
-        right: 15px;
-        width: 44px;
-        height: 44px;
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
         background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(10px);
-        border-radius: 16px;
+        backdrop-filter: blur(4px);
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        border: none;
-        color: #adb5bd;
-        transition: var(--transition-bounce);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         z-index: 10;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        border: none;
+        transition: all 0.3s;
     }
 
-    .fav-btn-bubble:hover {
-        transform: scale(1.2) rotate(8deg);
-        background: white;
-        color: #ff4757;
+    .favorite-btn:active {
+        transform: scale(0.9);
     }
 
-    .fav-btn-bubble.active {
-        background: var(--primary-color) !important;
-        color: white !important;
-        box-shadow: 0 0 20px var(--primary-glow) !important;
-        transform: scale(1.1) rotate(5deg);
+    .favorite-btn .material-symbols-outlined {
+        color: #9ca3af;
+        font-size: 20px;
+        transition: color 0.3s;
+        font-variation-settings: 'FILL' 0;
     }
 
-    .fav-btn-bubble.active .material-symbols-outlined {
+    .favorite-btn.active .material-symbols-outlined {
+        color: var(--heart-active);
         font-variation-settings: 'FILL' 1;
-        color: white !important;
     }
 
-    .dark-mode .fav-btn-bubble {
-        background: rgba(40, 45, 30, 0.8);
-        border-color: rgba(255, 255, 255, 0.1);
-        color: var(--text-muted);
-    }
-
-    .dark-mode .fav-btn-bubble:hover {
-        background: white;
-        color: #ff4757;
-    }
-
-    .macro-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-    }
-
-    .macro-label {
-        font-size: 0.7rem;
-        font-weight: 700;
-        color: var(--text-muted);
-    }
-
-    .stat-pill {
+    /* Tabs */
+    .nav-tabs-custom {
         display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 14px;
-        background: rgba(0, 0, 0, 0.03);
-        border-radius: 50px;
-        font-size: 0.75rem;
-        font-weight: 800;
+        gap: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 1.5rem;
+        overflow-x: auto;
+        white-space: nowrap;
     }
 
-    .dark-mode .stat-pill {
-        background: rgba(255, 255, 255, 0.05);
+    .nav-tabs-custom button,
+    .nav-tabs-custom a {
+        background: none;
+        border: none;
+        padding: 0.75rem 0.25rem;
+        color: #6b7280;
+        font-weight: 700;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+        text-decoration: none;
     }
 
-    /* Tags */
-    .recipe-tag {
-        position: absolute;
-        bottom: 15px;
-        left: 15px;
-        background: var(--primary-color);
-        color: white;
-        padding: 4px 14px;
-        border-radius: 50px;
-        font-size: 0.65rem;
-        font-weight: 800;
+    .nav-tabs-custom button.active,
+    .nav-tabs-custom a.active {
+        color: #000;
+        border-bottom-color: var(--primary-color);
+    }
+
+    /* Macros & Badges */
+    .macro-pill {
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        box-shadow: 0 4px 12px var(--primary-glow);
-    }
-
-    /* Filters Bar */
-    .filters-scroll {
-        display: flex;
-        gap: 10px;
-        overflow-x: auto;
-        padding-bottom: 10px;
-        margin-bottom: 2rem;
-    }
-
-    .filters-scroll::-webkit-scrollbar {
-        display: none;
-    }
-
-    .filter-btn-premium {
-        background: var(--glass-bg);
-        border: 1px solid var(--glass-border);
-        padding: 10px 22px;
-        border-radius: 50px;
-        font-weight: 700;
-        font-size: 0.85rem;
-        white-space: nowrap;
-        color: var(--text-main);
-        transition: var(--transition-base);
-        box-shadow: var(--glass-shadow);
-    }
-
-    .filter-btn-premium.active {
-        background: var(--primary-color);
-        color: white;
-        border-color: var(--primary-color);
     }
 
     /* FAB */
-    .fab-premium {
+    .fab-btn {
         position: fixed;
-        bottom: 110px;
-        right: 2rem;
-        width: 65px;
-        height: 65px;
-        background: var(--primary-color);
+        bottom: 30px;
+        right: 30px;
+        width: 56px;
+        height: 56px;
+        background-color: var(--primary-color);
         color: white;
-        border-radius: 22px;
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 15px 35px var(--primary-glow);
-        z-index: 1000;
-        transition: var(--transition-bounce);
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s, background-color 0.2s;
+        z-index: 50;
+        text-decoration: none;
     }
 
-    .fab-premium:hover {
-        transform: scale(1.1) rotate(5deg);
+    .fab-btn:hover {
+        background-color: var(--primary-dark);
+        transform: scale(1.1);
         color: white;
     }
 
-    /* Detail Offcanvas */
-    .offcanvas-premium {
-        border-left: none !important;
-        background: var(--bg-page) !important;
-        border-radius: 40px 0 0 40px !important;
+    /* Scrollbar Hide */
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
     }
 
-    .detail-hero-wrapper {
-        position: relative;
-        height: 280px;
-        overflow: hidden;
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
     }
 
-    .detail-hero-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .detail-content-floating {
-        background: var(--bg-content);
-        padding: 25px;
-        position: relative;
-    }
-
-    .step-card {
-        background: rgba(0, 0, 0, 0.02);
-        border-radius: 20px;
-        padding: 20px;
-        margin-bottom: 15px;
-        display: flex;
-        gap: 15px;
-    }
-
-    .dark-mode .step-card {
-        background: rgba(255, 255, 255, 0.03);
-    }
-
-    .step-number {
-        width: 32px;
-        height: 32px;
-        min-width: 32px;
-        background: var(--primary-color);
-        color: white;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 800;
-    }
-
-    .upload-box {
-        border: 2px dashed var(--primary-light);
-        border-radius: 20px;
-        padding: 40px;
-        text-align: center;
-        background: rgba(0, 0, 0, 0.02);
-        cursor: pointer;
-        transition: var(--transition-base);
-    }
-
-    .dark-mode .upload-box {
-        background: rgba(255, 255, 255, 0.03);
-    }
-
-    .upload-box:hover {
-        border-color: var(--primary-color);
-        background: var(--primary-light);
-    }
-
-    .creator-input {
-        background: var(--bg-page) !important;
-        border: 1px solid var(--glass-border);
-        border-radius: 12px;
-        padding: 12px 16px;
-        font-weight: 500;
-        color: var(--text-main);
-    }
-
-    .btn-creator-save {
-        width: 100%;
-        background: var(--primary-color);
-        color: white;
-        border: none;
-        padding: 16px;
-        border-radius: 16px;
-        font-weight: 800;
-        font-size: 1.1rem;
-        box-shadow: 0 10px 20px var(--primary-glow);
-    }
-
-    .recipe-creator-overlay {
+    /* Modals & Overlays */
+    .recipe-creator-overlay,
+    .recipe-Detail-overlay {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.98);
         z-index: 2000;
         display: none;
         overflow-y: auto;
     }
 
-    .recipe-creator-overlay.show {
+    .recipe-creator-overlay.show,
+    .recipe-Detail-overlay.show {
         display: block;
     }
 
     .recipe-creator-container {
         max-width: 800px;
         margin: 2rem auto;
-        background: var(--bg-content);
-        border-radius: 30px;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+        border: 1px solid #eee;
     }
 
-    .calendar-week-grid {
+    .btn-primary-custom {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 999px;
+        padding: 8px 16px;
+        font-weight: 700;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-primary-custom:hover {
+        background-color: var(--primary-dark);
+        color: white;
+    }
+
+    .btn-filter {
+        background: white;
+        border: 1px solid #f3f4f6;
+        color: #4b5563;
+        border-radius: 999px;
+        padding: 6px 16px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+
+    .btn-filter:hover {
+        background-color: #f9fafb;
+    }
+
+    .btn-filter.active {
+        background-color: #111827;
+        color: white;
+        border-color: #111827;
+    }
+
+    /* Utilities */
+    .object-cover {
+        object-fit: cover;
+    }
+
+    .transition-transform {
+        transition: transform 0.5s;
+    }
+
+    /* Calendar Grid */
+    .calendar-grid {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
         gap: 15px;
-        margin-top: 20px;
     }
 
-    @media (max-width: 992px) {
-        .calendar-week-grid {
-            grid-template-columns: repeat(1, 1fr);
+    /* (removed fixed-height wrapper to allow grid to expand vertically) */
+
+    @media (max-width: 991px) {
+        .calendar-grid {
+            grid-template-columns: 1fr;
         }
     }
 
-    .calendar-day-col {
-        background: var(--glass-bg);
+    .calendar-day-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.25rem;
+        border: 1px solid #f3f4f6;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .calendar-day-card.today {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 1px var(--primary-color);
+    }
+    /* Detail view styles (from provided design) */
+    :root {
+        --bg-dark: #1b2111;
+        --text-dark: #161b0e;
+        --text-light: #f7f8f6;
+        --border-color: #eef3e8;
+    }
+
+    .sticky-nav {
+        position: sticky;
+        top: 0;
+        z-index: 1050;
+        background-color: rgba(247, 248, 246, 0.8);
         backdrop-filter: blur(10px);
-        border: 1px solid var(--glass-border);
-        border-radius: 20px;
-        padding: 15px;
-        min-height: 250px;
-        transition: var(--transition-base);
     }
 
-    .calendar-day-col.today {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 15px var(--primary-glow);
+    .btn-round-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: white;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
-    .calendar-day-header {
-        text-align: center;
-        margin-bottom: 15px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid var(--glass-border);
-    }
-
-    .calendar-day-name {
-        font-weight: 800;
-        font-size: 0.8rem;
-        color: var(--primary-color);
-    }
-
-    .calendar-day-num {
-        font-size: 1.2rem;
-        font-weight: 900;
-    }
-
-    .calendar-meal-item {
-        background: var(--bg-page);
-        border-radius: 12px;
-        padding: 10px;
-        margin-bottom: 10px;
-        font-size: 0.8rem;
-        position: relative;
-        border: 1px solid transparent;
-        transition: var(--transition-base);
-    }
-
-    .calendar-meal-item:hover {
-        border-color: var(--primary-color);
-        transform: translateY(-2px);
-    }
-
-    .calendar-meal-item .btn-remove {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        opacity: 0;
-        transition: 0.2s;
-        padding: 2px;
-        background: rgba(255, 0, 0, 0.1);
-        color: red;
-        border-radius: 5px;
-    }
-
-    .calendar-meal-item:hover .btn-remove {
-        opacity: 1;
-    }
-
-    .btn-add-meal {
+    .hero-image-detail {
         width: 100%;
-        border: 2px dashed var(--glass-border);
-        background: transparent;
-        border-radius: 12px;
-        padding: 8px;
-        color: var(--text-muted);
-        font-size: 0.8rem;
+        min-height: 350px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 1.25rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .stat-badge {
+        background-color: rgba(132, 199, 26, 0.2);
+        color: var(--text-dark);
+        padding: 6px 16px;
+        border-radius: 50px;
         font-weight: 700;
-        transition: var(--transition-base);
+        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
 
-    .btn-add-meal:hover {
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-        background: var(--primary-light);
+    .custom-card {
+        background-color: white;
+        border-radius: 1rem;
+        border: 1px solid var(--border-color);
+        padding: 1.25rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
 
-    .ai-plan-floating {
-        position: relative;
-        background: var(--bg-content);
-        border: 2px solid var(--primary-light);
-        border-radius: 30px;
-        padding: 25px;
-        margin-bottom: 30px;
-        box-shadow: 0 15px 40px rgba(133, 200, 26, 0.1);
+    .step-number {
+        width: 32px;
+        height: 32px;
+        background-color: var(--primary-color);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        flex-shrink: 0;
     }
 
-    .meal-selection-checkbox {
-        position: absolute;
-        top: 15px;
-        left: 15px;
-        width: 24px;
-        height: 24px;
-        accent-color: var(--primary-color);
-        z-index: 5;
+    .bottom-action-container {
+        position: fixed;
+        bottom: 72px;
+        left: 0;
+        right: 0;
+        padding: 1rem;
+        background: linear-gradient(to top, var(--bg-light), rgba(247,248,246,0.95), transparent);
+        z-index: 1040;
     }
+
+    .btn-add {
+        background-color: var(--primary-color);
+        color: white;
+        font-weight: 700;
+        padding: 1rem;
+        border-radius: 1rem;
+        border: none;
+        width: 100%;
+        box-shadow: 0 10px 15px -3px rgba(132, 199, 26, 0.25);
+        transition: transform 0.2s;
+    }
+
+    .ios-bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 72px;
+        background-color: white;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 1050;
+    }
+
+    .nav-item-custom { display:flex; flex-direction:column; align-items:center; color:#9ca3af; font-size:10px; font-weight:600; text-decoration:none; }
+    .nav-item-custom.active { color: var(--primary-color); }
 </style>
 
+<div class="main-container pb-5">
 
-<!-- Navigation Toggle (TOP) -->
-<div class="nav-tabs-premium stagger-item mb-4">
-    <a href="?view=recetario" class="btn {% if vista_activa != 'calendario' %}active{% endif %}">
-        <span class="material-symbols-outlined fs-5">restaurant_menu</span> Recetario
-    </a>
-    <a href="?view=calendario" class="btn {% if vista_activa == 'calendario' %}active{% endif %}">
-        <span class="material-symbols-outlined fs-5">calendar_month</span> Calendario
-    </a>
-</div>
-
-<header class="premium-header flex-column flex-md-row d-flex justify-content-between align-items-md-center gap-4 mb-5">
-    <div class="text-center text-md-start">
-        <h1 class="display-6 fw-900 m-0 stagger-item" style="letter-spacing: -1px;">Mis Planes y Recetas</h1>
-        <p class="text-muted fw-600 mb-0 mt-1 stagger-item">Organiza tu nutrición con el poder de la IA.</p>
-    </div>
-    <div class="search-input-container shadow-lg rounded-pill stagger-item overflow-hidden"
-        style="background: var(--glass-bg); padding: 5px;">
-        <div class="d-flex align-items-center w-100">
-            <span class="material-symbols-outlined ms-3 opacity-50">search</span>
-            <form action="." method="get" class="flex-grow-1">
-                <input type="text" name="q" class="form-control border-0 bg-transparent shadow-none"
-                    style="padding: 12px 15px; font-weight: 500;" placeholder="Ingrediente, nombre o tipo..."
-                    value="{{ request.GET.q|default:'' }}">
-            </form>
-            <button class="btn btn-primary rounded-pill px-4 me-1" onclick="this.form.submit()">Buscar</button>
+    <!-- HEADER -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h1 class="fw-bolder m-0 text-dark" style="font-size: 1.75rem;">
+                {% if vista_activa == 'calendario' %}Mi Calendario{% else %}Explorador de Recetas{% endif %}
+            </h1>
+            <p class="text-muted fw-bold m-0 mt-1" style="font-size: 0.9rem;">Planifica, crea y disfruta tus comidas.
+            </p>
         </div>
+
+        {% if vista_activa != 'calendario' %}
+        <div class="position-relative w-100" style="max-width: 500px;">
+            <span class="material-symbols-outlined position-absolute"
+                style="left: 15px; top: 50%; transform: translateY(-50%); color: var(--primary-color);">search</span>
+            <input type="text" name="q" value="{{ request.GET.q|default:'' }}"
+                class="form-control border-0 shadow-sm ps-5 py-3 rounded-4 fw-bold"
+                style="padding-left: 3rem !important; background: white;" placeholder="Buscar por plato, ingrediente..."
+                autocomplete="off">
+        </div>
+        {% endif %}
     </div>
-</header>
 
-<!-- VIEW: RECETARIO -->
-<div id="recetario-view" class="{% if vista_activa == 'calendario' %}d-none{% endif %}">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-4 mb-4">
-        <nav class="nav-tabs-premium m-0 stagger-item" id="recipe-tabs">
-            <button class="active" data-tab="explorar">Explorar</button>
-            <button data-tab="mis-recetas">Mis Recetas</button>
-            <button data-tab="favoritos">Favoritos</button>
-        </nav>
+    <!-- TABS -->
+    <nav class="nav-tabs-custom" id="recipe-tabs">
+        {% if vista_activa != 'calendario' %}
+            <button class="nav-link active" data-tab="explorar" onclick="switchTab('explorar')">Explorar</button>
+            <button class="nav-link" data-tab="mis-recetas" onclick="switchTab('mis-recetas')">Mis Recetas</button>
+            <button class="nav-link" data-tab="favoritos" onclick="switchTab('favoritos')">Favoritos</button>
+        {% else %}
+            <a href="?view=recetario" class="nav-link">Explorar</a>
+        {% endif %}
+        <a href="?view=calendario" class="nav-link {% if vista_activa == 'calendario' %}active{% endif %}">Calendario</a>
+    </nav>
 
-        <div class="d-flex gap-2 stagger-item">
-            <button id="btnAutoPlan" onclick="generateAutoPlan()" class="btn-ai-sparkle">
-                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
-                Plan Diario con IA
+    <!-- VIEWS CONTAINER -->
+    <!-- RECETARIO VIEW -->
+    <div id="recetario-view" class="{% if vista_activa == 'calendario' %}d-none{% endif %}">
+
+        <!-- FILTERS -->
+        <div class="d-flex align-items-center gap-2 overflow-auto pb-3 scrollbar-hide mb-4">
+            <!-- Create Plan AI -->
+            <button onclick="generateAutoPlan()" class="btn-primary-custom">
+                <span class="material-symbols-outlined" style="font-size: 18px;">auto_awesome</span> Plan IA
             </button>
-        </div>
-    </div>
 
-    <!-- IA PLAN FLOATING CONTAINER (Moved here) -->
-    <div id="dailyPlanSection" class="d-none mb-5 stagger-item ai-plan-floating">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="fw-900 m-0 d-flex align-items-center gap-2">
-                <span class="material-symbols-outlined text-primary">auto_awesome</span>
-                Plan Sugerido por IA
-            </h4>
-            <div class="d-flex gap-2">
-                <button class="btn btn-sm btn-outline-primary rounded-pill fw-bold" onclick="generateAutoPlan()">
-                    <span class="material-symbols-outlined fs-6 align-middle">refresh</span> Cambiar Plan
-                </button>
-                <button class="btn btn-sm btn-light rounded-circle shadow-sm" onclick="closeAiPlan()">
-                    <span class="material-symbols-outlined fs-6">close</span>
-                </button>
+            <!-- Standard -->
+            <button onclick="window.location.href='?'"
+                class="btn-filter {% if not request.GET.q %}active{% endif %}">Todo</button>
+
+            <button onclick="window.location.href='?q=tendencia'"
+                class="btn-filter {% if request.GET.q == 'tendencia' %}active{% endif %}">🔥 Tendencia</button>
+
+            <!-- Dynamic Chips -->
+            <button onclick="setFilter('KETO', this)" class="btn-filter filter-chip">🥑 Keto</button>
+            <button onclick="setFilter('VEGA', this)" class="btn-filter filter-chip">🌿 Vegana</button>
+            <button onclick="setFilter('PROT', this)" class="btn-filter filter-chip">🍗 Proteica</button>
+        </div>
+
+        <!-- AI PLAN SECTION (HIDDEN) -->
+        <div id="dailyPlanSection"
+            class="d-none mb-5 p-4 bg-white rounded-4 shadow-sm border border-success-subtle position-relative">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold m-0 d-flex align-items-center gap-2 text-dark">
+                    <span class="material-symbols-outlined text-success">auto_awesome</span> Plan Sugerido
+                </h4>
+                <button onclick="closeAiPlan()" class="btn btn-sm btn-link text-muted p-0"><span
+                        class="material-symbols-outlined">close</span></button>
+            </div>
+            <div id="dailyPlanContent"></div>
+            <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                <button onclick="addAllToCalendar()" class="btn-primary-custom">Añadir Todo al Calendario</button>
             </div>
         </div>
 
-        <div id="dailyPlanContent" class="mb-4">
-            <!-- Se poblará vía JS -->
-        </div>
-
-        <div class="d-flex flex-wrap justify-content-end gap-3 border-top pt-4">
-            <button class="btn btn-light rounded-pill px-4 fw-800" onclick="addAllToCalendar()">
-                Añadir Todos al Calendario
-            </button>
-            <button class="btn btn-primary rounded-pill px-4 fw-800" onclick="addSelectedToCalendar()">
-                Añadir Seleccionados
-            </button>
-        </div>
-    </div>
-
-
-    <div class="filters-scroll stagger-item d-flex align-items-center gap-3">
-        <button class="filter-btn-premium {% if not request.GET.q or request.GET.q == 'todo' %}active{% endif %}"
-            onclick="window.location.href='?'">
-            <span class="material-symbols-outlined fs-6 align-middle">grid_view</span> Todas
-        </button>
-        <button class="filter-btn-premium {% if request.GET.q == 'tendencia' %}active{% endif %}"
-            onclick="window.location.href='?q=tendencia'">
-            <span class="material-symbols-outlined fs-6 align-middle">trending_up</span> 🔥 Tendencias
-        </button>
-
-        <div class="vr mx-2 opacity-10" style="height: 30px;"></div>
-
-        <div class="position-relative">
-            <span
-                class="material-symbols-outlined position-absolute top-50 start-0 translate-middle-y ms-3 opacity-50 fs-6">restaurant</span>
-            <select class="filter-btn-premium ps-5 border-0" id="diet-filter-select" onchange="applyFilters()">
-                <option value="todo">Cualquier Dieta</option>
-                {% for code, name in opciones_dieta.items %}
-                <option value="{{ code }}">{{ name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="position-relative">
-            <span
-                class="material-symbols-outlined position-absolute top-50 start-0 translate-middle-y ms-3 opacity-50 fs-6">category</span>
-            <select class="filter-btn-premium ps-5 border-0" id="category-filter-select" onchange="applyFilters()">
-                <option value="todo">Cualquier Comida</option>
-                {% for cat in categorias_receta %}
-                {% if cat != 'explorar' and cat != 'tendencia' %}
-                <option value="{{ cat }}">{{ cat|capfirst }}</option>
-                {% endif %}
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="position-relative ms-md-auto">
-            <span
-                class="material-symbols-outlined position-absolute top-50 start-0 translate-middle-y ms-3 opacity-50 fs-6">sort</span>
-            <select class="filter-btn-premium ps-5 border-0" id="sort-filter-select"
-                onchange="window.location.href='?sort='+this.value">
-                <option value="">Más Recientes</option>
-                <option value="dificultad" {% if request.GET.sort=='dificultad' %}selected{% endif %}>Dificultad
-                </option>
-                <option value="ingredientes" {% if request.GET.sort=='ingredientes' %}selected{% endif %}>Ingredientes
-                </option>
-                <option value="tiempo" {% if request.GET.sort=='tiempo' %}selected{% endif %}>Tiempo</option>
-            </select>
-        </div>
-    </div>
-
-    <div id="recipe-grid-container">
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4" id="recipe-grid">
+        <!-- RECIPE GRID -->
+        <div class="row row-cols-2 row-cols-lg-4 g-3 g-md-4" id="recipe-grid">
             {% for receta in recetas %}
-            <div class="col filter-item stagger-item" data-category="{{ receta.categoria|lower }}"
-                data-type="{{ receta.tipo_dieta }}"
+            <div class="col filter-item" data-category="{{ receta.categoria|lower }}"
+                data-type="{{ receta.tipo_dieta }}" data-prot="{{ receta.proteinas }}"
+                data-userrecipe="{% if user.is_authenticated and user.perfil and receta.perfil_creador == user.perfil %}true{% else %}false{% endif %}"
                 data-favorite="{% if user.is_authenticated and receta.id in favoritas_ids %}true{% else %}false{% endif %}"
-                data-userrecipe="{% if user.is_authenticated and user.perfil and receta.perfil_creador == user.perfil %}true{% else %}false{% endif %}">
-                <div class="recipe-card" onclick="openRecipeDetail(this)" data-id="{{ receta.id }}"
-                    data-title="{{ receta.titulo|escape }}" data-kcal="{{ receta.calorias|default:0 }}"
-                    data-time="{{ receta.tiempo|escape }}" data-rating="{{ receta.rating|default:0 }}"
-                    data-category="{{ receta.categoria|lower }}"
+                data-title="{{ receta.titulo|lower }}">
+
+                <div class="recipe-card-container shadow-sm group" style="cursor: pointer;"
+                    onclick="openRecipeDetail(this)" data-id="{{ receta.id }}" data-title="{{ receta.titulo|escape }}"
+                    data-kcal="{{ receta.calorias|default:0 }}" data-time="{{ receta.tiempo|escape }}"
+                    data-rating="{{ receta.rating|default:0 }}"
                     data-img="{% if receta.imagen_url %}{{ receta.imagen_url|escape }}{% else %}https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=500&h=300&fit=crop{% endif %}"
-                    data-prot="{{ receta.proteinas|default:0 }}" data-carbs="{{ receta.carbos|default:0 }}"
-                    data-fats="{{ receta.grasas|default:0 }}" data-desc="{{ receta.descripcion|striptags|escape }}">
+                    data-desc="{{ receta.descripcion|striptags|escape }}" data-prot-val="{{ receta.proteinas }}"
+                    data-carbs-val="{{ receta.carbos }}" data-fats-val="{{ receta.grasas }}">
 
-                    <div class="recipe-img-wrapper">
-                        <img src="{% if receta.imagen_url %}{{ receta.imagen_url }}{% else %}https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=500&h=300&fit=crop{% endif %}"
-                            class="recipe-img-main" alt="{{ receta.titulo }}" loading="lazy">
-
-                        <div class="recipe-tag">{{ receta.tipo_dieta }}</div>
-
-                        {% if user.is_authenticated and user.perfil and receta.perfil_creador == user.perfil %}
-                        <div class="position-absolute top-0 start-0 p-3 d-flex gap-2" style="z-index: 10;">
-                            <button onclick="event.stopPropagation(); openEditOverlay({{ receta.id }});"
-                                class="btn btn-sm btn-white rounded-circle shadow-sm"
-                                style="width: 36px; height: 36px;">
-                                <span class="material-symbols-outlined fs-6">edit</span>
-                            </button>
-                            <button onclick="event.stopPropagation(); deleteRecipe({{ receta.id }}, this);"
-                                class="btn btn-sm btn-white rounded-circle shadow-sm text-danger"
-                                style="width: 36px; height: 36px;">
-                                <span class="material-symbols-outlined fs-6">delete</span>
-                            </button>
-                        </div>
-                        {% endif %}
-
-                        <button class="fav-btn-bubble {% if receta.id in favoritas_ids %}active{% endif %}"
+                    <div class="position-relative overflow-hidden" style="aspect-ratio: 4/3;">
+                        <button class="favorite-btn {% if receta.id in favoritas_ids %}active{% endif %}"
                             onclick="event.stopPropagation(); toggleFavorite({{ receta.id }}, this)">
                             <span class="material-symbols-outlined">favorite</span>
                         </button>
+                        <img src="{% if receta.imagen_url %}{{ receta.imagen_url }}{% else %}https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=500&h=300&fit=crop{% endif %}"
+                            class="recipe-img w-100 h-100 object-cover" alt="{{ receta.titulo }}">
+
+                        <span class="position-absolute bottom-0 start-0 m-2 px-2 py-1 text-white fw-bold rounded small"
+                            style="background: rgba(0,0,0,0.6); font-size: 0.65rem; backdrop-filter: blur(4px);">
+                            {{ receta.tipo_dieta }}
+                        </span>
                     </div>
 
-                    <div class="p-4 d-flex flex-column flex-grow-1">
-                        <h3 class="h6 fw-800 line-clamp-2 mb-3" style="min-height: 2.8em;">{{ receta.titulo }}</h3>
+                    <div class="p-3 d-flex flex-column flex-grow-1">
+                        <h6 class="fw-bold text-dark text-truncate mb-2">{{ receta.titulo }}</h6>
 
-                        <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="macro-dot" style="background: var(--macro-protein);"></div>
-                                <span class="macro-label">P: {{ receta.proteinas }}g</span>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="macro-dot" style="background: var(--macro-carbs);"></div>
-                                <span class="macro-label">C: {{ receta.carbos }}g</span>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="macro-dot" style="background: var(--macro-fats);"></div>
-                                <span class="macro-label">G: {{ receta.grasas }}g</span>
-                            </div>
+                        <div class="d-flex flex-wrap gap-1 mb-3">
+                            <span class="macro-pill"
+                                style="background: var(--macro-protein); color: var(--macro-protein-text);">P: {{  receta.proteinas }}g</span>
+                            <span class="macro-pill"
+                                style="background: var(--macro-carbs); color: var(--macro-carbs-text);">C: {{ receta.carbos }}g</span>
+                            <span class="macro-pill"
+                                style="background: var(--macro-fats); color: var(--macro-fats-text);">G: {{ receta.grasas }}g</span>
                         </div>
 
-                        <div class="card-footer-stats">
-                            <div class="stat-pill text-brand">
-                                <span class="material-symbols-outlined fs-6"
-                                    style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
-                                {{ receta.calorias }} kcal
+                        <div
+                            class="mt-auto d-flex justify-content-between align-items-center pt-2 border-top border-light">
+                            <div class="d-flex align-items-center gap-1 text-muted small">
+                                <span class="material-symbols-outlined" style="font-size: 14px;">schedule</span>
+                                <span class="fw-bold" style="font-size: 0.7rem;">{{ receta.tiempo }}</span>
                             </div>
-                            <div class="stat-pill text-muted">
-                                <span class="material-symbols-outlined fs-6">schedule</span>
-                                {{ receta.tiempo }}
-                            </div>
-                            <div class="stat-pill text-warning">
-                                <span class="material-symbols-outlined fs-6"
-                                    style="font-variation-settings: 'FILL' 1;">star</span>
-                                {{ receta.rating|default:"4.5" }}
+                            <div class="d-flex align-items-center gap-1 text-dark small">
+                                <span class="material-symbols-outlined"
+                                    style="font-size: 14px;">local_fire_department</span>
+                                <span class="fw-bold" style="font-size: 0.7rem;">{{ receta.calorias }} Kcal</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             {% empty %}
-            <div class="col-12 text-center py-5 stagger-item">
-                <span class="material-symbols-outlined display-4 text-muted opacity-25 mb-3">restaurant</span>
-                <h3 class="h4 fw-800 text-muted">No encontramos recetas</h3>
-                <p class="text-muted">Ajusta los filtros o prueba con una búsqueda diferente.</p>
+            <div class="col-12 text-center py-5">
+                <span class="material-symbols-outlined text-secondary" style="font-size: 3rem;">search_off</span>
+                <p class="text-muted fw-bold mt-2">No se encontraron recetas</p>
             </div>
             {% endfor %}
         </div>
     </div>
 
-    <!-- NATIVE RECIPE DETAIL (Replaces grid) -->
-    <div id="recipe-detail-view" class="d-none animate-fade-in">
-        <div class="mb-4">
-            <button class="btn btn-light rounded-pill px-4 fw-800 d-flex align-items-center gap-2"
-                onclick="closeRecipeDetail()">
-                <span class="material-symbols-outlined">arrow_back</span> Volver al Recetario
-            </button>
+    <!-- CALENDAR VIEW -->
+    <div id="calendar-week-container" class="{% if vista_activa != 'calendario' %}d-none{% endif %}">
+        <div class="calendar-grid">
+            {% for dia in semana_calendario %}
+            <div class="calendar-day-card {% if dia.is_today %}today{% endif %}">
+                <div class="text-center border-bottom pb-2 mb-3">
+                    <small class="fw-bold text-success text-uppercase">{{ dia.nombre }}</small>
+                    <div class="h3 fw-bolder m-0 text-dark">{{ dia.dia_num }}</div>
+                </div>
+
+                <div class="d-flex flex-column gap-2 flex-grow-1">
+                    {% for comida in dia.comidas %}
+                    <div class="bg-light p-2 rounded position-relative group border border-transparent">
+                        <div class="fw-bold text-dark text-truncate pe-3" style="font-size: 0.85rem;">{{ comida.nombre
+                            }}</div>
+                        <small class="text-muted fw-bold" style="font-size: 0.7rem;">{{ comida.calorias }} kcal</small>
+                        <button type="button" onclick="removeFromCalendar({{ comida.id }}, this)"
+                            class="btn btn-sm text-danger p-0 position-absolute top-0 end-0 me-1 mt-1"
+                            style="line-height:0;">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <button onclick="openAddMealModal('{{ dia.fecha|date:'Y-m-d' }}')"
+                    class="btn btn-outline-light w-100 mt-3 border-dashed text-muted fw-bold d-flex justify-content-center align-items-center gap-1"
+                    style="border: 2px dashed #e5e7eb; font-size: 0.75rem;">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">add</span> AÑADIR
+                </button>
+            </div>
+            {% endfor %}
         </div>
-        <div class="premium-card p-0 overflow-hidden" style="border-radius: 40px; background: var(--bg-content);">
-            <div class="row g-0">
-                <div class="col-lg-6">
-                    <div id="detailHeroImg"
-                        style="height: 100%; min-height: 400px; background-size: cover; background-position: center;">
+    </div>
+
+</div>
+
+<!-- OVERSLAYS -->
+
+<!-- Recipe Detail -->
+<div id="recipe-detail-view" class="recipe-Detail-overlay">
+    <nav class="sticky-nav">
+        <div class="container-fluid d-flex align-items-center justify-content-between p-3">
+            <button class="btn-round-icon" onclick="closeRecipeDetail()">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+            <h2 class="h6 mb-0 fw-bold flex-grow-1 text-center">Detalle de Comida</h2>
+            <div style="width: 40px;" class="d-flex justify-content-end">
+                <button class="btn-round-icon">
+                    <span class="material-symbols-outlined">share</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-3">
+        <div id="detailHeroImg" class="hero-image-detail mt-1 mb-4" style="background-image: url('');"></div>
+
+        <div class="mb-4">
+            <h1 id="detailTitle" class="fw-bolder mb-3" style="font-size: 1.875rem; line-height: 1.2;">Título</h1>
+            <div class="d-flex flex-wrap gap-2">
+                <div class="stat-badge">
+                    <span class="material-symbols-outlined" style="color: var(--primary-color); font-size: 20px;">local_fire_department</span>
+                    <span id="detailKcal">0 kcal</span>
+                </div>
+                <div class="stat-badge">
+                    <span class="material-symbols-outlined" style="color: var(--primary-color); font-size: 20px;">schedule</span>
+                    <span id="detailTime">0 min</span>
+                </div>
+                <div class="stat-badge">
+                    <span class="material-symbols-outlined" style="color: var(--primary-color); font-size: 20px;">star</span>
+                    <span id="detailRating">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h2 class="h5 fw-bold mb-3">Macros Detallados</h2>
+            <div class="custom-card">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-2 fw-bold small">
+                        <span>Proteínas</span>
+                        <span id="detailProtPercent">0g</span>
+                    </div>
+                    <div class="progress">
+                        <div id="detailProtBar" class="progress-bar bg-primary-custom" role="progressbar" style="width: 0%"></div>
                     </div>
                 </div>
-                <div class="col-lg-6">
-                    <div class="p-4 p-md-5">
-                        <div class="d-flex justify-content-between align-items-start mb-4">
-                            <h1 id="detailTitle" class="display-6 fw-900 m-0"></h1>
-                            <button class="btn btn-outline-primary rounded-pill px-4 fw-900 btn-add-diary">
-                                <span class="material-symbols-outlined fs-5 align-middle">calendar_add_on</span> Añadir
-                                Hoy
-                            </button>
-                        </div>
-                        <div class="d-flex flex-wrap gap-3 mb-5">
-                            <div class="stat-pill"><span
-                                    class="material-symbols-outlined text-brand">local_fire_department</span>
-                                <span id="detailKcal" class="fw-800"></span> kcal
-                            </div>
-                            <div class="stat-pill"><span class="material-symbols-outlined text-muted">schedule</span>
-                                <span id="detailTime" class="fw-800"></span>
-                            </div>
-                            <div class="stat-pill"><span class="material-symbols-outlined text-warning">star</span>
-                                <span id="detailRating" class="fw-800"></span>
-                            </div>
-                        </div>
-
-                        <h4 class="h6 fw-800 text-uppercase mb-4 opacity-50">Macros por porción</h4>
-                        <div class="row g-3 mb-5">
-                            <div class="col-4">
-                                <div class="small fw-800 mb-1 d-flex justify-content-between">Proteínas <span
-                                        id="detailProtText"></span></div>
-                                <div class="progress" style="height:6px;">
-                                    <div id="detailProtBar" class="progress-bar"
-                                        style="background:var(--macro-protein);"></div>
-                                </div>
-                            </div>
-                            <div class="col-4">
-                                <div class="small fw-800 mb-1 d-flex justify-content-between">Carbos <span
-                                        id="detailCarbsText"></span></div>
-                                <div class="progress" style="height:6px;">
-                                    <div id="detailCarbsBar" class="progress-bar"
-                                        style="background:var(--macro-carbs);"></div>
-                                </div>
-                            </div>
-                            <div class="col-4">
-                                <div class="small fw-800 mb-1 d-flex justify-content-between">Grasas <span
-                                        id="detailFatsText"></span></div>
-                                <div class="progress" style="height:6px;">
-                                    <div id="detailFatsBar" class="progress-bar" style="background:var(--macro-fats);">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row g-4">
-                            <div class="col-md-5">
-                                <h4 class="h6 fw-800 text-uppercase mb-4 opacity-50">Ingredientes</h4>
-                                <div id="detailIngredients" class="d-grid gap-2"></div>
-                            </div>
-                            <div class="col-md-7">
-                                <h4 class="h6 fw-800 text-uppercase mb-4 opacity-50">Pasos a seguir</h4>
-                                <div id="detailSteps"></div>
-                            </div>
-                        </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-2 fw-bold small">
+                        <span>Carbohidratos</span>
+                        <span id="detailCarbsPercent">0g</span>
+                    </div>
+                    <div class="progress">
+                        <div id="detailCarbsBar" class="progress-bar" role="progressbar" style="width: 0%; background-color: #fb923c;"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="d-flex justify-content-between mb-2 fw-bold small">
+                        <span>Grasas</span>
+                        <span id="detailFatsPercent">0g</span>
+                    </div>
+                    <div class="progress">
+                        <div id="detailFatsBar" class="progress-bar" role="progressbar" style="width: 0%; background-color: #60a5fa;"></div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Hidden element for JS empty state -->
-    <div id="no-results-msg" class="d-none col-12 text-center py-5">
-        <span class="material-symbols-outlined text-muted fs-1 mb-3">filter_list_off</span>
-        <h3 class="h5 fw-bold text-muted">Sin resultados en esta categoría</h3>
-        <p class="small text-muted">Prueba con otro filtro o la pestaña "Explorar".</p>
-    </div>
-</div> <!-- End recetario-view -->
-
-<!-- ADD MEAL SELECTOR (Replaces week grid) -->
-<div id="add-meal-view" class="d-none animate-fade-in">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <button class="btn btn-light rounded-pill px-4 fw-800 d-flex align-items-center gap-2" onclick="closeAddMeal()">
-            <span class="material-symbols-outlined">arrow_back</span> Volver al Calendario
-        </button>
-        <h5 class="m-0 fw-900 text-primary">Añadir a: <span id="target-date-label"></span></h5>
-    </div>
-
-    <div class="premium-card p-4 p-md-5" style="border-radius: 40px; background: var(--bg-content);">
-        <div class="search-input-container mb-4 w-100" style="max-width: 100%;">
-            <span
-                class="material-symbols-outlined position-absolute top-50 start-0 translate-middle-y ms-3 opacity-50">search</span>
-            <input type="text" id="recipeSearchModal" class="form-control search-input w-100"
-                placeholder="Busca una receta para añadir..." onkeyup="filterModalRecipes()">
+        <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 fw-bold mb-0">Ingredientes</h2>
+                <span class="fw-bold small" style="color: var(--primary-color);">1 ración</span>
+            </div>
+            <div id="detailIngredients" class="d-flex flex-column gap-2"></div>
         </div>
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3" id="modalRecipeGrid"
-            style="max-height: 60vh; overflow-y: auto; padding: 10px;">
+
+        <div class="mb-5">
+            <h2 class="h5 fw-bold mb-4">Preparación</h2>
+            <div id="detailSteps" class="d-flex flex-column gap-4 text-secondary small" style="line-height:1.8;"></div>
+        </div>
+    </div>
+
+    <div class="bottom-action-container">
+        <button class="btn-add btn-add-diary" onclick="/* click handled by JS setup */">Añadir a mi diario</button>
+    </div>
+
+    <div class="ios-bottom-nav">
+        <a href="#" class="nav-item-custom active">
+            <span class="material-symbols-outlined">home</span>
+            <span>Inicio</span>
+        </a>
+        <a href="#" class="nav-item-custom">
+            <span class="material-symbols-outlined">calendar_today</span>
+            <span>Planes</span>
+        </a>
+        <a href="#" class="nav-item-custom">
+            <span class="material-symbols-outlined">trending_up</span>
+            <span>Progreso</span>
+        </a>
+        <a href="#" class="nav-item-custom">
+            <span class="material-symbols-outlined">menu_book</span>
+            <span>Biblioteca</span>
+        </a>
+    </div>
+</div>
+
+<!-- Add Meal Modal (Bootstrap Style Overlay) -->
+<div id="add-meal-view" class="recipe-creator-overlay">
+    <div class="recipe-creator-container p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <button onclick="closeAddMeal()" class="btn btn-sm fw-bold text-muted d-flex align-items-center gap-1">
+                <span class="material-symbols-outlined">arrow_back</span> Volver
+            </button>
+            <h5 class="fw-bold m-0">Añadir Comida</h5>
+        </div>
+
+        <input type="text" id="recipeSearchModal" onkeyup="filterModalRecipes()"
+            class="form-control bg-light border-0 py-3 px-4 rounded-4 mb-4 fw-bold" placeholder="Buscar receta...">
+
+        <div class="row row-cols-2 row-cols-md-3 g-3" style="max-height: 60vh; overflow-y: auto;">
             {% for receta in recetas %}
             <div class="col modal-recipe-item" data-title="{{ receta.titulo|lower }}">
-                <div class="d-flex align-items-center gap-3 p-3 rounded-4 border hover-shadow transition-base h-100"
-                    style="cursor: pointer; background: var(--bg-page);"
+                <div class="p-2 border rounded-3 d-flex align-items-center gap-2" style="cursor: pointer;"
                     onclick="confirmAddRecipe({{ receta.id }}, '{{ receta.titulo|escapejs }}')">
+
                     <img src="{% if receta.imagen_url %}{{ receta.imagen_url }}{% else %}https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=100&h=100&fit=crop{% endif %}"
-                        class="rounded-3" style="width: 50px; height: 50px; object-fit: cover;">
-                    <div class="flex-grow-1 min-w-0">
-                        <h6 class="mb-0 fw-bold text-truncate" style="font-size: 0.9rem;">{{ receta.titulo }}</h6>
-                        <small class="text-muted">{{ receta.calorias }} kcal</small>
+                        class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
+                    <div class="text-truncate">
+                        <div class="fw-bold small text-truncate">{{ receta.titulo }}</div>
+                        <div class="text-muted" style="font-size: 10px;">{{ receta.calorias }} kcal</div>
                     </div>
-                    <span class="material-symbols-outlined text-primary">add_circle</span>
                 </div>
             </div>
             {% endfor %}
@@ -903,429 +700,295 @@
     </div>
 </div>
 
-<div id="calendar-week-container">
-    <div class="calendar-week-grid stagger-item">
-        {% for dia in semana_calendario %}
-        <div class="calendar-day-col {% if dia.is_today %}today{% endif %}">
-            <div class="calendar-day-header">
-                <div class="calendar-day-name">{{ dia.nombre }}</div>
-                <div class="calendar-day-num">{{ dia.dia_num }}</div>
-            </div>
-
-            <div class="calendar-meals-list" id="meals-{{ dia.fecha|date:'Y-m-d' }}">
-                {% for comida in dia.comidas %}
-                <div class="calendar-meal-item" title="{{ comida.nombre }}">
-                    <div class="fw-bold text-truncate" style="max-width: 90%;">{{ comida.nombre }}</div>
-                    <div class="small text-muted">{{ comida.calorias }} kcal • {{ comida.get_categoria_display }}
-                    </div>
-                    <button class="btn btn-remove" onclick="removeFromCalendar({{ comida.id }}, this)">
-                        <span class="material-symbols-outlined fs-6">delete</span>
-                    </button>
-                </div>
-                {% endfor %}
-            </div>
-
-            <button class="btn-add-meal d-flex align-items-center justify-content-center gap-1"
-                onclick="openAddMealModal('{{ dia.fecha|date:'Y-m-d' }}')">
-                <span class="material-symbols-outlined fs-5">add</span>
-                Añadir
-            </button>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-</div> <!-- End calendario-view -->
-
-
-
-<a href="javascript:void(0)" class="fab-premium stagger-item" id="openCreator">
-    <span class="material-symbols-outlined fs-1">add</span>
+<!-- Creator FAB -->
+<a href="javascript:void(0)" class="fab-btn" id="openCreator"
+    onclick="document.getElementById('recipeOverlay').classList.add('show')">
+    <span class="material-symbols-outlined" style="font-size: 32px;">add</span>
 </a>
 
-<!-- RECIPE CREATOR OVERLAY -->
+<!-- Creator Overlay -->
 <div class="recipe-creator-overlay" id="recipeOverlay">
     <div class="recipe-creator-container">
         <form id="recipeCreatorForm" hx-post="{% url 'base:crear_receta' %}" hx-swap="none"
-            hx-on::after-request="if(event.detail.successful) { showToast('Receta creada', 'success'); location.reload(); }">
+            hx-on::after-request="if(event.detail.successful) { location.reload(); }">
             {% csrf_token %}
-            <header class="p-3 d-flex align-items-center border-bottom sticky-top bg-white">
-                <div id="closeCreator" class="d-flex align-items-center justify-content-center"
-                    style="width:48px; cursor:pointer;"><span class="material-symbols-outlined">arrow_back</span>
+            <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                <span class="material-symbols-outlined cursor-pointer"
+                    onclick="document.getElementById('recipeOverlay').classList.remove('show')">arrow_back</span>
+                <h5 class="fw-bold m-0">Nueva Receta</h5>
+                <div style="width: 24px;"></div>
+            </div>
+            <div class="p-4">
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted mb-1 text-uppercase">Título</label>
+                    <input name="titulo" class="form-control bg-light border-0 py-2 fw-bold" required
+                        placeholder="Ej. Pollo con Arroz">
                 </div>
-                <h2 class="h6 m-0 fw-bold flex-grow-1 text-center">Nueva Receta</h2>
-                <div style="width:48px;"></div>
-            </header>
-            <main class="p-4">
+                <div class="row g-3 mb-3">
+                    <div class="col-6">
+                        <label class="small fw-bold text-muted mb-1 text-uppercase">Dieta</label>
+                        <select name="dieta" class="form-select bg-light border-0 fw-bold">
+                            {% for code, name in opciones_dieta.items %}<option value="{{ code }}">{{ name }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <label class="small fw-bold text-muted mb-1 text-uppercase">Categoría</label>
+                        <select name="categoria" class="form-select bg-light border-0 fw-bold">
+                            {% for cat in categorias_receta %}<option value="{{ cat }}">{{ cat|capfirst }}</option>{% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted mb-1 text-uppercase">Calorías</label>
+                    <input type="number" name="calorias" class="form-control bg-light border-0 py-2 fw-bold"
+                        placeholder="0">
+                </div>
                 <div class="mb-4">
-                    <label class="small fw-bold mb-2">Título</label>
-                    <input type="text" name="titulo" class="form-control creator-input" placeholder="Ej. Pollo al Curry"
-                        required>
+                    <label class="small fw-bold text-muted mb-1 text-uppercase">Detalles</label>
+                    <textarea name="descripcion" rows="4" class="form-control bg-light border-0 fw-bold"
+                        placeholder="Ingredientes y pasos..."></textarea>
                 </div>
-                <div class="row g-3 mb-4">
-                    <div class="col-6"><label class="small fw-bold mb-2">Dieta</label><select name="dieta"
-                            class="form-select creator-input">{% for code, name in opciones_dieta.items %}<option
-                                value="{{ code }}">{{ name }}</option>{% endfor %}</select></div>
-                    <div class="col-6"><label class="small fw-bold mb-2">Categoría</label><select name="categoria"
-                            class="form-select creator-input">{% for cat in categorias_receta %}<option
-                                value="{{ cat }}">{{ cat|capfirst }}</option>{% endfor %}</select></div>
-                </div>
-                <div class="mb-4">
-                    <label class="small fw-bold mb-2">Calorías</label>
-                    <input type="number" name="calorias" class="form-control creator-input" required>
-                </div>
-                <div class="mb-4">
-                    <label class="small fw-bold mb-2">Pasos y Descripción</label>
-                    <textarea name="descripcion" class="form-control creator-input" rows="5"></textarea>
-                </div>
-                <button type="submit" class="btn-creator-save">Guardar Receta</button>
-            </main>
+                <button class="btn btn-primary-custom w-100 justify-content-center py-3">Guardar Receta</button>
+            </div>
         </form>
     </div>
 </div>
 
-<!-- EDIT RECIPE OVERLAY (Simplified for restoration) -->
-<div class="recipe-creator-overlay" id="editRecipeOverlay">
-    <div class="recipe-creator-container">
-        <form id="editRecipeForm" onsubmit="submitEditForm(event)">
-            <header class="p-3 d-flex align-items-center border-bottom bg-white">
-                <div id="closeEdit" class="d-flex align-items-center justify-content-center"
-                    style="width:48px; cursor:pointer;"><span class="material-symbols-outlined">arrow_back</span>
-                </div>
-                <h2 class="h6 m-0 fw-bold flex-grow-1 text-center">Editar Receta</h2>
-                <div style="width:48px;"></div>
-            </header>
-            <main class="p-4">
-                <input type="hidden" id="edit_receta_id" name="receta_id">
-                <div class="mb-4">
-                    <label class="small fw-bold mb-2">Título</label>
-                    <input type="text" id="edit_titulo" name="titulo" class="form-control creator-input">
-                </div>
-                <textarea id="edit_descripcion" name="descripcion" class="d-none"></textarea>
-                <button type="submit" class="btn-creator-save">Actualizar</button>
-            </main>
-        </form>
-    </div>
-</div>
 
 <script>
-    // --- INITIALIZATION ---
+    // --- JS LOGIC (Preserved) ---
 
-    // --- RECIPE LOGIC ---
-    function openRecipeDetail(card) {
-        const d = card.dataset;
-        showRecipeDetail(d.id, d.title, d.kcal, d.time, d.rating, d.img, d.prot, d.carbs, d.fats, d.desc, d.category);
+    // Tabs
+    function switchTab(tabId) {
+        document.querySelectorAll('#recipe-tabs .nav-link').forEach(b => b.classList.remove('active'));
+        const btn = document.querySelector(`#recipe-tabs .nav-link[data-tab="${tabId}"]`);
+        if (btn) btn.classList.add('active');
+        applyFilters(tabId);
     }
 
-    function showRecipeDetail(id, title, kcal, time, rating, img, prot, carbs, fats, desc, category) {
-        window.currentRecipeId = id;
-        document.getElementById('detailTitle').innerText = title;
-        document.getElementById('detailKcal').innerText = kcal;
-        document.getElementById('detailTime').innerText = time;
-        document.getElementById('detailRating').innerText = rating;
-        document.getElementById('detailHeroImg').style.backgroundImage = `url('${img}')`;
-
-        document.getElementById('detailProtText').innerText = prot + 'g';
-        document.getElementById('detailCarbsText').innerText = carbs + 'g';
-        document.getElementById('detailFatsText').innerText = fats + 'g';
-
-        const k = parseFloat(kcal) || 1;
-        document.getElementById('detailProtBar').style.width = Math.min((prot * 4 / k) * 100, 100) + '%';
-        document.getElementById('detailCarbsBar').style.width = Math.min((carbs * 4 / k) * 100, 100) + '%';
-        document.getElementById('detailFatsBar').style.width = Math.min((fats * 9 / k) * 100, 100) + '%';
-
-        let ingredientsHTML = "";
-        let stepsHTML = "";
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = desc;
-        const cleanDesc = tempDiv.innerText;
-
-        if (cleanDesc.includes("INGREDIENTES:") || cleanDesc.includes("PREPARACIÓN:")) {
-            const parts = cleanDesc.split(/PREPARACIÓN:|PREPARACION:/i);
-            const ingPart = parts[0].replace(/INGREDIENTES:/i, "").trim();
-            const stepPart = parts[1] ? parts[1].trim() : "";
-
-            if (ingPart) {
-                ingPart.split("\n").forEach(line => {
-                    if (line.trim()) {
-                        ingredientsHTML += `<div class="p-2 border-bottom small d-flex align-items-center gap-2">
-                            <span class="macro-dot" style="background: var(--primary-color); width: 6px; height: 6px;"></span>
-                            ${line.replace("- ", "").trim()}
-                        </div>`;
-                    }
-                });
-            }
-            stepsHTML = stepPart ? `<p class="small text-muted">${stepPart.replace(/\n/g, '<br>')}</p>` : `<p class="small text-muted">${ingPart.replace(/\n/g, '<br>')}</p>`;
+    // Filters
+    let activeTypeFilter = null;
+    function setFilter(type, btn) {
+        if (activeTypeFilter === type) {
+            activeTypeFilter = null;
+            btn.classList.remove('active');
         } else {
-            ingredientsHTML = '<div class="alert alert-light border-0 small py-2">Ingredientes integrados en la preparación.</div>';
-            stepsHTML = `<p class="small text-muted">${cleanDesc.replace(/\n/g, '<br>')}</p>`;
+            activeTypeFilter = type;
+            document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+        applyFilters();
+    }
+
+    function applyFilters(forcedTab) {
+        const activeTab = forcedTab || document.querySelector('#recipe-tabs .nav-link.active')?.dataset.tab || 'explorar';
+        const query = document.querySelector('input[name="q"]')?.value.toLowerCase() || '';
+
+        document.querySelectorAll('.filter-item').forEach(item => {
+            const d = item.dataset;
+            const isFav = d.favorite === 'true';
+            const isMine = d.userrecipe === 'true';
+            const title = (d.title || '').toLowerCase();
+
+            let visible = true;
+
+            if (activeTab === 'favoritos' && !isFav) visible = false;
+            if (activeTab === 'mis-recetas' && !isMine) visible = false;
+            if (query && !title.includes(query)) visible = false;
+
+            if (activeTypeFilter) {
+                if (activeTypeFilter === 'PROT') {
+                    if (parseInt(d.prot || '0') < 25) visible = false;
+                } else if ((d.type || '') !== activeTypeFilter) {
+                    visible = false;
+                }
+            }
+
+            item.classList.toggle('d-none', !visible);
+        });
+    }
+
+    document.querySelector('input[name="q"]')?.addEventListener('input', () => applyFilters());
+
+    // Detail
+    function openRecipeDetail(card) {
+        const d = card.dataset;
+        document.getElementById('detailTitle').innerText = d.title;
+        document.getElementById('detailKcal').innerText = d.kcal + ' kcal';
+        document.getElementById('detailTime').innerText = d.time;
+        document.getElementById('detailRating').innerText = d.rating || '0';
+
+        // Set hero image
+        document.getElementById('detailHeroImg').style.backgroundImage = `url('${d.img}')`;
+
+        // Macros: compute percentages if values available
+        const prot = parseFloat(d.protVal || '0');
+        const carbs = parseFloat(d.carbsVal || '0');
+        const fats = parseFloat(d.fatsVal || '0');
+        const total = (prot + carbs + fats) || 1;
+        const protPct = Math.round((prot / total) * 100);
+        const carbsPct = Math.round((carbs / total) * 100);
+        const fatsPct = Math.round((fats / total) * 100);
+
+        document.getElementById('detailProtPercent').innerText = `${prot}g (${protPct}%)`;
+        document.getElementById('detailCarbsPercent').innerText = `${carbs}g (${carbsPct}%)`;
+        document.getElementById('detailFatsPercent').innerText = `${fats}g (${fatsPct}%)`;
+
+        document.getElementById('detailProtBar').style.width = protPct + '%';
+        document.getElementById('detailCarbsBar').style.width = carbsPct + '%';
+        document.getElementById('detailFatsBar').style.width = fatsPct + '%';
+
+        // Parse description into ingredients and steps
+        const temp = document.createElement('div');
+        temp.innerHTML = d.desc || '';
+        const fullText = temp.innerText || '';
+
+        let ingredientsHtml = '';
+        let stepsHtml = '';
+
+        if (fullText.toUpperCase().includes('INGREDIENTES')) {
+            const parts = fullText.split(/PREPARACI|PREPARACIÓN/);
+            ingredientsHtml = parts[0].replace(/INGREDIENTES:\s*/i, '').trim();
+            stepsHtml = (parts[1] || '').trim();
+        } else {
+            // Fallback: show whole description as steps
+            stepsHtml = fullText;
         }
 
-        document.getElementById('detailIngredients').innerHTML = ingredientsHTML;
-        document.getElementById('detailSteps').innerHTML = stepsHTML;
-
-        // Mostrar vista detalle, ocultar grid
-        document.getElementById('recipe-grid-container').classList.add('d-none');
-        document.getElementById('recipe-detail-view').classList.remove('d-none');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        const addBtn = document.querySelector('.btn-add-diary');
-        if (addBtn) {
-            addBtn.onclick = () => confirmAddRecipe(id, title);
+        // Populate ingredients: if ingredientsHtml contains lines, convert to cards
+        const ingContainer = document.getElementById('detailIngredients');
+        ingContainer.innerHTML = '';
+        if (ingredientsHtml) {
+            ingredientsHtml.split(/\n|\r\n/).map(s => s.trim()).filter(Boolean).forEach(line => {
+                const card = document.createElement('div');
+                card.className = 'custom-card p-3 d-flex justify-content-between align-items-center';
+                card.innerHTML = `<div class="d-flex align-items-center gap-3"><span class="material-symbols-outlined" style="color: var(--primary-color);">check_circle</span><span class="fw-medium">${line}</span></div>`;
+                ingContainer.appendChild(card);
+            });
         }
+
+        // Populate steps area
+        const stepsContainer = document.getElementById('detailSteps');
+        stepsContainer.innerHTML = '';
+        if (stepsHtml) {
+            // split by numbered or line breaks
+            const stepLines = stepsHtml.split(/\n|\r\n/).map(s => s.trim()).filter(Boolean);
+            if (stepLines.length > 0) {
+                stepLines.forEach((line, idx) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'd-flex gap-3';
+                    wrapper.innerHTML = `<div class="step-number">${idx+1}</div><p class="small mb-0">${line}</p>`;
+                    stepsContainer.appendChild(wrapper);
+                });
+            } else {
+                stepsContainer.innerHTML = `<p class="small">${stepsHtml}</p>`;
+            }
+        }
+
+        // Show overlay
+        document.getElementById('recetario-view').classList.add('d-none');
+        document.getElementById('recipe-detail-view').classList.add('show');
+        window.scrollTo(0, 0);
+
+        // Hook up add button
+        document.querySelector('.btn-add-diary').onclick = () => confirmAddRecipe(d.id, d.title);
     }
 
     function closeRecipeDetail() {
-        document.getElementById('recipe-detail-view').classList.add('d-none');
-        document.getElementById('recipe-grid-container').classList.remove('d-none');
+        document.getElementById('recipe-detail-view').classList.remove('show');
+        document.getElementById('recetario-view').classList.remove('d-none');
     }
 
+    // Favorite
     function toggleFavorite(id, btn) {
         fetch(`/api/toggle_favorito/${id}/`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' } })
             .then(res => res.json()).then(data => {
                 if (data.status === 'success') {
-                    btn.classList.toggle('active');
+                    if (data.is_favorite) btn.classList.add('active'); else btn.classList.remove('active');
                     btn.closest('.filter-item').dataset.favorite = data.is_favorite;
-                    applyFilters();
                 }
             });
     }
 
-    function deleteRecipe(id, btn) {
-        showConfirmModal({
-            title: '¿Borrar Receta?',
-            message: 'Esta receta se eliminará permanentemente de tu colección.',
-            icon: 'delete',
-            type: 'danger',
-            yesText: 'Borrar ahora',
-            onConfirm: () => {
-                fetch(`/api/borrar_receta/${id}/`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' } })
-                    .then(res => res.json()).then(data => {
-                        if (data.success) {
-                            btn.closest('.col').remove();
-                            showToast('Receta eliminada correctamente', 'success');
-                        }
-                    });
-            }
+    // Calendar Add
+    let selectedDate = null;
+    function openAddMealModal(date) {
+        selectedDate = date;
+        document.getElementById('calendar-week-container').classList.add('d-none');
+        document.getElementById('add-meal-view').classList.add('show');
+    }
+    function closeAddMeal() {
+        document.getElementById('add-meal-view').classList.remove('show');
+        document.getElementById('calendar-week-container').classList.remove('d-none');
+    }
+    function filterModalRecipes() {
+        const q = document.getElementById('recipeSearchModal').value.toLowerCase();
+        document.querySelectorAll('.modal-recipe-item').forEach(item => {
+            item.style.display = (item.dataset.title || '').includes(q) ? '' : 'none';
         });
     }
-
-    // --- FILTERS ---
-    function applyFilters() {
-        const activeTab = document.querySelector('#recipe-tabs button.active').dataset.tab;
-        const diet = document.getElementById('diet-filter-select').value;
-        const cat = document.getElementById('category-filter-select').value;
-        const searchQ = document.querySelector('input[name="q"]').value.toLowerCase();
-
-        let visibleCount = 0;
-        document.querySelectorAll('.filter-item').forEach(item => {
-            const d = item.dataset;
-            const title = item.querySelector('h3').innerText.toLowerCase();
-
-            const matchesTab = activeTab === 'explorar' || (activeTab === 'mis-recetas' && d.userrecipe === 'true') || (activeTab === 'favoritos' && d.favorite === 'true');
-            const matchesDiet = diet === 'todo' || d.type === diet;
-            const matchesCat = cat === 'todo' || d.category === cat;
-            const matchesSearch = title.includes(searchQ);
-
-            const ok = matchesTab && matchesDiet && matchesCat && matchesSearch;
-            item.style.display = ok ? 'block' : 'none';
-            if (ok) visibleCount++;
-        });
-
-        const noResults = document.getElementById('no-results-msg');
-        if (noResults) {
-            noResults.classList.toggle('d-none', visibleCount > 0);
+    function confirmAddRecipe(id, title) {
+        const targetDate = selectedDate || new Date().toISOString().split('T')[0];
+        if (confirm(`¿Añadir "${title}" al ${targetDate}?`)) {
+            fetch('/api/agregar_al_calendario/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ receta_ids: [id], fecha: targetDate })
+            }).then(res => { location.reload(); });
+        }
+    }
+    function removeFromCalendar(id, btn) {
+        if (confirm('¿Quitar del calendario?')) {
+            fetch(`/api/quitar_del_calendario/${id}/`, {
+                method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            }).then(r => location.reload());
         }
     }
 
-    // Escuchar cambios en el input de búsqueda para filtrado instantáneo
-    document.querySelector('input[name="q"]').addEventListener('input', applyFilters);
-
-    document.querySelectorAll('#recipe-tabs button').forEach(btn => {
-        btn.onclick = () => {
-            document.querySelectorAll('#recipe-tabs button').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            applyFilters();
-        };
-    });
-
-    // --- IA PLAN ---
+    // AI Plan
     function generateAutoPlan() {
-        const section = document.getElementById('dailyPlanSection');
-        const content = document.getElementById('dailyPlanContent');
-        section.classList.remove('d-none');
-        content.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div><p class="mt-3 fw-bold">Nuestra IA está diseñando tu plan ideal...</p></div>';
+        const sec = document.getElementById('dailyPlanSection');
+        sec.classList.remove('d-none');
+        document.getElementById('dailyPlanContent').innerHTML = '<div class="text-center p-4 text-muted"><span class="material-symbols-outlined spin">sync</span> Generando...</div>';
 
         fetch('/api/generar_plan_ia/', { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' } })
             .then(res => res.json()).then(data => {
                 if (data.success) {
                     window.currentAiPlan = data.plan;
-                    let html = `<div class="row g-3">`;
-                    data.plan.forEach((meal, idx) => {
+                    let html = '<div class="row g-3">';
+                    data.plan.forEach((m, idx) => {
                         html += `
-                        <div class="col-md-6 col-lg-3">
-                            <div class="recipe-card p-0 overflow-hidden border-0 shadow-sm" style="background: var(--bg-page);">
-                                <input type="checkbox" class="meal-selection-checkbox" data-index="${idx}" checked>
-                                <img src="${meal.imagen_url}" style="height:120px; width:100%; object-fit:cover;">
-                                <div class="p-3">
-                                    <h6 class="fw-bold mb-1 text-truncate">${meal.titulo}</h6>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="badge bg-primary-light text-primary rounded-pill" style="font-size:0.6rem;">${meal.tipo}</span>
-                                        <span class="small text-muted fw-bold">${meal.calorias} kcal</span>
+                        <div class="col-6 col-md-3">
+                            <div class="card h-100 border shadow-sm">
+                                <img src="${m.imagen_url}" class="card-img-top" style="height:100px; object-fit:cover;">
+                                <div class="card-body p-2">
+                                    <div class="small fw-bold text-truncate">${m.titulo}</div>
+                                    <div class="d-flex justify-content-between text-muted" style="font-size:10px;">
+                                        <span>${m.tipo}</span>
+                                        <span>${m.calorias} kcal</span>
                                     </div>
-                                    <button class="btn btn-sm btn-link text-primary fw-bold p-0 mt-2" onclick="showGeneratedDetailByIndex(${idx})">Ver receta</button>
                                 </div>
                             </div>
                         </div>`;
                     });
-                    html += `</div>`;
-                    content.innerHTML = html;
-                } else {
-                    content.innerHTML = `<div class="alert alert-danger">${data.error || 'Error al generar plan'}</div>`;
+                    html += '</div>';
+                    document.getElementById('dailyPlanContent').innerHTML = html;
                 }
             });
     }
-
-    function showGeneratedDetailByIndex(idx) {
-        const meal = window.currentAiPlan[idx];
-        showRecipeDetail(meal.id, meal.titulo, meal.calorias, meal.tiempo, "5.0", meal.imagen_url, meal.proteinas, meal.carbos, meal.grasas, meal.descripcion, meal.tipo);
-    }
-
-    function closeAiPlan() {
-        document.getElementById('dailyPlanSection').classList.add('d-none');
-    }
-
+    function closeAiPlan() { document.getElementById('dailyPlanSection').classList.add('d-none'); }
     function addAllToCalendar() {
         if (!window.currentAiPlan) return;
         const ids = window.currentAiPlan.map(m => m.id);
-        confirmAddToCalendar(ids);
-    }
-
-    function addSelectedToCalendar() {
-        const selectedIdx = Array.from(document.querySelectorAll('.meal-selection-checkbox:checked')).map(cb => cb.dataset.index);
-        if (selectedIdx.length === 0) {
-            alert('Selecciona al menos una comida');
-            return;
-        }
-        const ids = selectedIdx.map(idx => window.currentAiPlan[idx].id);
-        confirmAddToCalendar(ids);
-    }
-
-    function confirmAddToCalendar(ids) {
         const today = new Date().toISOString().split('T')[0];
-        fetch('/api/agregar_al_calendario/', {
-            method: 'POST',
-            headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' },
-            body: JSON.stringify({ receta_ids: ids, fecha: today })
-        }).then(res => res.json()).then(data => {
-            if (data.success) {
-                alert('¡Comidas añadidas al calendario de hoy!');
-                location.reload();
-            }
-        });
-    }
-
-    // --- CALENDAR ACTIONS ---
-    let selectedDateForAdd = null;
-    function openAddMealModal(date) {
-        selectedDateForAdd = date;
-        document.getElementById('target-date-label').innerText = date;
-        document.getElementById('calendar-week-container').classList.add('d-none');
-        document.getElementById('add-meal-view').classList.remove('d-none');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function closeAddMeal() {
-        document.getElementById('add-meal-view').classList.add('d-none');
-        document.getElementById('calendar-week-container').classList.remove('d-none');
-    }
-
-    function filterModalRecipes() {
-        const q = document.getElementById('recipeSearchModal').value.toLowerCase();
-        document.querySelectorAll('.modal-recipe-item').forEach(item => {
-            item.style.display = item.dataset.title.includes(q) ? 'block' : 'none';
-        });
-    }
-
-    function confirmAddRecipe(recipeId, title) {
-        showConfirmModal({
-            title: '¿Añadir al Calendario?',
-            message: `¿Deseas añadir "${title}" a tu calendario para el día ${selectedDateForAdd}?`,
-            icon: 'calendar_add_on',
-            type: 'primary',
-            yesText: 'Añadir Comida',
-            onConfirm: () => {
-                fetch('/api/agregar_al_calendario/', {
-                    method: 'POST',
-                    headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ receta_ids: [recipeId], fecha: selectedDateForAdd })
-                }).then(res => res.json()).then(data => {
-                    if (data.success) {
-                        showToast('¡Receta añadida!', 'success');
-                        setTimeout(() => location.reload(), 800);
-                    }
-                });
-            }
-        });
-    }
-
-    function removeFromCalendar(comidaId, btn) {
-        showConfirmModal({
-            title: '¿Quitar Comida?',
-            message: '¿Estás seguro de que quieres quitar esta comida de tu calendario?',
-            icon: 'calendar_remove',
-            type: 'danger',
-            yesText: 'Quitar ahora',
-            onConfirm: () => {
-                fetch(`/api/quitar_del_calendario/${comidaId}/`, {
-                    method: 'POST',
-                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
-                }).then(res => res.json()).then(data => {
-                    if (data.success) {
-                        btn.closest('.calendar-meal-item').remove();
-                        showToast('Comida quitada del calendario', 'success');
-                    }
-                });
-            }
-        });
-    }
-
-    function showGeneratedDetail(meal) {
-        showRecipeDetail(meal.id, meal.titulo, meal.calorias, meal.tiempo, "5.0", meal.imagen_url, meal.proteinas, meal.carbos, meal.grasas, meal.descripcion, meal.tipo);
-    }
-
-
-    // --- OVERLAYS ---
-    document.getElementById('openCreator').onclick = () => document.getElementById('recipeOverlay').classList.add('show');
-    document.getElementById('closeCreator').onclick = () => document.getElementById('recipeOverlay').classList.remove('show');
-
-    function openEditOverlay(id) {
-        fetch(`/editar_receta/${id}/`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-            .then(res => res.json()).then(data => {
-                if (data.success) {
-                    document.getElementById('edit_receta_id').value = data.receta.id;
-                    document.getElementById('edit_titulo').value = data.receta.titulo;
-                    document.getElementById('editRecipeOverlay').classList.add('show');
-                }
-            });
-    }
-    document.getElementById('closeEdit').onclick = () => document.getElementById('editRecipeOverlay').classList.remove('show');
-
-    // Star rating
-    document.querySelectorAll('.rating-star').forEach(star => {
-        star.onclick = () => {
-            const val = star.dataset.value;
-            fetch(`/api/calificar_receta/${window.currentRecipeId}/`, {
+        if (confirm('¿Añadir plan a hoy?')) {
+            fetch('/api/agregar_al_calendario/', {
                 method: 'POST',
                 headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' },
-                body: JSON.stringify({ puntuacion: val })
-            }).then(res => res.json()).then(data => {
-                if (data.status === 'success') {
-                    document.querySelectorAll('.rating-star').forEach(s => s.style.color = s.dataset.value <= val ? 'var(--primary-color)' : '#ccc');
-                    document.getElementById('detailRating').innerText = data.new_rating;
-                }
-            });
-        };
-    });
+                body: JSON.stringify({ receta_ids: ids, fecha: today })
+            }).then(r => location.reload());
+        }
+    }
+
 </script>
-</div>
 {% endblock %}

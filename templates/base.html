@@ -298,6 +298,107 @@
 
         /* CONTENEDOR PRINCIPAL */
         .container {
+            margin-top: 50px;
+            /* Adjust for header junction */
+            padding-bottom: 120px;
+            /* Footer/Nav space */
+            flex: 1;
+        }
+
+        .scrolled-mode .container {
+            margin-top: 20px;
+        }
+
+        /* SKELETON LOADING */
+        .skeleton {
+            pointer-events: none;
+            user-select: none;
+            background-color: rgba(0, 0, 0, 0.05) !important;
+            border-color: transparent !important;
+            color: transparent !important;
+            position: relative;
+            overflow: hidden !important;
+        }
+
+        .skeleton * {
+            visibility: hidden !important;
+        }
+
+        .skeleton::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+            animation: skeleton-pulse 1.5s infinite;
+            z-index: 100;
+        }
+
+        .dark-mode .skeleton {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        .dark-mode .skeleton::after {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+        }
+
+        @keyframes skeleton-pulse {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        /* BACK BUTTON FLOAT */
+        .back-btn-float {
+            position: fixed;
+            top: 125px;
+            left: 5%;
+            z-index: 3000;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--bg-content);
+            display: none;
+            /* Shown via JS */
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: var(--transition-fluid);
+            color: var(--text-main);
+            text-decoration: none;
+        }
+
+        .back-btn-float:hover {
+            transform: scale(1.1) translateX(-3px);
+            background: var(--primary);
+            color: white !important;
+            border-color: var(--primary);
+        }
+
+        .scrolled-mode .back-btn-float {
+            top: 85px;
+        }
+
+        @media (max-width: 768px) {
+            .back-btn-float {
+                left: 15px;
+                top: 110px;
+            }
+
+            .scrolled-mode .back-btn-float {
+                top: 85px;
+            }
+        }
+
+        .container {
             flex: 1;
             background-color: var(--bg-content);
             border-radius: 0;
@@ -876,8 +977,12 @@
     {% endif %}
 
     <div class="{% if user.is_authenticated and not user.perfil.onboarding_completado %}app-locked{% endif %}"
-        style="flex: 1; display: flex; flex-direction: column;">
+        style="flex: 1; display: flex; flex-direction: column; min-height: 100vh;">
         <div class="header-accent-junction"></div>
+
+        <button id="global-back-btn" class="back-btn-float" onclick="goBack()" title="Regresar">
+            <span class="material-symbols-outlined">arrow_back_ios_new</span>
+        </button>
 
         <header class="desktop-header d-flex justify-content-between align-items-center py-4 px-4">
             <a href="{% url 'base:index' %}" class="brand d-flex align-items-center text-decoration-none">
@@ -1102,24 +1207,19 @@
         /* Mobile adjustment for navbar capsule */
         @media (max-width: 768px) {
             .fixed-footer {
+                bottom: 0;
                 padding-bottom: 95px;
-                /* Stay above the nav-capsule */
-                background: transparent;
-                backdrop-filter: none;
-                border-top: none;
-                pointer-events: none;
+                /* Above nav capsule but still bottom 0 context */
+                background: var(--bg-navbar);
+                backdrop-filter: blur(10px);
+                border-top: 1px solid rgba(0, 0, 0, 0.05);
             }
 
             .fixed-footer .container-fluid {
-                pointer-events: auto;
-                background: rgba(255, 255, 255, 0.9);
-                backdrop-filter: blur(10px);
-                border-radius: 20px 20px 0 0;
-                box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.05);
-            }
-
-            .dark-mode .fixed-footer .container-fluid {
-                background: rgba(22, 24, 17, 0.9);
+                background: transparent;
+                backdrop-filter: none;
+                border-radius: 0;
+                box-shadow: none;
             }
         }
 
@@ -1226,10 +1326,12 @@
             globalGreetingEl.textContent = globalGreetings[Math.floor(Math.random() * globalGreetings.length)];
         }
         // HTMX Loading States (Skeletons)
-        document.body.addEventListener('htmx:beforeRequest', () => {
-            document.querySelectorAll('.premium-card, .card-custom, .card-pro, .macro-mini-card').forEach(el => {
+        document.body.addEventListener('htmx:beforeRequest', (evt) => {
+            // No mostrar skeleton si es una acción pequeña (como racha o hidratación)
+            if (evt.detail.target.id === 'water-glasses-container') return;
+
+            document.querySelectorAll('#main-content .premium-card, #main-content .card-custom, #main-content .card-pro, #main-content .macro-mini-card, #main-content .recipe-card').forEach(el => {
                 el.classList.add('skeleton');
-                el.style.minHeight = el.offsetHeight + 'px';
             });
         });
 
@@ -1238,6 +1340,57 @@
                 el.classList.remove('skeleton');
             });
         });
+
+        // --- NAVIGATION STACK & SCROLL RESTORATION ---
+        const navStack = {
+            get: () => JSON.parse(sessionStorage.getItem('nunut_nav_stack') || '[]'),
+            push: (url, scroll) => {
+                const stack = navStack.get();
+                // Si la última es igual a la actual, no duplicar
+                if (stack.length > 0 && stack[stack.length - 1].url === url) return;
+                stack.push({ url, scroll });
+                if (stack.length > 10) stack.shift(); // Max 10 items
+                sessionStorage.setItem('nunut_nav_stack', JSON.stringify(stack));
+                updateBackBtn();
+            },
+            pop: () => {
+                const stack = navStack.get();
+                if (stack.length <= 1) return null;
+                stack.pop(); // Sacar la actual
+                const prev = stack.pop(); // Obtener la anterior
+                sessionStorage.setItem('nunut_nav_stack', JSON.stringify(stack));
+                return prev;
+            }
+        };
+
+        function updateBackBtn() {
+            const btn = document.getElementById('global-back-btn');
+            const stack = navStack.get();
+            if (btn) {
+                btn.style.display = stack.length > 1 ? 'flex' : 'none';
+            }
+        }
+
+        window.goBack = function () {
+            const prev = navStack.pop();
+            if (prev) {
+                htmx.ajax('GET', prev.url, { target: '#main-content', swap: 'outerHTML', select: '#main-content' })
+                    .then(() => {
+                        window.history.pushState({}, '', prev.url);
+                        setTimeout(() => window.scrollTo({ top: prev.scroll, behavior: 'instant' }), 50);
+                    });
+            }
+        };
+
+        // Capturar navegación para el stack
+        document.body.addEventListener('htmx:beforeTransition', (evt) => {
+            const currentUrl = window.location.pathname + window.location.search;
+            navStack.push(currentUrl, window.scrollY);
+        });
+
+        // Inicializar botón
+        document.addEventListener('DOMContentLoaded', updateBackBtn);
+        document.body.addEventListener('htmx:afterSwap', updateBackBtn);
 
         // Global Scroll Logic for Sticky Header
         window.addEventListener('scroll', () => {

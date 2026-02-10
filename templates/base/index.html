@@ -681,8 +681,7 @@
                     <div class="col-md-4 col-sm-6">
                         <div class="macro-mini-card border-bottom border-4" style="border-color: #3abff8 !important;">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div class="icon-box p-2 rounded-circle"
-                                    style="background-color: #3abff8 !important;">
+                                <div class="icon-box p-2 rounded-circle" style="background-color: #3abff8 !important;">
                                     <span class="material-symbols-outlined fs-5">fitness_center</span>
                                 </div>
                                 <span class="badge bg-light text-muted fw-bold border header-badge">Proteína</span>
@@ -783,7 +782,8 @@
                                 class="material-symbols-outlined fs-6 {% if receta.id in favoritas_ids %}active{% endif %}">favorite</span>
                         </button>
                         <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-50">
-                            <span class="text-white fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">{{ receta.get_tipo_dieta_display|upper }}</span>
+                            <span class="text-white fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">{{
+                                receta.get_tipo_dieta_display|upper }}</span>
                         </div>
                     </div>
                     <div class="p-3">
@@ -831,7 +831,8 @@
             </div>
             <div class="position-relative mb-3" style="z-index: 2;">
                 <p class="small text-white opacity-90 mb-0 ps-2 italic lh-base"
-                    style="font-size: 0.85rem; font-weight: 500; border-left: 2px solid var(--primary);">{{ recomendacion_ia }}</p>
+                    style="font-size: 0.85rem; font-weight: 500; border-left: 2px solid var(--primary);">{{
+                    recomendacion_ia }}</p>
             </div>
             <div class="d-flex gap-2 mb-0" style="z-index: 2; position: relative;"><span
                     class="badge rounded-pill bg-primary bg-opacity-20 text-white x-small fw-bold border border-white border-opacity-10"
@@ -868,7 +869,9 @@
                             class="text-muted h6">/
                             <span id="meta-liters-display">{{ registro_agua.meta_litros|default:"2.0" }}</span>
                             Lts</small></h4>
-                    <p class="text-xs-bold text-muted mb-0">Vasos: <span id="current-vasos-display">{{ registro_agua.cantidad_vasos|default:"0" }}</span> / <span id="meta-vasos-display">{{ registro_agua.meta_vasos|default:"8" }}</span></p>
+                    <p class="text-xs-bold text-muted mb-0">Vasos: <span id="current-vasos-display">{{
+                            registro_agua.cantidad_vasos|default:"0" }}</span> / <span id="meta-vasos-display">{{
+                            registro_agua.meta_vasos|default:"8" }}</span></p>
                 </div>
                 {% if es_invitado %}
             </div>{% endif %}

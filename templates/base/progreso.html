@@ -589,7 +589,8 @@
                     <span class="text-slate-400 fw-black">KG</span>
                     <div class="d-flex align-items-center justify-content-end text-lime fw-black"
                         style="font-size: 0.75rem;">
-                        <span class="material-symbols-outlined fs-6">{% if avatar.tendencia == 'bajando' %}trending_down{% else %}trending_up{% endif %}</span>
+                        <span class="material-symbols-outlined fs-6">{% if avatar.tendencia == 'bajando'
+                            %}trending_down{% else %}trending_up{% endif %}</span>
                         TENDENCIA: {{ avatar.tendencia|upper }}
                     </div>
                 </div>
