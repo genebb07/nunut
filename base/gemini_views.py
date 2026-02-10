@@ -1,6 +1,6 @@
 import os
 import json
-from google import genai
+import google.generativeai as genai
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -337,3 +337,258 @@ def generar_plan_ia(request):
     except Exception as e:
         print("Error Plan IA:", e)
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@login_required
+def analizar_comida_ia(request):
+    """Analiza una comida usando NLP local + Base de Datos, con fallback a Gemini."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        descripcion_comida = data.get('descripcion', '').strip()
+        
+        if not descripcion_comida:
+            return JsonResponse({'success': False, 'error': 'Descripción vacía'}, status=400)
+
+        # --- 1. INTENTO DE ANÁLISIS NLP LOCAL ---
+        from .models import Alimento
+        import re
+
+        # Regex para identificar cantidades y alimentos
+        # Patrones: "100g de pollo", "200 gr arroz", "1 taza de leche", "pollo 100g"
+        # Simplificación: Buscar Numero + Unidad (opcional) + Texto Restante
+        
+        # Separadores de "complementos"
+        separadores = r'(?: y | con | \+ | , | más | tras | acompando de )'
+        partes = re.split(separadores, descripcion_comida, flags=re.IGNORECASE)
+        
+        ingredientes_detectados = []
+        macros_totales = {'calorias': 0, 'proteinas': 0, 'carbos': 0, 'grasas': 0, 'fibra': 0}
+        micro_totales = {'vitamina_a': 0, 'vitamina_c': 0, 'hierro': 0, 'magnesio': 0, 'potasio': 0, 'zinc': 0}
+        
+        found_any = False
+        
+        for parte in partes:
+            parte = parte.strip()
+            if not parte: continue
+            
+            # Extraer cantidad
+            cantidad = 100 # Default 100g
+            match_cant = re.search(r'(\d+(?:[.,]\d+)?)', parte)
+            if match_cant:
+                try:
+                    cantidad = float(match_cant.group(1).replace(',', '.'))
+                except: pass
+            
+            # Limpiar nombre (quitar numeros, unidades comunes, stopwords)
+            nombre_limpio = re.sub(r'\d+(?:[.,]\d+)?', '', parte) # Quitar numeros
+            nombre_limpio = re.sub(r'\b(g|gr|gramos|ml|litros|kg|kilo|kilos|taza|tazas|cuchara|cucharadas|unidad|unidades|pieza|piezas)\b', '', nombre_limpio, flags=re.IGNORECASE)
+            nombre_limpio = re.sub(r'\b(de|del|un|una|el|la|los|las)\b', '', nombre_limpio, flags=re.IGNORECASE)
+            nombre_limpio = nombre_limpio.strip()
+            
+            # Buscar en BD (Fuzzy search simple: buscando keywords)
+            # Primero intento exacto, luego contains
+            alimento = Alimento.objects.filter(nombre__iexact=nombre_limpio).first()
+            if not alimento:
+                alimento = Alimento.objects.filter(nombre__icontains=nombre_limpio).first()
+                # Fallback: si string es "pechuga de pollo", y tenemos "Pollo", intentamos buscar palabras clave
+                if not alimento and len(nombre_limpio) > 3:
+                    for palabra in nombre_limpio.split():
+                        if len(palabra) > 3:
+                            alimento = Alimento.objects.filter(nombre__icontains=palabra).first()
+                            if alimento: break
+            
+            if alimento:
+                found_any = True
+                factor = cantidad / 100.0
+                
+                # Calcular macros
+                cal = int(alimento.calorias_100g * factor)
+                prot = round(float(alimento.proteinas_100g) * factor, 1)
+                carbs = round(float(alimento.carbos_100g) * factor, 1)
+                grasas = round(float(alimento.grasas_100g) * factor, 1)
+                fibra = round(float(alimento.fibra_100g) * factor, 1)
+                
+                macros_totales['calorias'] += cal
+                macros_totales['proteinas'] += prot
+                macros_totales['carbos'] += carbs
+                macros_totales['grasas'] += grasas
+                macros_totales['fibra'] += fibra
+                
+                # Micronutrientes
+                micro_totales['vitamina_a'] += float(alimento.vitamina_a_mg) * factor
+                micro_totales['vitamina_c'] += float(alimento.vitamina_c_mg) * factor
+                micro_totales['hierro'] += float(alimento.hierro_mg) * factor
+                micro_totales['magnesio'] += float(alimento.magnesio_mg) * factor
+                micro_totales['potasio'] += float(alimento.potasio_mg) * factor
+                micro_totales['zinc'] += float(alimento.zinc_mg) * factor
+                
+                ingredientes_detectados.append({
+                    "nombre": alimento.nombre,
+                    "cantidad": f"{int(cantidad) if cantidad.is_integer() else cantidad}g"
+                })
+
+        # Si encontramos ALGO en la BD local, devolvemos eso (Prioridad Local)
+        # Ojo: Si el usuario pone "100g pollo y 100g vibranium", solo detectará pollo.
+        # Para ser robustos, si detectamos CERO ingredientes, usamos Gemini.
+        # Si detectamos al menos uno, asumimos éxito parcial y devolvemos eso (o podríamos mezclar, pero complicado).
+        
+        if found_any and len(ingredientes_detectados) > 0:
+            return JsonResponse({
+                'success': True,
+                'analisis': {
+                    "titulo": descripcion_comida.capitalize(),
+                    "descripcion": f"Análisis basado en base de datos local para: {', '.join([i['nombre'] for i in ingredientes_detectados])}",
+                    "calorias": int(macros_totales['calorias']),
+                    "proteinas": int(macros_totales['proteinas']),
+                    "carbohidratos": int(macros_totales['carbos']),
+                    "grasas": int(macros_totales['grasas']),
+                    "fibra": int(macros_totales['fibra']),
+                    "ingredientes": ingredientes_detectados,
+                    "micronutrientes": {k: int(v) for k, v in micro_totales.items()}
+                }
+            })
+
+        # --- 2. FALLBACK A GEMINI SI NO HAY MATCH LOCAL ---
+        api_key = getattr(settings, 'GEMINI_API_KEY', None)
+        if not api_key:
+             return JsonResponse({'success': False, 'error': 'No se encontraron alimentos en la BD y no hay API Key.'}, status=404)
+
+        genai.configure(api_key=api_key)
+        
+        # Auto-detect available model
+        available_models = []
+        try:
+            for m in genai.list_models():
+                if 'generateContent' in m.supported_generation_methods:
+                    available_models.append(m.name)
+        except: pass
+        
+        model_name = next((m for m in ['models/gemini-1.5-flash', 'models/gemini-pro'] if m in available_models), available_models[0] if available_models else None)
+        
+        if not model_name:
+            return JsonResponse({'success': False, 'error': 'No hay modelos disponibles.'}, status=500)
+        
+        model = genai.GenerativeModel(model_name)
+        
+        prompt = f"""
+        Eres un nutricionista experto. Analiza la siguiente descripción de comida y proporciona un análisis nutricional detallado.
+        
+        DESCRIPCIÓN DE LA COMIDA:
+        "{descripcion_comida}"
+        
+        INSTRUCCIONES:
+        1. Identifica todos los ingredientes principales
+        2. Estima las cantidades aproximadas
+        3. Calcula los valores nutricionales totales
+        4. Proporciona un desglose de macronutrientes
+        5. Incluye micronutrientes relevantes (vitaminas y minerales)
+        
+        Responde EXCLUSIVAMENTE con un objeto JSON válido (sin texto extra, sin markdown) con esta estructura EXACTA:
+        {{
+            "titulo": "Nombre descriptivo del plato",
+            "descripcion": "Descripción breve del análisis",
+            "calorias": 0,
+            "proteinas": 0,
+            "carbohidratos": 0,
+            "grasas": 0,
+            "fibra": 0,
+            "ingredientes": [
+                {{"nombre": "Ingrediente 1", "cantidad": "100g"}},
+                {{"nombre": "Ingrediente 2", "cantidad": "50g"}}
+            ],
+            "micronutrientes": {{
+                "vitamina_a": 120,
+                "vitamina_c": 88,
+                "hierro": 24,
+                "magnesio": 45,
+                "potasio": 32,
+                "zinc": 15
+            }}
+        }}
+        """
+        
+        response = model.generate_content(prompt)
+        text_resp = response.text.replace('```json', '').replace('```', '').strip()
+        analysis_data = json.loads(text_resp)
+        
+        return JsonResponse({
+            'success': True,
+            'analisis': analysis_data
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'JSON inválido'}, status=400)
+    except Exception as e:
+        print("Error Analizar Comida:", e)
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@login_required
+def transcribir_audio(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+    
+    if not request.FILES.get('audio_file'):
+        return JsonResponse({'success': False, 'error': 'No se recibió archivo de audio'}, status=400)
+    
+    from django.core.files.storage import default_storage
+    from django.core.files.base import ContentFile
+    import os
+    import time
+    import traceback
+    
+    audio_file = request.FILES['audio_file']
+    api_key = getattr(settings, 'GEMINI_API_KEY', None)
+    
+    if not api_key:
+        return JsonResponse({'success': False, 'error': 'API Key no configurada'}, status=500)
+
+    # 1. Guardar temporalmente usando el storage de Django (más robusto)
+    # Generar un nombre único para evitar colisiones
+    temp_filename = f"audio_{int(time.time())}_{audio_file.name}"
+    path = default_storage.save(f'tmp/{temp_filename}', ContentFile(audio_file.read()))
+    full_path = default_storage.path(path)
+    
+    try:
+        genai.configure(api_key=api_key)
+        
+        # 2. Subir a Gemini
+        uploaded_file = genai.upload_file(full_path)
+        
+        # 3. Esperar procesamiento (max 20s)
+        attempts = 0
+        while uploaded_file.state.name == "PROCESSING" and attempts < 20:
+            time.sleep(1)
+            uploaded_file = genai.get_file(uploaded_file.name)
+            attempts += 1
+            
+        if uploaded_file.state.name == "FAILED":
+            raise Exception("El procesamiento del audio falló en los servidores de Google.")
+            
+        # 4. Transcribir
+        model = genai.GenerativeModel("models/gemini-1.5-flash")
+        prompt = "Actúa como un transcriptor experto. Transcribe este audio exactamente palabra por palabra en español. Si solo hay silencio o ruido, responde 'SILENCIO'. No añadas introducciones."
+        
+        response = model.generate_content([prompt, uploaded_file])
+        transcription = response.text.strip()
+        
+        if "SILENCIO" in transcription.upper():
+            transcription = ""
+            
+        return JsonResponse({'success': True, 'text': transcription})
+
+    except Exception as e:
+        traceback.print_exc()
+        return JsonResponse({'success': False, 'error': f"Error en la IA: {str(e)}"}, status=500)
+        
+    finally:
+        # 5. Limpiar siempre
+        try:
+            if default_storage.exists(path):
+                default_storage.delete(path)
+        except: pass
+        try:
+            if 'uploaded_file' in locals():
+                genai.delete_file(uploaded_file.name)
+        except: pass

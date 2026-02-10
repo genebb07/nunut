@@ -9,7 +9,7 @@ urlpatterns = [
     path('dashboard/', views.index, name='index'),
     path('panel/', views.panel, name='panel'),
     path('planes/', views.planes, name='planes'),
-    path('diario/', views.diario, name='diario'),
+    path('analizador/', views.analizador, name='analizador'),
     path('progreso/', views.progreso, name='progreso'),
     path('biblioteca/', views.biblio, name='biblio'),
     path('iniciar_sesion/', views.iniciar_sesion, name='iniciar_sesion'),
@@ -49,6 +49,7 @@ urlpatterns = [
     path('api/archivar_sugerencia/<int:sugerencia_id>/', views.archivar_sugerencia, name='archivar_sugerencia'),
     path('api/agregar_al_calendario/', views.agregar_al_calendario, name='agregar_al_calendario'),
     path('api/quitar_del_calendario/<int:comida_id>/', views.quitar_del_calendario, name='quitar_del_calendario'),
+    path('api/analizar_comida_ia/', gemini_views.analizar_comida_ia, name='analizar_comida_ia'),
     path('api/obtener_calorias_dias/', views.obtener_calorias_dias, name='obtener_calorias_dias'),
+    path('api/transcribir_audio/', gemini_views.transcribir_audio, name='transcribir_audio'),
 ]
-

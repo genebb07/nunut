@@ -604,6 +604,27 @@ def seed_db():
             url="https://example.com/proteina"
         )
 
+    from .models import Alimento
+    if not Alimento.objects.exists():
+        # Basicos
+        Alimento.objects.create(nombre="Pollo", calorias_100g=165, proteinas_100g=31, carbos_100g=0, grasas_100g=3.6, fibra_100g=0, vitamina_a_mg=0, vitamina_c_mg=0, hierro_mg=1, magnesio_mg=23, potasio_mg=256, zinc_mg=1)
+        Alimento.objects.create(nombre="Arroz", calorias_100g=130, proteinas_100g=2.7, carbos_100g=28, grasas_100g=0.3, fibra_100g=0.4, vitamina_a_mg=0, vitamina_c_mg=0, hierro_mg=0.2, magnesio_mg=12, potasio_mg=35, zinc_mg=0.5)
+        Alimento.objects.create(nombre="Huevo", calorias_100g=155, proteinas_100g=13, carbos_100g=1.1, grasas_100g=11, fibra_100g=0, vitamina_a_mg=0.16, vitamina_c_mg=0, hierro_mg=1.2, magnesio_mg=10, potasio_mg=126, zinc_mg=1)
+        Alimento.objects.create(nombre="Aguacate", calorias_100g=160, proteinas_100g=2, carbos_100g=8.5, grasas_100g=14.7, fibra_100g=6.7, vitamina_a_mg=0.01, vitamina_c_mg=10, hierro_mg=0.6, magnesio_mg=29, potasio_mg=485, zinc_mg=0.6)
+        Alimento.objects.create(nombre="Pasta", calorias_100g=131, proteinas_100g=5, carbos_100g=25, grasas_100g=1.1, fibra_100g=1.2)
+        Alimento.objects.create(nombre="Pan", calorias_100g=265, proteinas_100g=9, carbos_100g=49, grasas_100g=3.2, fibra_100g=2.7)
+        Alimento.objects.create(nombre="Pescado", calorias_100g=206, proteinas_100g=22, carbos_100g=0, grasas_100g=12, vitamina_a_mg=0.05, vitamina_c_mg=0, hierro_mg=0.5, magnesio_mg=30, potasio_mg=384, zinc_mg=0.5)
+        Alimento.objects.create(nombre="Carne", calorias_100g=250, proteinas_100g=26, carbos_100g=0, grasas_100g=15, hierro_mg=2.6, zinc_mg=4.8)
+        Alimento.objects.create(nombre="Leche", calorias_100g=42, proteinas_100g=3.4, carbos_100g=5, grasas_100g=1, vitamina_a_mg=0.03, vitamina_c_mg=0)
+        Alimento.objects.create(nombre="Papa", calorias_100g=77, proteinas_100g=2, carbos_100g=17, grasas_100g=0.1, fibra_100g=2.2, vitamina_c_mg=19, potasio_mg=421)
+        Alimento.objects.create(nombre="Tomate", calorias_100g=18, proteinas_100g=0.9, carbos_100g=3.9, grasas_100g=0.2, fibra_100g=1.2, vitamina_c_mg=13, vitamina_a_mg=0.04)
+        Alimento.objects.create(nombre="Lechuga", calorias_100g=15, proteinas_100g=1.4, carbos_100g=2.9, grasas_100g=0.2, fibra_100g=1.3, vitamina_a_mg=0.37)
+        Alimento.objects.create(nombre="Manzana", calorias_100g=52, proteinas_100g=0.3, carbos_100g=14, grasas_100g=0.2, fibra_100g=2.4, vitamina_c_mg=4.6)
+        Alimento.objects.create(nombre="Platano", calorias_100g=89, proteinas_100g=1.1, carbos_100g=22.8, grasas_100g=0.3, fibra_100g=2.6, potasio_mg=358, vitamina_c_mg=8.7)
+        Alimento.objects.create(nombre="Queso", calorias_100g=402, proteinas_100g=25, carbos_100g=1.3, grasas_100g=33)
+        Alimento.objects.create(nombre="Yogur", calorias_100g=59, proteinas_100g=10, carbos_100g=3.6, grasas_100g=0.4)
+        Alimento.objects.create(nombre="Avena", calorias_100g=389, proteinas_100g=16.9, carbos_100g=66, grasas_100g=6.9, fibra_100g=10.6)
+
 def planes(request):
     seed_db()
     from .models import Receta, RecetaFavorita, ComidaDiaria
@@ -795,7 +816,7 @@ def planes(request):
     })
 
 @login_required
-def diario(request):
+def analizador(request):
     perfil = request.user.perfil
     
     # 1. Manejo de Fecha
@@ -861,9 +882,9 @@ def diario(request):
     }
 
     if request.headers.get('HX-Request'):
-        return render(request, 'base/diario.html', context)
+        return render(request, 'base/analizador.html', context)
     
-    return render(request, 'base/diario.html', context)
+    return render(request, 'base/analizador.html', context)
 
 @login_required
 def progreso(request):

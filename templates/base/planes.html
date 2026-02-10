@@ -129,7 +129,8 @@
     /* FAB */
     .fab-btn {
         position: fixed;
-        bottom: 30px;
+        bottom: 100px;
+        /* Default higher to avoid nav capsule */
         right: 30px;
         width: 56px;
         height: 56px;
@@ -143,6 +144,13 @@
         transition: transform 0.2s, background-color 0.2s;
         z-index: 50;
         text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+        .fab-btn {
+            bottom: 110px;
+            right: 20px;
+        }
     }
 
     .fab-btn:hover {
@@ -339,12 +347,15 @@
         box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
         .recipe-detail-panel {
-            height: 90vh;
+            height: 95vh;
             width: 100%;
+            max-width: 100%;
             border-bottom-left-radius: 0;
             border-bottom-right-radius: 0;
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
             position: fixed;
             bottom: 0;
             transform: translateY(100%);
@@ -352,6 +363,18 @@
 
         .recipe-Detail-overlay.show .recipe-detail-panel {
             transform: translateY(0);
+        }
+
+        .recipe-detail-content {
+            padding-bottom: 120px;
+        }
+
+        .hero-image-detail {
+            min-height: 250px;
+            border-radius: 0;
+            margin-left: -1rem;
+            margin-right: -1rem;
+            width: calc(100% + 2rem);
         }
     }
 
@@ -362,6 +385,16 @@
         border-radius: 20px;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
         border: 1px solid #eee;
+        transition: all 0.3s ease;
+    }
+
+    @media (max-width: 768px) {
+        .recipe-creator-container {
+            margin: 0;
+            border-radius: 0;
+            width: 100%;
+            min-height: 100vh;
+        }
     }
 
     .btn-primary-custom {
@@ -429,9 +462,35 @@
 
     /* (removed fixed-height wrapper to allow grid to expand vertically) */
 
+    @media (max-width: 1200px) {
+        .calendar-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
     @media (max-width: 991px) {
         .calendar-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .calendar-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .calendar-day-card {
+            min-height: 180px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .calendar-grid {
             grid-template-columns: 1fr;
+        }
+
+        .calendar-day-card {
+            min-height: auto;
         }
     }
 
@@ -590,8 +649,8 @@
 <div class="main-container pb-5">
 
     <!-- HEADER -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
-        <div>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div class="text-center text-md-start">
             <h1 class="fw-bolder m-0 text-dark" style="font-size: 1.75rem;">
                 {% if vista_activa == 'calendario' %}Mi Calendario{% else %}Explorador de Recetas{% endif %}
             </h1>

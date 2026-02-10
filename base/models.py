@@ -227,6 +227,24 @@ class RegistroSueno(models.Model):
         if f <= i: f += timedelta(days=1)
         return round((f - i).total_seconds() / 3600, 2)
 
+class Alimento(models.Model):
+    nombre = models.CharField(max_length=200, unique=True)
+    calorias_100g = models.IntegerField(default=0)
+    proteinas_100g = models.DecimalField(max_digits=5, decimal_places=1, default=0)
+    carbos_100g = models.DecimalField(max_digits=5, decimal_places=1, default=0)
+    grasas_100g = models.DecimalField(max_digits=5, decimal_places=1, default=0)
+    fibra_100g = models.DecimalField(max_digits=5, decimal_places=1, default=0)
+    
+    # Micronutrientes (mg o mcg según estándar per 100g)
+    vitamina_a_mg = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    vitamina_c_mg = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    hierro_mg = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    magnesio_mg = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    potasio_mg = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    zinc_mg = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+
+    def __str__(self): return self.nombre
+
 class Receta(models.Model):
     titulo = models.CharField(max_length=200)
     descripcion = models.TextField(blank=True)

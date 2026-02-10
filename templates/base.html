@@ -1134,11 +1134,11 @@
                     </a>
                 </li>
                 <li data-index="2">
-                    <a href="{% url 'base:diario' %}" hx-get="{% url 'base:diario' %}" hx-target="#main-content"
+                    <a href="{% url 'base:analizador' %}" hx-get="{% url 'base:analizador' %}" hx-target="#main-content"
                         hx-select="#main-content" hx-swap="outerHTML" hx-push-url="true"
-                        class="nav-item {% if request.resolver_match.url_name == 'diario' %}active{% endif %}">
-                        <span class="icon"><i class="fas fa-clipboard-list icon-color-silver"></i></span>
-                        <span class="text">Diario</span>
+                        class="nav-item {% if request.resolver_match.url_name == 'analizador' %}active{% endif %}">
+                        <span class="icon"><i class="fas fa-brain icon-color-silver"></i></span>
+                        <span class="text">Analizador</span>
                     </a>
                 </li>
                 <li data-index="3">
