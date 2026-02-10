@@ -2167,3 +2167,41 @@ def quitar_del_calendario(request, comida_id):
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
 
+@login_required
+def obtener_calorias_dias(request):
+    """API endpoint to get calorie data for the next 7 days"""
+    try:
+        from .models import ComidaDiaria
+        perfil = request.user.perfil
+        
+        # Get user's calorie goal
+        meta_cal = 2000
+        try:
+            informe = perfil.generar_informe_nutricional()
+            meta_cal = informe['plan']['calorias_dia']
+        except:
+            pass
+        
+        # Calculate calories for next 7 days
+        today = date.today()
+        dias_data = []
+        
+        for i in range(7):
+            fecha = today + timedelta(days=i)
+            comidas_dia = ComidaDiaria.objects.filter(perfil=perfil, fecha=fecha)
+            calorias_acumuladas = sum(c.calorias for c in comidas_dia)
+            
+            dias_data.append({
+                'fecha': fecha.isoformat(),
+                'calorias': calorias_acumuladas,
+                'meta': meta_cal
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'dias': dias_data,
+            'meta_calorias': meta_cal
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+

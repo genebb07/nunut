@@ -143,9 +143,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'base:iniciar_sesion'
 LOGIN_REDIRECT_URL = 'base:index'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'base:bienvenida'
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+
+# --- Configuración Actualizada para Allauth ---
+# Reemplaza AUTHENTICATION_METHOD, EMAIL_REQUIRED y USERNAME_REQUIRED con estos dos:
+ACCOUNT_LOGIN_METHODS = {'username', 'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
+
 SOCIALACCOUNT_QUERY_EMAIL = True
 SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
 

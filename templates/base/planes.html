@@ -162,8 +162,7 @@
     }
 
     /* Modals & Overlays */
-    .recipe-creator-overlay,
-    .recipe-Detail-overlay {
+    .recipe-creator-overlay {
         position: fixed;
         top: 0;
         left: 0;
@@ -175,9 +174,185 @@
         overflow-y: auto;
     }
 
-    .recipe-creator-overlay.show,
-    .recipe-Detail-overlay.show {
+    .recipe-creator-overlay.show {
         display: block;
+    }
+
+    /* Recipe Detail Popup (Modal) */
+    .recipe-Detail-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2000;
+        display: none;
+        pointer-events: none;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .recipe-Detail-overlay.show {
+        display: flex;
+        pointer-events: auto;
+    }
+
+    /* Modal Content Panel */
+    .recipe-detail-panel {
+        position: relative;
+        width: 95%;
+        max-width: 600px;
+        height: 70vh;
+        background: var(--bg-light);
+        border-radius: 24px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        transform: scale(0.9);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        overflow: hidden;
+        /* Header and Footer will be absolute/sticky */
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .recipe-Detail-overlay.show .recipe-detail-panel {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    .recipe-detail-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding-bottom: 100px;
+        /* Space for fixed bottom action */
+    }
+
+    /* Date Selector Mini Calendar */
+    .date-selector-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-top-left-radius: 24px;
+        border-top-right-radius: 24px;
+        box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.1);
+        transform: translateY(100%);
+        transition: transform 0.3s ease-out;
+        z-index: 10;
+        padding: 1.5rem;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .date-selector-overlay.show {
+        transform: translateY(0);
+    }
+
+    .date-chip {
+        padding: 12px;
+        border: 2px solid #f3f4f6;
+        border-radius: 16px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        flex: 1;
+        min-width: 90px;
+        position: relative;
+        background: white;
+    }
+
+    .date-chip:hover {
+        border-color: var(--primary-color);
+        background: #f7fee7;
+        transform: translateY(-2px);
+    }
+
+    .date-chip.selected {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 12px rgba(132, 199, 26, 0.3);
+    }
+
+    .date-chip small {
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        opacity: 0.8;
+        margin-bottom: 4px;
+    }
+
+    .date-chip .day-number {
+        display: block;
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 6px;
+    }
+
+    .date-chip .cal-info {
+        font-size: 9px;
+        font-weight: 600;
+        opacity: 0.9;
+        line-height: 1.3;
+    }
+
+    .date-chip.selected .cal-info {
+        opacity: 1;
+    }
+
+    .cal-progress-mini {
+        height: 3px;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 3px;
+        margin-top: 6px;
+        overflow: hidden;
+    }
+
+    .date-chip.selected .cal-progress-mini {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .cal-progress-fill {
+        height: 100%;
+        background: var(--primary-color);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+
+    .date-chip.selected .cal-progress-fill {
+        background: white;
+    }
+
+    .preview-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #ff6b6b;
+        color: white;
+        font-size: 10px;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+    }
+
+    @media (max-width: 600px) {
+        .recipe-detail-panel {
+            height: 90vh;
+            width: 100%;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            position: fixed;
+            bottom: 0;
+            transform: translateY(100%);
+        }
+
+        .recipe-Detail-overlay.show .recipe-detail-panel {
+            transform: translateY(0);
+        }
     }
 
     .recipe-creator-container {
@@ -206,6 +381,12 @@
     .btn-primary-custom:hover {
         background-color: var(--primary-dark);
         color: white;
+    }
+
+    .btn-primary-custom:disabled {
+        background-color: #d1d5db;
+        cursor: not-allowed;
+        opacity: 0.6;
     }
 
     .btn-filter {
@@ -268,6 +449,7 @@
         border-color: var(--primary-color);
         box-shadow: 0 0 0 1px var(--primary-color);
     }
+
     /* Detail view styles (from provided design) */
     :root {
         --bg-dark: #1b2111;
@@ -293,7 +475,7 @@
         justify-content: center;
         background-color: white;
         border: none;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
     .hero-image-detail {
@@ -302,7 +484,7 @@
         background-size: cover;
         background-position: center;
         border-radius: 1.25rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
 
     .stat-badge {
@@ -322,7 +504,7 @@
         border-radius: 1rem;
         border: 1px solid var(--border-color);
         padding: 1.25rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     .step-number {
@@ -344,8 +526,16 @@
         left: 0;
         right: 0;
         padding: 1rem;
-        background: linear-gradient(to top, var(--bg-light), rgba(247,248,246,0.95), transparent);
+        background: linear-gradient(to top, var(--bg-light), rgba(247, 248, 246, 0.95), transparent);
         z-index: 1040;
+    }
+
+    /* Bottom action inside offcanvas */
+    .recipe-detail-panel .bottom-action-container {
+        position: absolute;
+        bottom: 72px;
+        left: 0;
+        right: 0;
     }
 
     .btn-add {
@@ -374,8 +564,27 @@
         z-index: 1050;
     }
 
-    .nav-item-custom { display:flex; flex-direction:column; align-items:center; color:#9ca3af; font-size:10px; font-weight:600; text-decoration:none; }
-    .nav-item-custom.active { color: var(--primary-color); }
+    /* Bottom nav inside offcanvas */
+    .recipe-detail-panel .ios-bottom-nav {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+
+    .nav-item-custom {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: #9ca3af;
+        font-size: 10px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .nav-item-custom.active {
+        color: var(--primary-color);
+    }
 </style>
 
 <div class="main-container pb-5">
@@ -405,13 +614,14 @@
     <!-- TABS -->
     <nav class="nav-tabs-custom" id="recipe-tabs">
         {% if vista_activa != 'calendario' %}
-            <button class="nav-link active" data-tab="explorar" onclick="switchTab('explorar')">Explorar</button>
-            <button class="nav-link" data-tab="mis-recetas" onclick="switchTab('mis-recetas')">Mis Recetas</button>
-            <button class="nav-link" data-tab="favoritos" onclick="switchTab('favoritos')">Favoritos</button>
+        <button class="nav-link active" data-tab="explorar" onclick="switchTab('explorar')">Explorar</button>
+        <button class="nav-link" data-tab="mis-recetas" onclick="switchTab('mis-recetas')">Mis Recetas</button>
+        <button class="nav-link" data-tab="favoritos" onclick="switchTab('favoritos')">Favoritos</button>
         {% else %}
-            <a href="?view=recetario" class="nav-link">Explorar</a>
+        <a href="?view=recetario" class="nav-link">Explorar</a>
         {% endif %}
-        <a href="?view=calendario" class="nav-link {% if vista_activa == 'calendario' %}active{% endif %}">Calendario</a>
+        <a href="?view=calendario"
+            class="nav-link {% if vista_activa == 'calendario' %}active{% endif %}">Calendario</a>
     </nav>
 
     <!-- VIEWS CONTAINER -->
@@ -490,11 +700,14 @@
 
                         <div class="d-flex flex-wrap gap-1 mb-3">
                             <span class="macro-pill"
-                                style="background: var(--macro-protein); color: var(--macro-protein-text);">P: {{  receta.proteinas }}g</span>
+                                style="background: var(--macro-protein); color: var(--macro-protein-text);">P: {{
+                                receta.proteinas }}g</span>
                             <span class="macro-pill"
-                                style="background: var(--macro-carbs); color: var(--macro-carbs-text);">C: {{ receta.carbos }}g</span>
+                                style="background: var(--macro-carbs); color: var(--macro-carbs-text);">C: {{
+                                receta.carbos }}g</span>
                             <span class="macro-pill"
-                                style="background: var(--macro-fats); color: var(--macro-fats-text);">G: {{ receta.grasas }}g</span>
+                                style="background: var(--macro-fats); color: var(--macro-fats-text);">G: {{
+                                receta.grasas }}g</span>
                         </div>
 
                         <div
@@ -560,111 +773,131 @@
 
 <!-- OVERSLAYS -->
 
-<!-- Recipe Detail -->
-<div id="recipe-detail-view" class="recipe-Detail-overlay">
-    <nav class="sticky-nav">
-        <div class="container-fluid d-flex align-items-center justify-content-between p-3">
-            <button class="btn-round-icon" onclick="closeRecipeDetail()">
-                <span class="material-symbols-outlined">arrow_back</span>
-            </button>
-            <h2 class="h6 mb-0 fw-bold flex-grow-1 text-center">Detalle de Comida</h2>
-            <div style="width: 40px;" class="d-flex justify-content-end">
-                <button class="btn-round-icon">
-                    <span class="material-symbols-outlined">share</span>
+<!-- Recipe Detail popup -->
+<div id="recipe-detail-view" class="recipe-Detail-overlay" onclick="handleBackdropClick(event)">
+    <!-- Backdrop oscuro (ahora fuera del panel para cubrir todo) -->
+    <div class="recipe-detail-backdrop"
+        style="position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1;"></div>
+
+    <!-- Panel Modal -->
+    <div class="recipe-detail-panel">
+        <nav class="sticky-nav">
+            <div class="container-fluid d-flex align-items-center justify-content-between p-3">
+                <button class="btn-round-icon" onclick="closeRecipeDetail()">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+                <h2 class="h6 mb-0 fw-bold flex-grow-1 text-center">Detalle de Comida</h2>
+                <div style="width: 40px;" class="d-flex justify-content-end">
+                    <button class="btn-round-icon">
+                        <span class="material-symbols-outlined">share</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Scrollable Content wrapper -->
+        <div class="recipe-detail-content">
+            <div class="container-fluid px-3">
+                <div id="detailHeroImg" class="hero-image-detail mt-1 mb-4" style="background-image: url('');"></div>
+
+                <div class="mb-4">
+                    <h1 id="detailTitle" class="fw-bolder mb-3" style="font-size: 1.875rem; line-height: 1.2;">Título
+                    </h1>
+                    <div class="d-flex flex-wrap gap-2">
+                        <div class="stat-badge">
+                            <span class="material-symbols-outlined"
+                                style="color: var(--primary-color); font-size: 20px;">local_fire_department</span>
+                            <span id="detailKcal">0 kcal</span>
+                        </div>
+                        <div class="stat-badge">
+                            <span class="material-symbols-outlined"
+                                style="color: var(--primary-color); font-size: 20px;">schedule</span>
+                            <span id="detailTime">0 min</span>
+                        </div>
+                        <div class="stat-badge">
+                            <span class="material-symbols-outlined"
+                                style="color: var(--primary-color); font-size: 20px;">star</span>
+                            <span id="detailRating">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h2 class="h5 fw-bold mb-3">Macros Detallados</h2>
+                    <div class="custom-card">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-2 fw-bold small">
+                                <span>Proteínas</span>
+                                <span id="detailProtPercent">0g</span>
+                            </div>
+                            <div class="progress">
+                                <div id="detailProtBar" class="progress-bar bg-primary-custom" role="progressbar"
+                                    style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-2 fw-bold small">
+                                <span>Carbohidratos</span>
+                                <span id="detailCarbsPercent">0g</span>
+                            </div>
+                            <div class="progress">
+                                <div id="detailCarbsBar" class="progress-bar" role="progressbar"
+                                    style="width: 0%; background-color: #fb923c;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="d-flex justify-content-between mb-2 fw-bold small">
+                                <span>Grasas</span>
+                                <span id="detailFatsPercent">0g</span>
+                            </div>
+                            <div class="progress">
+                                <div id="detailFatsBar" class="progress-bar" role="progressbar"
+                                    style="width: 0%; background-color: #60a5fa;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h5 fw-bold mb-0">Ingredientes</h2>
+                        <span class="fw-bold small" style="color: var(--primary-color);">1 ración</span>
+                    </div>
+                    <div id="detailIngredients" class="d-flex flex-column gap-2"></div>
+                </div>
+
+                <div class="mb-5" style="padding-bottom: 50px;">
+                    <h2 class="h5 fw-bold mb-4">Preparación</h2>
+                    <div id="detailSteps" class="d-flex flex-column gap-4 text-secondary small"
+                        style="line-height:1.8;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-action-container"
+            style="position: absolute; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; padding: 1rem; z-index: 5;">
+            <button id="showDateSelectorBtn" class="btn-add" onclick="showDateSelector()">Añadir a mi plan</button>
+        </div>
+
+        <!-- Date Selector Mini Calendar Overlay -->
+        <div id="dateSelector" class="date-selector-overlay">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold m-0">¿Cuándo quieres comerlo?</h5>
+                <button class="btn btn-sm btn-light rounded-circle" onclick="hideDateSelector()">
+                    <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
-        </div>
-    </nav>
 
-    <div class="container-fluid px-3">
-        <div id="detailHeroImg" class="hero-image-detail mt-1 mb-4" style="background-image: url('');"></div>
-
-        <div class="mb-4">
-            <h1 id="detailTitle" class="fw-bolder mb-3" style="font-size: 1.875rem; line-height: 1.2;">Título</h1>
-            <div class="d-flex flex-wrap gap-2">
-                <div class="stat-badge">
-                    <span class="material-symbols-outlined" style="color: var(--primary-color); font-size: 20px;">local_fire_department</span>
-                    <span id="detailKcal">0 kcal</span>
-                </div>
-                <div class="stat-badge">
-                    <span class="material-symbols-outlined" style="color: var(--primary-color); font-size: 20px;">schedule</span>
-                    <span id="detailTime">0 min</span>
-                </div>
-                <div class="stat-badge">
-                    <span class="material-symbols-outlined" style="color: var(--primary-color); font-size: 20px;">star</span>
-                    <span id="detailRating">0</span>
-                </div>
+            <div class="d-flex gap-2 overflow-auto pb-2 scrollbar-hide" id="miniCalendarDays">
+                <!-- Days will be injected by JS -->
             </div>
+
+            <button id="finalAddBtn" class="btn-primary-custom w-100 justify-content-center py-3 mt-3 shadow-sm"
+                style="font-size: 1rem; border-radius: 16px;">
+                Confirmar y Añadir
+            </button>
         </div>
-
-        <div class="mb-4">
-            <h2 class="h5 fw-bold mb-3">Macros Detallados</h2>
-            <div class="custom-card">
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between mb-2 fw-bold small">
-                        <span>Proteínas</span>
-                        <span id="detailProtPercent">0g</span>
-                    </div>
-                    <div class="progress">
-                        <div id="detailProtBar" class="progress-bar bg-primary-custom" role="progressbar" style="width: 0%"></div>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between mb-2 fw-bold small">
-                        <span>Carbohidratos</span>
-                        <span id="detailCarbsPercent">0g</span>
-                    </div>
-                    <div class="progress">
-                        <div id="detailCarbsBar" class="progress-bar" role="progressbar" style="width: 0%; background-color: #fb923c;"></div>
-                    </div>
-                </div>
-                <div>
-                    <div class="d-flex justify-content-between mb-2 fw-bold small">
-                        <span>Grasas</span>
-                        <span id="detailFatsPercent">0g</span>
-                    </div>
-                    <div class="progress">
-                        <div id="detailFatsBar" class="progress-bar" role="progressbar" style="width: 0%; background-color: #60a5fa;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="h5 fw-bold mb-0">Ingredientes</h2>
-                <span class="fw-bold small" style="color: var(--primary-color);">1 ración</span>
-            </div>
-            <div id="detailIngredients" class="d-flex flex-column gap-2"></div>
-        </div>
-
-        <div class="mb-5">
-            <h2 class="h5 fw-bold mb-4">Preparación</h2>
-            <div id="detailSteps" class="d-flex flex-column gap-4 text-secondary small" style="line-height:1.8;"></div>
-        </div>
-    </div>
-
-    <div class="bottom-action-container">
-        <button class="btn-add btn-add-diary" onclick="/* click handled by JS setup */">Añadir a mi diario</button>
-    </div>
-
-    <div class="ios-bottom-nav">
-        <a href="#" class="nav-item-custom active">
-            <span class="material-symbols-outlined">home</span>
-            <span>Inicio</span>
-        </a>
-        <a href="#" class="nav-item-custom">
-            <span class="material-symbols-outlined">calendar_today</span>
-            <span>Planes</span>
-        </a>
-        <a href="#" class="nav-item-custom">
-            <span class="material-symbols-outlined">trending_up</span>
-            <span>Progreso</span>
-        </a>
-        <a href="#" class="nav-item-custom">
-            <span class="material-symbols-outlined">menu_book</span>
-            <span>Biblioteca</span>
-        </a>
     </div>
 </div>
 
@@ -811,8 +1044,12 @@
     document.querySelector('input[name="q"]')?.addEventListener('input', () => applyFilters());
 
     // Detail
+    let currentDetailRecipeId = null;
+    let currentSelectedDate = null;
+
     function openRecipeDetail(card) {
         const d = card.dataset;
+        currentDetailRecipeId = d.id;
         document.getElementById('detailTitle').innerText = d.title;
         document.getElementById('detailKcal').innerText = d.kcal + ' kcal';
         document.getElementById('detailTime').innerText = d.time;
@@ -877,7 +1114,7 @@
                 stepLines.forEach((line, idx) => {
                     const wrapper = document.createElement('div');
                     wrapper.className = 'd-flex gap-3';
-                    wrapper.innerHTML = `<div class="step-number">${idx+1}</div><p class="small mb-0">${line}</p>`;
+                    wrapper.innerHTML = `<div class="step-number">${idx + 1}</div><p class="small mb-0">${line}</p>`;
                     stepsContainer.appendChild(wrapper);
                 });
             } else {
@@ -885,18 +1122,198 @@
             }
         }
 
-        // Show overlay
-        document.getElementById('recetario-view').classList.add('d-none');
+        // Show overlay popup
         document.getElementById('recipe-detail-view').classList.add('show');
-        window.scrollTo(0, 0);
+        document.body.style.overflow = 'hidden';
 
-        // Hook up add button
-        document.querySelector('.btn-add-diary').onclick = () => confirmAddRecipe(d.id, d.title);
+        hideDateSelector();
     }
 
     function closeRecipeDetail() {
         document.getElementById('recipe-detail-view').classList.remove('show');
-        document.getElementById('recetario-view').classList.remove('d-none');
+        document.body.style.overflow = '';
+        hideDateSelector();
+    }
+
+    // Date Selector Logic
+    let selectedDates = [];
+    let caloriasData = {};
+    let recipeCalories = 0;
+
+    async function showDateSelector() {
+        selectedDates = [];
+        const container = document.getElementById('miniCalendarDays');
+        container.innerHTML = '<div class="text-center p-3"><span class="spinner-border spinner-border-sm"></span> Cargando...</div>';
+
+        document.getElementById('dateSelector').classList.add('show');
+
+        // Get recipe calories
+        const kcalText = document.getElementById('detailKcal').innerText;
+        recipeCalories = parseInt(kcalText) || 0;
+
+        // Fetch calorie data for the next 7 days
+        try {
+            const response = await fetch('/api/obtener_calorias_dias/', {
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                caloriasData = {};
+                data.dias.forEach(dia => {
+                    caloriasData[dia.fecha] = {
+                        calorias: dia.calorias,
+                        meta: dia.meta
+                    };
+                });
+
+                renderCalendar();
+            }
+        } catch (error) {
+            console.error('Error fetching calorie data:', error);
+            renderCalendar(); // Render anyway with default data
+        }
+    }
+
+    function renderCalendar() {
+        const container = document.getElementById('miniCalendarDays');
+        container.innerHTML = '';
+
+        const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const today = new Date();
+
+        for (let i = 0; i < 7; i++) {
+            const date = new Date();
+            date.setDate(today.getDate() + i);
+            const dateStr = date.toISOString().split('T')[0];
+            const isToday = i === 0;
+
+            const dayData = caloriasData[dateStr] || { calorias: 0, meta: 2000 };
+            const currentCal = dayData.calorias;
+            const metaCal = dayData.meta;
+            const currentProgress = Math.min((currentCal / metaCal) * 100, 100);
+
+            const chip = document.createElement('div');
+            chip.className = 'date-chip';
+            chip.dataset.date = dateStr;
+            chip.onclick = function () {
+                toggleDateSelection(this);
+            };
+
+            chip.innerHTML = `
+                <small>${isToday ? 'Hoy' : days[date.getDay()]}</small>
+                <span class="day-number">${date.getDate()}</span>
+                <div class="cal-info">
+                    ${currentCal}/${metaCal} kcal
+                </div>
+                <div class="cal-progress-mini">
+                    <div class="cal-progress-fill" style="width: ${currentProgress}%"></div>
+                </div>
+            `;
+            container.appendChild(chip);
+        }
+
+        updateConfirmButton();
+    }
+
+    function toggleDateSelection(chipElement) {
+        const dateStr = chipElement.dataset.date;
+        const index = selectedDates.indexOf(dateStr);
+
+        if (index > -1) {
+            selectedDates.splice(index, 1);
+            chipElement.classList.remove('selected');
+            // Remove preview badge if exists
+            const badge = chipElement.querySelector('.preview-badge');
+            if (badge) badge.remove();
+
+            // Reset progress bar to current
+            const dayData = caloriasData[dateStr] || { calorias: 0, meta: 2000 };
+            const currentProgress = Math.min((dayData.calorias / dayData.meta) * 100, 100);
+            const progressBar = chipElement.querySelector('.cal-progress-fill');
+            progressBar.style.width = currentProgress + '%';
+
+            // Update cal info
+            chipElement.querySelector('.cal-info').textContent = `${dayData.calorias}/${dayData.meta} kcal`;
+        } else {
+            selectedDates.push(dateStr);
+            chipElement.classList.add('selected');
+
+            // Show preview
+            const dayData = caloriasData[dateStr] || { calorias: 0, meta: 2000 };
+            const previewCal = dayData.calorias + recipeCalories;
+            const previewProgress = Math.min((previewCal / dayData.meta) * 100, 100);
+
+            // Update progress bar
+            const progressBar = chipElement.querySelector('.cal-progress-fill');
+            progressBar.style.width = previewProgress + '%';
+
+            // Update cal info with preview
+            chipElement.querySelector('.cal-info').textContent = `${previewCal}/${dayData.meta} kcal`;
+
+            // Add preview badge
+            const badge = document.createElement('div');
+            badge.className = 'preview-badge';
+            badge.textContent = `+${recipeCalories}`;
+            chipElement.appendChild(badge);
+        }
+
+        updateConfirmButton();
+    }
+
+    function updateConfirmButton() {
+        const btn = document.getElementById('finalAddBtn');
+        if (selectedDates.length === 0) {
+            btn.textContent = 'Selecciona al menos un día';
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+        } else {
+            const count = selectedDates.length;
+            btn.textContent = `Añadir a ${count} día${count > 1 ? 's' : ''}`;
+            btn.disabled = false;
+            btn.style.opacity = '1';
+
+            btn.onclick = function () {
+                const title = document.getElementById('detailTitle').innerText;
+                confirmAddRecipeMultiple(currentDetailRecipeId, title, selectedDates);
+            };
+        }
+    }
+
+    function hideDateSelector() {
+        document.getElementById('dateSelector').classList.remove('show');
+        selectedDates = [];
+    }
+
+    function confirmAddRecipeMultiple(id, title, dates) {
+        if (dates.length === 0) return;
+
+        const datesText = dates.length === 1 ? dates[0] : `${dates.length} días`;
+        if (confirm(`¿Añadir "${title}" a ${datesText}?`)) {
+            // Add to each selected date
+            const promises = dates.map(fecha => {
+                return fetch('/api/agregar_al_calendario/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ receta_ids: [id], fecha: fecha })
+                });
+            });
+
+            Promise.all(promises).then(() => {
+                location.reload();
+            });
+        }
+    }
+
+    // Close popup when clicking on backdrop
+    function handleBackdropClick(event) {
+        if (event.target.classList.contains('recipe-Detail-overlay') ||
+            event.target.classList.contains('recipe-detail-backdrop')) {
+            closeRecipeDetail();
+        }
     }
 
     // Favorite
@@ -927,8 +1344,8 @@
             item.style.display = (item.dataset.title || '').includes(q) ? '' : 'none';
         });
     }
-    function confirmAddRecipe(id, title) {
-        const targetDate = selectedDate || new Date().toISOString().split('T')[0];
+    function confirmAddRecipe(id, title, forceDate) {
+        const targetDate = forceDate || selectedDate || new Date().toISOString().split('T')[0];
         if (confirm(`¿Añadir "${title}" al ${targetDate}?`)) {
             fetch('/api/agregar_al_calendario/', {
                 method: 'POST',

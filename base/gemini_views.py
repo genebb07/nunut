@@ -1,6 +1,6 @@
 import os
 import json
-import google.generativeai as genai
+from google import genai
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.conf import settings

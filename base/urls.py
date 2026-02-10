@@ -49,5 +49,6 @@ urlpatterns = [
     path('api/archivar_sugerencia/<int:sugerencia_id>/', views.archivar_sugerencia, name='archivar_sugerencia'),
     path('api/agregar_al_calendario/', views.agregar_al_calendario, name='agregar_al_calendario'),
     path('api/quitar_del_calendario/<int:comida_id>/', views.quitar_del_calendario, name='quitar_del_calendario'),
+    path('api/obtener_calorias_dias/', views.obtener_calorias_dias, name='obtener_calorias_dias'),
 ]
 
