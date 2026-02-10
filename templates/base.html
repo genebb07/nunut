@@ -920,10 +920,12 @@
                 <span class="guest-indicator small d-none d-lg-inline me-2 fw-bold">Invitado</span>
                 {% endif %}
 
-                <!-- Theme Toggle Icon -->
+                <!-- Theme Toggle Icon (Admin only) -->
+                {% if user.is_staff %}
                 <div class="theme-toggle-top" onclick="toggleTheme()" title="Cambiar Tema">
                     <span class="material-symbols-outlined" id="theme-icon-top">dark_mode</span>
                 </div>
+                {% endif %}
 
                 {% if user.is_authenticated and user.username != 'invitado' %}
                 <!-- Single Unified Profile Icon (Logout for Staff, Profile for Users) -->

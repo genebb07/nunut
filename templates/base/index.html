@@ -377,6 +377,11 @@
         border-radius: 12px;
         object-fit: cover;
     }
+
+    .favorite-btn.active .material-symbols-outlined {
+        font-variation-settings: 'FILL' 1;
+        color: var(--primary-elite) !important;
+    }
 </style>
 {% endblock %}
 
@@ -674,11 +679,13 @@
             <div class="blur-preview">{% endif %}
                 <div class="row g-3">
                     <div class="col-md-4 col-sm-6">
-                        <div class="macro-mini-card border-bottom border-primary border-4">
+                        <div class="macro-mini-card border-bottom border-4" style="border-color: #3abff8 !important;">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div class="icon-box bg-primary bg-opacity-10 text-primary p-2 rounded-circle"><span
-                                        class="material-symbols-outlined fs-5">fitness_center</span></div><span
-                                    class="badge bg-light text-muted fw-bold border header-badge">Proteína</span>
+                                <div class="icon-box p-2 rounded-circle"
+                                    style="background-color: #3abff8 !important;">
+                                    <span class="material-symbols-outlined fs-5">fitness_center</span>
+                                </div>
+                                <span class="badge bg-light text-muted fw-bold border header-badge">Proteína</span>
                             </div>
                             <div>
                                 <h4 class="h4 fw-900 mb-1"><span id="consumo-proteina">0</span>g</h4>
@@ -755,30 +762,49 @@
             {% for receta in recetas_sugeridas %}
             <div class="col-6 col-md-3">
                 <div class="card-custom h-100 position-relative overflow-hidden shadow-sm"
-                    style="transition: transform 0.3s ease;">
+                    style="transition: transform 0.3s ease; cursor: pointer;" onclick="openRecipeQuickLook({
+                        id: '{{ receta.id }}',
+                        titulo: '{{ receta.titulo|escapejs }}',
+                        calorias: '{{ receta.calorias }}',
+                        img: '{% if receta.imagen_url %}{% if receta.imagen_url|slice:':4' == 'http' %}{{ receta.imagen_url }}{% else %}/{{ receta.imagen_url }}{% endif %}{% else %}https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=300{% endif %}',
+                        prot: '{{ receta.proteinas }}',
+                        carb: '{{ receta.carbos }}',
+                        fat: '{{ receta.grasas }}',
+                        desc: '{{ receta.descripcion|escapejs }}',
+                        dieta: '{{ receta.get_tipo_dieta_display|upper }}'
+                    })">
                     <div class="meal-img position-relative"
-                        style="background-image: url('{% if receta.imagen_url %}{{ receta.imagen_url }}{% else %}https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=300{% endif %}'); height: 120px; background-size: cover; background-position: center;">
+                        style="background-image: url('{% if receta.imagen_url %}{% if receta.imagen_url|slice:':4' == 'http' %}{{ receta.imagen_url }}{% else %}/{{ receta.imagen_url }}{% endif %}{% else %}https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=300{% endif %}'); height: 120px; background-size: cover; background-position: center;">
                         <button
                             class="favorite-btn position-absolute {% if receta.id in favoritas_ids %}active{% endif %}"
                             style="top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 50%; border: none; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; z-index: 5;"
-                            onclick="toggleFavorite('{{ receta.id }}', this)">
+                            onclick="event.stopPropagation(); toggleFavorite('{{ receta.id }}', this)">
                             <span
-                                class="material-symbols-outlined fs-6 {% if receta.id in favoritas_ids %}text-primary{% else %}text-muted{% endif %}">favorite</span>
+                                class="material-symbols-outlined fs-6 {% if receta.id in favoritas_ids %}active{% endif %}">favorite</span>
                         </button>
                         <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-50">
-                            <span class="text-white fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">{{
-                                receta.get_tipo_dieta_display|upper }}</span>
+                            <span class="text-white fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">{{ receta.get_tipo_dieta_display|upper }}</span>
                         </div>
                     </div>
                     <div class="p-3">
                         <p class="fw-bold mb-1 text-truncate" style="font-size: 0.9rem;">{{ receta.titulo }}</p>
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-muted small fw-bold">{{ receta.calorias }} kcal</span>
-                            <a href="{% url 'base:planes' %}?receta={{ receta.id }}"
-                                class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center"
-                                style="width: 25px; height: 25px; background-color: var(--primary); border: none;"><span
-                                    class="material-symbols-outlined"
-                                    style="font-size: 14px; color: white;">arrow_forward</span></a>
+                            <div class="d-flex gap-1" onclick="event.stopPropagation()">
+                                <button onclick="quickAddRecipe('{{ receta.id }}', '{{ receta.titulo|escapejs }}')"
+                                    class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center"
+                                    title="Añadir a mi día"
+                                    style="width: 25px; height: 25px; background-color: var(--primary); border: none;">
+                                    <span class="material-symbols-outlined"
+                                        style="font-size: 14px; color: white;">add</span>
+                                </button>
+                                <a href="{% url 'base:planes' %}?receta={{ receta.id }}"
+                                    class="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center border"
+                                    style="width: 25px; height: 25px;">
+                                    <span class="material-symbols-outlined"
+                                        style="font-size: 14px;">arrow_forward</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -805,8 +831,7 @@
             </div>
             <div class="position-relative mb-3" style="z-index: 2;">
                 <p class="small text-white opacity-90 mb-0 ps-2 italic lh-base"
-                    style="font-size: 0.85rem; font-weight: 500; border-left: 2px solid var(--primary);">{{
-                    recomendacion_ia }}</p>
+                    style="font-size: 0.85rem; font-weight: 500; border-left: 2px solid var(--primary);">{{ recomendacion_ia }}</p>
             </div>
             <div class="d-flex gap-2 mb-0" style="z-index: 2; position: relative;"><span
                     class="badge rounded-pill bg-primary bg-opacity-20 text-white x-small fw-bold border border-white border-opacity-10"
@@ -843,9 +868,7 @@
                             class="text-muted h6">/
                             <span id="meta-liters-display">{{ registro_agua.meta_litros|default:"2.0" }}</span>
                             Lts</small></h4>
-                    <p class="text-xs-bold text-muted mb-0">Vasos: <span id="current-vasos-display">{{
-                            registro_agua.cantidad_vasos|default:"0" }}</span> / <span id="meta-vasos-display">{{
-                            registro_agua.meta_vasos|default:"8" }}</span></p>
+                    <p class="text-xs-bold text-muted mb-0">Vasos: <span id="current-vasos-display">{{ registro_agua.cantidad_vasos|default:"0" }}</span> / <span id="meta-vasos-display">{{ registro_agua.meta_vasos|default:"8" }}</span></p>
                 </div>
                 {% if es_invitado %}
             </div>{% endif %}
@@ -896,22 +919,16 @@
                 <div class="mb-4 text-center">
                     <label class="small fw-bold mb-3 text-muted text-uppercase d-block"
                         style="letter-spacing: 1px;">Nivel de Energía</label>
-                    <div class="d-flex justify-content-between gap-1 p-1 rounded-4 bg-light border"> {% for i in
-                        "12345"|make_list %}<input type="radio" class="btn-check" name="energy-level"
-                            id="energy-{{ i }}" value="{{ i }}" {% if sueno_hoy.calidad|slugify==i %}checked{% elif not
-                            sueno_hoy and i=="3" %}checked{% endif %} /><label
+                    <div class="d-flex justify-content-between gap-1 p-1 rounded-4 bg-light border"> {% for i in "12345"|make_list %}<input type="radio" class="btn-check" name="energy-level"
+                            id="energy-{{ i }}" value="{{ i }}" {% if sueno_hoy.calidad|slugify == i %}checked{% elif not sueno_hoy and i == "3" %}checked{% endif %} /><label
                             class="btn btn-sm btn-outline-light border-0 flex-grow-1 py-2 rounded-3 text-dark fw-bold energy-btn"
-                            for="energy-{{ i }}" onclick="selectEnergy(this)"><span class="d-block fs-3 mb-1">{% if i ==
-                                "1" %}😴{% elif i == "2" %}😪{% elif i == "3" %}😐{% elif i == "4" %}😊{% elif i == "5"
-                                %}🚀{% endif %}</span>
-                            <span class="d-block x-small lh-1 opacity-75">{% if i == "1" %}Baja{% elif i == "2" %}Leve{%
-                                elif i == "3" %}Normal{% elif i == "4" %}Bien{% elif i == "5" %}Excelente{% endif
-                                %}</span></label>{% endfor %}
+                            for="energy-{{ i }}" onclick="selectEnergy(this)"><span class="d-block fs-3 mb-1">{% if i == "1" %}😴{% elif i == "2" %}😪{% elif i == "3" %}😐{% elif i == "4" %}😊{% elif i == "5" %}🚀{% endif %}</span>
+                            <span class="d-block x-small lh-1 opacity-75">{% if i == "1" %}Baja{% elif i == "2" %}Leve{% elif i == "3" %}Normal{% elif i == "4" %}Bien{% elif i == "5" %}Excelente{% endif %}</span></label>
+                        {% endfor %}
                     </div>
                 </div>
                 <div class="text-center">
-                    <p class="small text-muted mb-3 fst-italic" id="sleep-status">{% if sueno_hoy %}¡Registro de hoy
-                        guardado!{% else %}Registra tu sueño de anoche{% endif %}</p>
+                    <p class="small text-muted mb-3 fst-italic" id="sleep-status">{% if sueno_hoy %}¡Registro de hoy guardado!{% else %}Registra tu sueño de anoche{% endif %}</p>
                     <button
                         class="btn btn-success w-100 py-3 rounded-4 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2"
                         style="background: var(--primary-elite); border: none;" onclick="saveSleep()"><span
@@ -971,7 +988,7 @@
     const pageData = document.getElementById('page-data').dataset;
     window.appState = {
         isGuest: pageData.isGuest === 'true',
-        isAdmin: {{ request.user.is_staff | yesno: "true,false" }},
+        isAdmin: {{ request.user.is_staff|yesno:"true,false" }},
     csrfToken: pageData.csrfToken,
         hasReport: pageData.hasReport === 'true',
             goals: { cals: parseInt(pageData.goalCals), prot: parseInt(pageData.goalProt), carb: parseInt(pageData.goalCarb), fat: parseInt(pageData.goalFat) }
@@ -1212,6 +1229,112 @@
                 }
             });
         }
+    };
+</script>
+
+<!-- RECIPE DETAIL MODAL -->
+<div class="modal fade" id="recipeQuickLookModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div id="m-img" class="position-relative"
+                style="height: 200px; background-size: cover; background-position: center;">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+                    data-bs-dismiss="modal"></button>
+                <div class="position-absolute bottom-0 start-0 w-100 p-3 bg-gradient-to-t"
+                    style="background: linear-gradient(0deg, rgba(0,0,0,0.8), transparent);">
+                    <span id="m-dieta" class="badge bg-primary text-white mb-2">DIETA</span>
+                    <h4 id="m-titulo" class="text-white fw-bold mb-0">Título Receta</h4>
+                </div>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-2 mb-4 text-center">
+                    <div class="col-3">
+                        <div class="p-2 border rounded-4">
+                            <p class="x-small text-muted mb-0">ENERGÍA</p>
+                            <p id="m-kcal" class="small fw-bold mb-0">0</p>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="p-2 border rounded-4 border-info">
+                            <p class="x-small text-muted mb-0">PROT</p>
+                            <p id="m-prot" class="small fw-bold mb-0">0g</p>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="p-2 border rounded-4 border-warning">
+                            <p class="x-small text-muted mb-0">CARB</p>
+                            <p id="m-carb" class="small fw-bold mb-0">0g</p>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="p-2 border rounded-4 border-danger">
+                            <p class="x-small text-muted mb-0">GRASA</p>
+                            <p id="m-fat" class="small fw-bold mb-0">0g</p>
+                        </div>
+                    </div>
+                </div>
+
+                <p id="m-desc" class="small text-muted mb-4 line-clamp-3">Descripción breve...</p>
+
+                <div class="d-grid gap-2">
+                    <button id="btn-m-add" class="btn btn-primary rounded-pill py-3 fw-bold">
+                        Añadir a mi Registro de Hoy
+                    </button>
+                    <a id="btn-m-more" href="#" class="btn btn-outline-light text-muted border-0 small">Ver preparación
+                        completa</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.openRecipeQuickLook = function (data) {
+        document.getElementById('m-titulo').innerText = data.titulo;
+        document.getElementById('m-kcal').innerText = data.calorias + ' kcal';
+        document.getElementById('m-dieta').innerText = data.dieta;
+        document.getElementById('m-img').style.backgroundImage = `url('${data.img}')`;
+        document.getElementById('m-prot').innerText = data.prot + 'g';
+        document.getElementById('m-carb').innerText = data.carb + 'g';
+        document.getElementById('m-fat').innerText = data.fat + 'g';
+        document.getElementById('m-desc').innerText = data.desc;
+        document.getElementById('btn-m-add').onclick = () => {
+            quickAddRecipe(data.id, data.titulo);
+            bootstrap.Modal.getInstance(document.getElementById('recipeQuickLookModal')).hide();
+        };
+        document.getElementById('btn-m-more').href = `/planes/?receta=${data.id}`;
+
+        new bootstrap.Modal(document.getElementById('recipeQuickLookModal')).show();
+    };
+
+    window.quickAddRecipe = function (id, title) {
+        if (window.appState.isGuest) { showToast('Regístrate para usar el diario', 'warning'); return; }
+
+        // Determinar categoría por hora (Desayuno, Almuerzo, Cena, Snack)
+        const hour = new Date().getHours();
+        let cat = 'Snack';
+        if (hour >= 6 && hour < 11) cat = 'Desayuno';
+        else if (hour >= 11 && hour < 16) cat = 'Almuerzo';
+        else if (hour >= 19 && hour < 23) cat = 'Cena';
+
+        fetch('/api/agregar_al_calendario/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': window.appState.csrfToken, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                receta_id: id,
+                fecha: new Date().toISOString().split('T')[0],
+                categoria: cat
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showToast(`¡${title} añadido a ${cat}!`, 'success');
+                    setTimeout(() => location.reload(), 1500); // Recargar para actualizar macros
+                } else {
+                    showToast('Error al añadir', 'error');
+                }
+            });
     };
 </script>
 

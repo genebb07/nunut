@@ -139,7 +139,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Configuración de Allauth
+# Configuración de Login
+LOGIN_URL = 'base:iniciar_sesion'
 LOGIN_REDIRECT_URL = 'base:index'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'base:bienvenida'
 ACCOUNT_EMAIL_REQUIRED = True

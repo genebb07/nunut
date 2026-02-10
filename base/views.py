@@ -865,6 +865,7 @@ def diario(request):
     
     return render(request, 'base/diario.html', context)
 
+@login_required
 def progreso(request):
     if request.user.is_staff:
         # VISTA DE ADMIN PARA PROGRESO: Estadísticas Globales de la App

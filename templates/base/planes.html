@@ -112,8 +112,9 @@
 
     .nav-tabs-premium button.active {
         background: var(--primary-color);
-        color: white;
-        box-shadow: 0 10px 20px var(--primary-glow);
+        color: white !important;
+        box-shadow: 0 10px 25px var(--primary-glow);
+        transform: translateY(-2px);
     }
 
     .btn-ai-sparkle {
@@ -150,8 +151,14 @@
     }
 
     .recipe-card:hover {
-        transform: translateY(-12px);
-        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
+        transform: translateY(-15px) scale(1.02);
+        box-shadow: 0 40px 80px rgba(0, 0, 0, 0.15);
+        border-color: var(--primary-color);
+    }
+
+    .dark-mode .recipe-card:hover {
+        box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
+        border-color: var(--primary-color);
     }
 
     .recipe-img-wrapper {
@@ -197,11 +204,26 @@
     }
 
     .fav-btn-bubble.active {
-        color: #ff4757;
+        background: var(--primary-color) !important;
+        color: white !important;
+        box-shadow: 0 0 20px var(--primary-glow) !important;
+        transform: scale(1.1) rotate(5deg);
     }
 
     .fav-btn-bubble.active .material-symbols-outlined {
         font-variation-settings: 'FILL' 1;
+        color: white !important;
+    }
+
+    .dark-mode .fav-btn-bubble {
+        background: rgba(40, 45, 30, 0.8);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: var(--text-muted);
+    }
+
+    .dark-mode .fav-btn-bubble:hover {
+        background: white;
+        color: #ff4757;
     }
 
     .macro-dot {
@@ -657,11 +679,11 @@
             <select class="filter-btn-premium ps-5 border-0" id="sort-filter-select"
                 onchange="window.location.href='?sort='+this.value">
                 <option value="">Más Recientes</option>
-                <option value="dificultad" {% if request.GET.sort == 'dificultad' %}selected{% endif %}>Dificultad
+                <option value="dificultad" {% if request.GET.sort=='dificultad' %}selected{% endif %}>Dificultad
                 </option>
-                <option value="ingredientes" {% if request.GET.sort == 'ingredientes' %}selected{% endif %}>Ingredientes
+                <option value="ingredientes" {% if request.GET.sort=='ingredientes' %}selected{% endif %}>Ingredientes
                 </option>
-                <option value="tiempo" {% if request.GET.sort == 'tiempo' %}selected{% endif %}>Tiempo</option>
+                <option value="tiempo" {% if request.GET.sort=='tiempo' %}selected{% endif %}>Tiempo</option>
             </select>
         </div>
     </div>
