@@ -1,0 +1,245 @@
+{% load static %}
+
+<style>
+    /* Estructura Maestra Nunut */
+    .card-onboarding {
+        border: none !important;
+        border-radius: 35px !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+        max-width: 420px;
+        width: 100%;
+        height: 550px;
+        background-color: var(--bg-content) !important;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .onboarding-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.5rem 2rem;
+        scrollbar-width: none;
+    }
+
+    .onboarding-body::-webkit-scrollbar {
+        display: none;
+    }
+
+    .avatar-circle {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid white;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .input-nunut {
+        background-color: rgba(0, 0, 0, 0.04) !important;
+        border: 2px solid transparent !important;
+        border-radius: 18px !important;
+        padding: 15px 45px 15px 20px !important;
+        /* Espacio para el icono a la derecha */
+        font-weight: 600 !important;
+        width: 100%;
+        transition: all 0.3s;
+    }
+
+    .dark-mode .input-nunut {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        color: white !important;
+    }
+
+    .input-nunut:focus {
+        border-color: #85c81a !important;
+        background-color: transparent !important;
+        outline: none;
+    }
+
+    /* Botón de ubicación interactivo */
+    .location-btn {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #85c81a;
+        cursor: pointer;
+        padding: 5px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .location-btn:hover {
+        color: #69a114;
+        transform: translateY(-50%) scale(1.2);
+    }
+
+    .location-btn.loading {
+        animation: rotate 1s infinite linear;
+        opacity: 0.5;
+    }
+
+    @keyframes rotate {
+        from {
+            transform: translateY(-50%) rotate(0deg);
+        }
+
+        to {
+            transform: translateY(-50%) rotate(360deg);
+        }
+    }
+
+    .onboarding-footer {
+        padding: 1.5rem 2rem;
+        background-color: var(--bg-content);
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        margin: 0 -2rem -1.5rem -2rem;
+        /* Compensate padding of body */
+    }
+
+    .btn-nunut {
+        background-color: #85c81a !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 20px !important;
+        padding: 16px !important;
+        font-weight: 800 !important;
+        text-transform: uppercase;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none !important;
+    }
+</style>
+
+<div class="card card-onboarding">
+    <div class="px-4 pt-4 pb-2">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="small fw-bold text-muted text-uppercase">Paso 1 de 4</span>
+            <span class="small fw-bold text-success">25%</span>
+        </div>
+        <div class="progress" style="height: 6px; border-radius: 10px; background: rgba(0,0,0,0.05);">
+            <div class="progress-bar" style="width: 25%; background: #85c81a;"></div>
+        </div>
+    </div>
+
+    <form id="step-form" hx-post="{% url 'base:guardar_paso' 1 %}" hx-target="#onboarding-container" hx-swap="innerHTML"
+        hx-encoding="multipart/form-data" class="onboarding-body">
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="alert alert-danger py-2 small" style="border-radius: 15px;">
+            <i class="fas fa-exclamation-circle me-1"></i> <strong>Error:</strong>
+            <ul class="mb-0 ps-3">
+                {% for field, errors in form.errors.items %}
+                <li>{{ field }}: {{ errors|striptags }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="text-center mb-4">
+            <h2 class="fw-black" style="font-size: 1.75rem;">¡Casi listo!</h2>
+            <p class="text-muted small">Completa tu perfil para continuar</p>
+        </div>
+
+        <div class="text-center mb-4 position-relative">
+            <div id="preview-container" class="d-inline-block position-relative">
+                {% if user.perfil.foto_perfil %}
+                <img src="data:image/png;base64,{{ user.perfil.get_foto_base64 }}" class="avatar-circle"
+                    id="profile-img">
+                {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=85c81a&color=fff"
+                    class="avatar-circle" id="profile-img">
+                {% endif %}
+
+                <label for="foto_upload"
+                    class="btn btn-primary btn-sm position-absolute bottom-0 end-0 rounded-circle d-flex align-items-center justify-content-center shadow"
+                    style="width: 32px; height: 32px; background-color: #85c81a; border: 2px solid white;">
+                    <span class="material-symbols-outlined" style="font-size: 1rem;">photo_camera</span>
+                </label>
+            </div>
+            <input id="foto_upload" type="file" name="foto_perfil_upload" class="d-none" onchange="updatePreview(this)">
+        </div>
+
+        <div class="mb-4">
+            <label class="small fw-bold text-uppercase mb-2 d-block text-muted">¿Dónde te encuentras?</label>
+            <div class="position-relative">
+                <input type="text" id="input-localidad" name="localidad" class="input-nunut" placeholder="Ciudad, País"
+                    value="{{ user.perfil.localidad|default:'' }}">
+
+                <button type="button" onclick="detectarUbicacion()" class="location-btn" id="btn-geo"
+                    title="Detectar mi ubicación">
+                    <span class="material-symbols-outlined" id="geo-icon">my_location</span>
+                </button>
+            </div>
+            <p id="geo-status" class="text-muted mt-2 mb-0" style="font-size: 10px; display: none;">Detectando...</p>
+        </div>
+
+        <p class="text-center text-muted mt-3 mb-4" style="font-size: 0.7rem;">
+            Tu información está segura con nosotros.
+        </p>
+
+        <div class="onboarding-footer text-center">
+            <button type="submit" class="btn-nunut shadow-lg mb-3">
+                <span>Continuar</span>
+                <span class="material-symbols-outlined ms-2">arrow_forward</span>
+            </button>
+            <button type="button" hx-get="{% url 'base:guardar_paso' 2 %}" hx-target="#onboarding-container"
+                class="btn btn-link w-100 text-decoration-none text-muted fw-bold small">
+                Omitir este paso
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function updatePreview(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => document.getElementById('profile-img').src = e.target.result;
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    async function detectarUbicacion() {
+        const input = document.getElementById('input-localidad');
+        const icon = document.getElementById('geo-icon');
+        const btn = document.getElementById('btn-geo');
+        const status = document.getElementById('geo-status');
+
+        // Efecto visual de carga
+        btn.classList.add('loading');
+        icon.innerText = 'sync';
+        status.style.display = 'block';
+        status.innerText = "Buscando tu ubicación...";
+
+        try {
+            // Usamos ip-api.com que es gratuito y no necesita API Key para pruebas
+            const response = await fetch('http://ip-api.com/json/');
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                input.value = `${data.city}, ${data.country}`;
+                status.innerText = "¡Ubicación detectada!";
+                status.classList.replace('text-muted', 'text-success');
+            } else {
+                throw new Error('No se pudo determinar');
+            }
+        } catch (error) {
+            status.innerText = "Error al detectar. Por favor escribe manualmente.";
+            status.classList.replace('text-muted', 'text-danger');
+        } finally {
+            btn.classList.remove('loading');
+            icon.innerText = 'my_location';
+            setTimeout(() => { status.style.display = 'none'; }, 3000);
+        }
+    }
+</script>

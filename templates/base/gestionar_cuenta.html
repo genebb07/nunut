@@ -1,0 +1,109 @@
+{% extends base_template %}
+{% load static %}
+
+{% block title %}Gestionar Cuenta | nunut{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center gap-3 mb-5">
+                <a href="{% url 'base:perfil' %}"
+                    class="btn btn-outline-secondary rounded-circle p-2 d-flex align-items-center justify-content-center"
+                    style="width: 40px; height: 40px;">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                </a>
+                <h2 class="fw-black mb-0">Gestionar Cuenta</h2>
+            </div>
+
+            {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-4 shadow-sm border-0 mb-2"
+                    role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- SECCIÓN: NOMBRE DE USUARIO -->
+            <div class="premium-card p-4 mb-4 shadow-sm bg-white dark-mode-bg-dark rounded-4 border">
+                <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-brand">person</span> Cambio de Usuario
+                </h5>
+                <form action="{% url 'base:cambiar_username' %}" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="small fw-bold text-muted mb-2 ps-1">NUEVO NOMBRE DE USUARIO</label>
+                        {{ username_form.new_username }}
+                        <div class="form-text x-small mt-2">
+                            <i class="fas fa-info-circle me-1"></i> Solo puedes cambiar tu nombre cada 30 días.
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-premium px-4 rounded-pill fw-bold">Actualizar Usuario</button>
+                </form>
+            </div>
+
+            <!-- SECCIÓN: CORREO ELECTRÓNICO -->
+            <div class="premium-card p-4 mb-4 shadow-sm bg-white dark-mode-bg-dark rounded-4 border">
+                <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-brand">mail</span> Correo Electrónico
+                </h5>
+                <form action="{% url 'base:cambiar_email' %}" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="small fw-bold text-muted mb-2 ps-1">NUEVO CORREO ELECTRÓNICO</label>
+                        {{ email_form.new_email }}
+                    </div>
+                    <button type="submit" class="btn btn-premium px-4 rounded-pill fw-bold">Actualizar Email</button>
+                </form>
+            </div>
+
+            <!-- SECCIÓN: CONTRASEÑA -->
+            <div class="premium-card p-4 mb-4 shadow-sm bg-white dark-mode-bg-dark rounded-4 border">
+                <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-brand">lock</span> Seguridad (Contraseña)
+                </h5>
+                <form action="{% url 'base:cambiar_contrasena' %}" method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        {% for field in password_form %}
+                        <div class="col-12">
+                            <label class="small fw-bold text-muted mb-1 ps-1">{{ field.label|upper }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                            <div class="form-text x-small">{{ field.help_text|safe }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="btn btn-premium px-4 rounded-pill fw-bold mt-4">Cambiar
+                        Contraseña</button>
+                </form>
+            </div>
+
+            <div class="text-center mt-5">
+                <p class="small text-muted mb-0">nunut v2.0 &bull; Seguridad Protegida por CSRF</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-premium {
+        background: linear-gradient(135deg, var(--brand-primary), var(--brand-dark));
+        color: white;
+        border: none;
+        box-shadow: 0 4px 15px rgba(133, 200, 26, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .btn-premium:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(133, 200, 26, 0.4);
+        color: white;
+    }
+</style>
+{% endblock %}

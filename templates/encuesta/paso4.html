@@ -1,0 +1,203 @@
+{% load static %}
+
+<style>
+    /* Mantenemos la estructura maestra idéntica a los otros pasos */
+    .card-onboarding {
+        border: none !important;
+        border-radius: 35px !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+        max-width: 420px;
+        width: 100%;
+        height: 550px;
+        background-color: var(--bg-content) !important;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .onboarding-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem 1.5rem;
+        scrollbar-width: none;
+    }
+
+    .onboarding-body::-webkit-scrollbar {
+        display: none;
+    }
+
+    .onboarding-footer {
+        padding: 1.5rem 2rem;
+        background-color: var(--bg-content);
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    /* Grilla de Platos */
+    .food-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .food-card {
+        position: relative;
+        border-radius: 20px;
+        aspect-ratio: 4/5;
+        overflow: hidden;
+        cursor: pointer;
+        border: 3px solid transparent;
+        transition: all 0.2s ease;
+    }
+
+    .food-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .food-card.active {
+        border-color: #85c81a;
+    }
+
+    .check-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: #85c81a;
+        color: white;
+        border-radius: 50%;
+        width: 22px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .food-card.active .check-badge {
+        opacity: 1;
+    }
+
+    .btn-nunut {
+        background-color: #85c81a !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 20px !important;
+        padding: 16px !important;
+        font-weight: 800 !important;
+        text-transform: uppercase;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+<div class="card card-onboarding">
+    <div class="px-4 pt-4 pb-2">
+        <div class="d-flex align-items-center mb-3">
+            <button hx-get="{% url 'base:guardar_paso' 3 %}" hx-target="#onboarding-container"
+                class="btn-back border-0 bg-transparent">
+                <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <h6 class="flex-grow-1 text-center mb-0 fw-bold text-muted pe-4">PASO 4 DE 4</h6>
+        </div>
+        <div class="progress" style="height: 6px; border-radius: 10px; background: rgba(0,0,0,0.05);">
+            <div class="progress-bar" style="width: 100%; background: #85c81a;"></div>
+        </div>
+    </div>
+
+    <form id="step-form" hx-post="{% url 'base:guardar_paso' 4 %}" hx-target="#onboarding-container"
+        class="onboarding-body">
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="alert alert-danger py-2 small" style="border-radius: 15px;">
+            <i class="fas fa-exclamation-circle me-1"></i> Por favor revisa los datos.
+        </div>
+        {% endif %}
+
+        <div class="text-center mb-4">
+            <h3 class="fw-black mb-1">Tus gustos</h3>
+            <p class="text-muted small">Elige al menos 3 platos para tu plan.</p>
+        </div>
+
+        <div class="food-grid">
+            <div class="food-card" onclick="toggleFood(this)">
+                <input type="checkbox" name="gustos" value="avocado" class="d-none">
+                <img src="https://images.unsplash.com/photo-1525351484163-7529414344d8?w=200" alt="Avocado">
+                <div class="check-badge"><span class="material-symbols-outlined" style="font-size: 14px;">check</span>
+                </div>
+            </div>
+            <div class="food-card" onclick="toggleFood(this)">
+                <input type="checkbox" name="gustos" value="salmon" class="d-none">
+                <img src="https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=200" alt="Salmon">
+                <div class="check-badge"><span class="material-symbols-outlined" style="font-size: 14px;">check</span>
+                </div>
+            </div>
+            <div class="food-card" onclick="toggleFood(this)">
+                <input type="checkbox" name="gustos" value="poke" class="d-none">
+                <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200" alt="Poke">
+                <div class="check-badge"><span class="material-symbols-outlined" style="font-size: 14px;">check</span>
+                </div>
+            </div>
+            <div class="food-card" onclick="toggleFood(this)">
+                <input type="checkbox" name="gustos" value="ensalada" class="d-none">
+                <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200" alt="Salad">
+                <div class="check-badge"><span class="material-symbols-outlined" style="font-size: 14px;">check</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center my-4">
+            <h3 class="fw-black mb-1">Tus disgustos</h3>
+            <p class="text-muted small">Selecciona qué prefieres evitar.</p>
+        </div>
+
+        <div class="food-grid">
+            <div class="food-card" onclick="toggleFood(this)">
+                <input type="checkbox" name="disgustos" value="higado" class="d-none">
+                <img src="https://media.istockphoto.com/id/526283108/es/foto/h%C3%ADgado-de-ternera-cruda-en-papel-de-plata.jpg?s=612x612&w=0&k=20&c=6hU3y2xCS45fK5K5K5K5K5K5K5K5K5K5K5K5K5K5"
+                    alt="Hígado">
+                <div class="check-badge"><span class="material-symbols-outlined" style="font-size: 14px;">check</span>
+                </div>
+            </div>
+            <div class="food-card" onclick="toggleFood(this)">
+                <input type="checkbox" name="disgustos" value="cebolla" class="d-none">
+                <img src="https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=200" alt="Cebolla">
+                <div class="check-badge"><span class="material-symbols-outlined" style="font-size: 14px;">check</span>
+                </div>
+            </div>
+            <div class="food-card" onclick="toggleFood(this)">
+                <input type="checkbox" name="disgustos" value="brocoli" class="d-none">
+                <img src="https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?w=200" alt="Brócoli">
+                <div class="check-badge"><span class="material-symbols-outlined" style="font-size: 14px;">check</span>
+                </div>
+            </div>
+            <div class="food-card" onclick="toggleFood(this)">
+                <input type="checkbox" name="disgustos" value="picante" class="d-none">
+                <img src="https://images.unsplash.com/photo-1599525626242-421712d9c49d?w=200" alt="Picante">
+                <div class="check-badge"><span class="material-symbols-outlined" style="font-size: 14px;">check</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center">
+            <button type="submit" class="btn-nunut shadow-lg mb-3">
+                <span>Finalizar</span>
+                <span class="material-symbols-outlined ms-2">check_circle</span>
+            </button>
+            <p class="text-muted" style="font-size: 10px;">¡Todo listo para crear tu dieta personalizada!</p>
+        </div>
+    </form>
+</div>
+
+<script>
+    function toggleFood(element) {
+        element.classList.toggle('active');
+        const checkbox = element.querySelector('input[type="checkbox"]');
+        checkbox.checked = !checkbox.checked;
+    }
+</script>

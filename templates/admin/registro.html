@@ -1,0 +1,129 @@
+{% extends base_template %}
+{% load static %}
+
+{% block title %}Registro Administrativo | nunut AI{% endblock %}
+
+{% block content %}
+<div class="row min-vh-100 align-items-center justify-content-center py-5"
+    style="background: radial-gradient(circle at top right, rgba(133, 200, 26, 0.05), transparent 400px);">
+    <div class="col-md-6 col-lg-5 col-xl-4">
+
+        <!-- Header -->
+        <div class="text-center mb-5 animate__animated animate__fadeIn">
+            <div class="d-inline-flex p-3 rounded-4 bg-white shadow-sm border mb-3 mb-4">
+                <span class="material-symbols-outlined fs-1 text-dark">admin_panel_settings</span>
+            </div>
+            <h1 class="fw-black h3 mb-2">Acceso Corporativo</h1>
+            <p class="text-muted small fw-bold">Gestión de privilegios y seguridad interna</p>
+        </div>
+
+        <!-- Registration Card -->
+        <div class="card border-0 p-4 p-md-5 shadow-lg bg-white rounded-5 position-relative overflow-hidden animate__animated animate__slideInUp"
+            style="border: 1px solid rgba(0,0,0,0.05) !important;">
+
+            {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-4 border-0 shadow-sm x-small fw-bold"
+                    role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" action="." class="needs-validation" novalidate>
+                {% csrf_token %}
+
+                <div class="mb-4">
+                    <label
+                        class="form-label x-small text-uppercase fw-black text-muted tracking-wider mb-2 ps-1">Validación
+                        de Seguridad</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0 rounded-start-4"><span
+                                class="material-symbols-outlined fs-5">key</span></span>
+                        <input type="password" name="security_code"
+                            class="form-control form-control-lg bg-light border-0 fw-bold rounded-end-4" required
+                            placeholder="CÓDIGO NUNUT">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label
+                        class="form-label x-small text-uppercase fw-black text-muted tracking-wider mb-2 ps-1">Identificador
+                        (Username)</label>
+                    {{ form.username }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label x-small text-uppercase fw-black text-muted tracking-wider mb-2 ps-1">Correo
+                        Institucional</label>
+                    {{ form.email }}
+                </div>
+
+                <div class="mb-4">
+                    <label
+                        class="form-label x-small text-uppercase fw-black text-muted tracking-wider mb-2 ps-1">Contraseña
+                        Maestra</label>
+                    {{ form.password }}
+                </div>
+
+                <button type="submit" name="admin_register_submit"
+                    class="btn btn-dark w-100 py-3 rounded-pill fw-black shadow-lg mt-3 d-flex align-items-center justify-content-center gap-2 transform-hover">
+                    CONTINUAR REGISTRO <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+            </form>
+
+            <div class="text-center mt-4">
+                <a href="{% url 'base:admin_dashboard' %}"
+                    class="x-small text-muted fw-bold text-decoration-none d-flex align-items-center justify-content-center gap-2">
+                    <span class="material-symbols-outlined fs-6">keyboard_backspace</span> VOLVER AL PANEL
+                </a>
+            </div>
+        </div>
+
+        <div class="text-center mt-5 opacity-50">
+            <p class="x-small fw-bold text-uppercase tracking-widest mb-0">nunut ecosystem &bull; secure environment</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .rounded-5 {
+        border-radius: 2rem !important;
+    }
+
+    .fw-black {
+        font-weight: 900 !important;
+    }
+
+    .x-small {
+        font-size: 0.75rem !important;
+    }
+
+    .tracking-wider {
+        letter-spacing: 1px;
+    }
+
+    .transform-hover {
+        transition: all 0.3s ease;
+    }
+
+    .transform-hover:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    /* Adapt standard form fields */
+    .form-control {
+        border-radius: 12px;
+        font-size: 0.95rem;
+    }
+
+    .form-control:focus {
+        box-shadow: none;
+        background-color: #f8fafc;
+    }
+</style>
+{% endblock %}

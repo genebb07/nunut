@@ -1,0 +1,1224 @@
+﻿{% extends base_template %}
+{% load static %}
+
+{% block title %}Inicio | nunut{% endblock %}
+
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --primary-elite: #85c81a;
+        --primary-dark-elite: #6fb015;
+        --bg-light-elite: #f7f8f6;
+        --bg-dark-elite: #1b2111;
+        --admin-accent: #00cec9;
+    }
+
+    .dashboard-elite {
+        font-family: 'Inter', sans-serif;
+    }
+
+    .admin-font {
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .rounded-4 {
+        border-radius: 1.5rem !important;
+    }
+
+    .card-custom {
+        background: var(--bg-content);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 1.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        overflow: hidden;
+        box-sizing: border-box;
+        transition: all 0.3s ease;
+    }
+
+    body.dark-mode .card-custom {
+        background: #1a1d14;
+        border-color: rgba(133, 200, 26, 0.2);
+        box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.3);
+    }
+
+    /* Admin specific */
+    .glass-card {
+        background: var(--bg-content);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 24px;
+        padding: 1.75rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        border-bottom: 4px solid transparent;
+    }
+
+    body.dark-mode .glass-card {
+        background: rgba(26, 29, 20, 0.8);
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .glass-card:hover {
+        transform: translateY(-5px);
+        border-bottom-color: var(--primary-elite);
+    }
+
+    .stat-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.4rem 1rem;
+        border-radius: 50px;
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .fw-black {
+        font-weight: 900 !important;
+    }
+
+    .hero-card {
+        background: linear-gradient(135deg, var(--primary-elite), var(--primary-dark-elite));
+        color: white;
+        border: none;
+        box-shadow: 0 1rem 3rem rgba(133, 200, 26, 0.2);
+    }
+
+    .glass-inner {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+    }
+
+    .icon-box {
+        padding: 0.75rem;
+        border-radius: 1rem;
+        display: inline-flex;
+    }
+
+    .meal-img {
+        height: 160px;
+        background-size: cover;
+        background-position: center;
+        transition: transform 0.5s ease;
+    }
+
+    .card-custom:hover .meal-img {
+        transform: scale(1.05);
+    }
+
+    .svg-chart {
+        transform: rotate(-90deg);
+    }
+
+    .text-xs-bold {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .blur-preview {
+        filter: blur(8px);
+        user-select: none;
+        pointer-events: none;
+        opacity: 0.6;
+    }
+
+    .lock-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(4px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        border-radius: 1.5rem;
+    }
+
+    .energy-btn {
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+        opacity: 0.7;
+        filter: grayscale(100%);
+    }
+
+    .energy-btn:hover {
+        transform: translateY(-3px);
+        opacity: 1;
+        filter: grayscale(0%);
+    }
+
+    .btn-check:checked+.energy-btn {
+        background-color: var(--primary-elite) !important;
+        color: white !important;
+        transform: scale(1.1);
+        box-shadow: 0 8px 20px rgba(133, 200, 26, 0.3);
+        opacity: 1;
+        filter: grayscale(0%);
+        border: none !important;
+    }
+
+    input[type="time"] {
+        border-radius: 1rem;
+        font-family: 'Inter', sans-serif;
+        color: var(--bg-dark-elite);
+        cursor: pointer;
+    }
+
+    input[type="time"]::-webkit-calendar-picker-indicator {
+        background: transparent;
+        bottom: 0;
+        color: transparent;
+        cursor: pointer;
+        height: auto;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: auto;
+    }
+
+    .macro-mini-card {
+        background: white;
+        border-radius: 1.2rem;
+        padding: 1.2rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border: 1px solid rgba(0, 0, 0, 0.03);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+        transition: transform 0.2s;
+    }
+
+    .macro-mini-card:hover {
+        transform: translateY(-3px);
+    }
+
+    body.dark-mode .macro-mini-card {
+        background: #252a1c;
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    body.dark-mode .lock-overlay {
+        background: rgba(0, 0, 0, 0.4);
+    }
+
+    .position-relative {
+        position: relative !important;
+    }
+
+    .water-glass {
+        color: #cbd5e1;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        font-size: 28px;
+    }
+
+    .water-glass.active {
+        color: #3abff8;
+        transform: scale(1.15) translateY(-2px);
+        filter: drop-shadow(0 4px 8px rgba(58, 191, 248, 0.3));
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .btn-water {
+        border: 2px solid #3abff8;
+        color: #3abff8;
+        background: transparent;
+        width: 36px;
+        height: 36px;
+        transition: all 0.2s;
+    }
+
+    .btn-water:hover {
+        background: #3abff8;
+        color: white;
+        transform: scale(1.1);
+    }
+
+    body.dark-mode .water-glass {
+        color: #334155;
+    }
+
+    body.dark-mode .water-glass.active {
+        color: #3abff8;
+    }
+
+    .macro-card {
+        position: relative;
+        padding: 1.5rem;
+    }
+
+    .macro-circle-container {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1rem;
+    }
+
+    .macro-circle-bg {
+        fill: none;
+        stroke: #e5e7eb;
+        stroke-width: 8;
+    }
+
+    body.dark-mode .macro-circle-bg {
+        stroke: #374151;
+    }
+
+    .macro-circle-progress {
+        fill: none;
+        stroke-width: 8;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 1s ease;
+    }
+
+    .macro-value {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 1.25rem;
+        font-weight: 900;
+    }
+
+    .sleep-input-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(133, 200, 26, 0.1);
+        padding: 0.75rem;
+        border-radius: 12px;
+    }
+
+    body.dark-mode .sleep-input-group {
+        background: rgba(133, 200, 26, 0.15);
+    }
+
+    .sleep-input {
+        width: 60px;
+        text-align: center;
+        border: 2px solid var(--primary-elite);
+        border-radius: 8px;
+        padding: 0.5rem;
+        font-weight: 700;
+        background: var(--bg-content);
+    }
+
+    body.dark-mode .sleep-input {
+        background: #0f1108;
+        color: var(--text-primary);
+        border-color: var(--primary-dark-elite);
+    }
+
+    body.dark-mode .progress {
+        background-color: #374151;
+    }
+
+    body.dark-mode .border-dashed {
+        border-color: rgba(133, 200, 26, 0.3) !important;
+    }
+
+    /* User list for Admin */
+    .user-list-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem;
+        border-radius: 16px;
+        transition: background 0.2s;
+    }
+
+    .user-list-item:hover {
+        background: rgba(133, 200, 26, 0.05);
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--primary-elite);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+    }
+
+    .badge-status {
+        font-size: 0.6rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 50px;
+        font-weight: 800;
+    }
+
+    /* Curation */
+    .curation-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem;
+        border-radius: 16px;
+        margin-bottom: 0.5rem;
+    }
+
+    .curation-img {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        object-fit: cover;
+    }
+</style>
+{% endblock %}
+
+{% block container_class %}container max-w-7xl dashboard-elite{% endblock %}
+
+{% block content %}
+
+{% if es_admin_view %}
+<div class="row align-items-center mb-5 mt-2 animate-fade">
+    <div class="col-md-7">
+        <h1 class="fw-black m-0 display-5" style="letter-spacing: -1px;">Panel <span class="text-info">Premium</span>
+            <span style="color: var(--primary-elite);">nunut</span>
+        </h1>
+        <p class="text-muted fw-bold mb-0">Gestión de comunidad y curación IA <span class="text-info ps-1">● Activo
+                ahora</span></p>
+    </div>
+    <div class="col-md-5 text-md-end mt-3 mt-md-0">
+        <div class="d-inline-flex flex-column align-items-end">
+            <div
+                class="d-flex align-items-center gap-2 bg-white dark-mode-bg-dark px-4 py-2 rounded-4 shadow-sm border mb-2">
+                <span class="material-symbols-outlined text-info">calendar_today</span>
+                <span class="fw-bold small">{% now "l, d F Y" %}</span>
+            </div>
+            <div class="d-flex align-items-center gap-2 text-info small fw-black text-uppercase letter-spacing-widest">
+                <span class="material-symbols-outlined fs-6 anim-pulse">sensors</span> Conexión Estable
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-5">
+    <div class="col-6 col-md-3">
+        <div class="glass-card text-center p-4 border-info">
+            <div class="stat-pill mb-3" style="background: rgba(133, 200, 26, 0.1); color: var(--primary-elite);">
+                <span class="material-symbols-outlined fs-6 me-1">group</span> Usuarios
+            </div>
+            <div class="h2 fw-black mb-1 d-flex align-items-center justify-content-center gap-2">{{ stats.total_users }}
+                <span class="material-symbols-outlined text-success fs-5">trending_up</span>
+            </div>
+            <div class="text-xs-bold text-muted">Total Registrados</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="glass-card text-center p-4 border-info">
+            <div class="stat-pill mb-3" style="background: rgba(0, 206, 201, 0.1); color: #00cec9;">
+                <span class="material-symbols-outlined fs-6 me-1">bolt</span> Activos
+            </div>
+            <div class="h2 fw-black mb-1">{{ stats.active_7d }}</div>
+            <div class="text-xs-bold text-muted">Últimos 7 días</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="glass-card text-center p-4 border-info">
+            <div class="stat-pill mb-3" style="background: rgba(108, 92, 231, 0.1); color: #6c5ce7;">
+                <span class="material-symbols-outlined fs-6 me-1">visibility</span> Alcance
+            </div>
+            <div class="h2 fw-black mb-1">{{ stats.active_30d }}</div>
+            <div class="text-xs-bold text-muted">Últimos 30 días</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="glass-card text-center p-4 border-info">
+            <div class="stat-pill mb-3" style="background: rgba(253, 121, 168, 0.1); color: #fd79a8;">
+                <span class="material-symbols-outlined fs-6 me-1">admin_panel_settings</span> Equipo
+            </div>
+            <div class="h2 fw-black mb-1">{{ stats.total_staff }}</div>
+            <div class="text-xs-bold text-muted">Admin & Staff</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-lg-8">
+        <div class="glass-card h-100 border-0 shadow-lg position-relative overflow-hidden">
+            <div class="position-absolute top-0 end-0 p-4">
+                <span class="text-info fw-black small text-uppercase">Crecimiento Comunidad</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="h5 fw-black m-0">Evolución Usuarios</h3>
+                    <p class="small text-muted mb-0">Nuevos registros por día</p>
+                </div>
+            </div>
+            <div style="height: 320px;"><canvas id="adminEvolutionChart"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="glass-card h-100 border-0 shadow-lg">
+            <h3 class="h5 fw-black mb-1">Alcance Geográfico</h3>
+            <p class="small text-muted mb-4">Concentración por país</p>
+            <div class="d-flex flex-column gap-3">
+                {% for pais in charts.dist_paises|slice:":5" %}
+                <div
+                    class="d-flex align-items-center gap-3 p-2 rounded-4 bg-light dark-mode-bg-dark border border-white border-opacity-10">
+                    <div class="rounded-circle bg-info bg-opacity-20 p-2 d-flex align-items-center justify-content-center fw-black text-info"
+                        style="width: 38px; height: 38px; font-size: 14px;">
+                        {{ forloop.counter }}</div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="small fw-black">{{ pais.localidad }}</span>
+                            <span class="small fw-black text-info">{{ pais.count }}</span>
+                        </div>
+                        <div class="progress rounded-pill bg-white dark-mode-bg-secondary" style="height: 6px;">
+                            <div class="progress-bar bg-info shadow-sm" style="width: {{ pais.count }}0%"></div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="mt-4 p-3 rounded-4 bg-info bg-opacity-10 border border-info border-opacity-20">
+                <p class="x-small text-info fw-black mb-0 d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined fs-6">info</span> Predominancia Venezuela Detectada
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-lg-3">
+        <div class="glass-card text-center h-100">
+            <h3 class="h6 fw-black mb-4 text-uppercase text-info">Distribución Género</h3>
+            <div style="height: 180px;"><canvas id="adminGenderChart"></canvas></div>
+            <div class="mt-3 small fw-bold text-muted">Base de Usuarios Real</div>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="glass-card h-100">
+            <h3 class="h6 fw-black mb-4 text-uppercase text-info">Rango de Edad</h3>
+            <div style="height: 180px;"><canvas id="adminAgeChart"></canvas></div>
+            <div class="mt-3 x-small text-center fw-bold text-muted">Promedio: 28 años</div>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="glass-card h-100">
+            <h3 class="h6 fw-black mb-4 text-uppercase text-info">Principales Objetivos</h3>
+            <div style="height: 180px;"><canvas id="adminObjectivesChart"></canvas></div>
+            <div class="mt-3 x-small text-center fw-bold text-muted">Tendencia Nutricional</div>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="card-custom h-100 p-4 border-0 position-relative overflow-hidden shadow-lg animate-pulse-slow"
+            style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); min-height: 300px;">
+            <div class="position-absolute top-0 end-0 p-3">
+                <span class="badge bg-info bg-opacity-20 text-info border-info border-opacity-40 fw-black x-small">NUNUT
+                    AI</span>
+            </div>
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <div class="bg-info bg-opacity-20 p-2 rounded-circle">
+                    <span class="material-symbols-outlined text-info fs-4">auto_awesome</span>
+                </div>
+                <h3 class="h6 fw-black m-0 text-white">Curación IA</h3>
+            </div>
+            <div class="d-flex flex-column gap-2 overflow-auto" style="max-height: 240px;">
+                {% for rec in recetas_pendientes %}
+                <div class="curation-item bg-white bg-opacity-5 border border-white border-opacity-10 p-2 rounded-4">
+                    <img src="{{ rec.imagen_url|default:'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=100' }}"
+                        class="curation-img" style="width: 40px; height: 40px;">
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="fw-bold text-truncate text-white" style="font-size: 0.75rem;">{{ rec.titulo }}</div>
+                        <div class="d-flex gap-2 mt-1">
+                            <button class="btn btn-info btn-sm rounded-pill py-0 px-2 x-small fw-black"
+                                onclick="curarAdmin('{{ rec.id }}', 'aprobar')">APROBAR</button>
+                            <button class="btn btn-outline-danger btn-sm rounded-pill py-0 px-2 x-small fw-black"
+                                onclick="curarAdmin('{{ rec.id }}', 'rechazar')">ELIMINAR</button>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-5">
+                    <span class="material-symbols-outlined text-info display-4 opacity-25 mb-2">check_circle</span>
+                    <p class="small text-info opacity-75 fw-bold">Sistema al día</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="h6 fw-bold m-0 text-uppercase">Actividad Reciente</h3>
+        <span class="x-small text-muted">Últimos registrados</span>
+    </div>
+    <div class="row g-3">
+        {% for u in recent_users %}
+        <div class="col-md-4 col-lg-2">
+            <div
+                class="glass-card p-3 border-0 bg-white dark-mode-bg-dark shadow-sm d-flex flex-column align-items-center text-center h-100">
+                <div class="rounded-circle bg-info bg-opacity-10 text-info d-flex align-items-center justify-content-center mb-2"
+                    style="width: 45px; height: 45px; font-weight: 800; font-size: 1.2rem;">
+                    {{ u.email.0|upper }}
+                </div>
+                <div class="w-100 overflow-hidden">
+                    <div class="fw-bold text-truncate x-small mb-1" title="{{ u.email }}" style="font-size: 0.7rem;">{{
+                        u.email }}</div>
+                    <div class="text-muted" style="font-size: 0.6rem;">{{ u.date_joined|date:"d M, H:i" }}</div>
+                </div>
+                <div class="mt-2 text-center">
+                    <span
+                        class="badge {% if u.is_active %}bg-success{% else %}bg-secondary{% endif %} rounded-pill p-1 px-2"
+                        style="font-size: 0.5rem;">
+                        {% if u.is_active %}ACTIVO{% else %}INACTIVO{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+</div>
+{% else %}
+<div class="d-flex align-items-center justify-content-between mb-5 mt-2">
+    <div class="d-flex align-items-center gap-3">
+        <div class="rounded-circle border border-2 border-success p-1 shadow-sm" style="width: 62px; height: 62px;">
+            {% if user.is_authenticated and user.perfil.foto_perfil %}
+            <img src="data:image/png;base64,{{ user.perfil.get_foto_base64 }}" class="rounded-circle w-100 h-100"
+                style="object-fit: cover;" />
+            {% else %}
+            <div class="w-100 h-100 rounded-circle bg-success-subtle d-flex align-items-center justify-content-center fw-bold"
+                style="color: var(--primary);">{{ user.username.0|upper }}</div>
+            {% endif %}
+        </div>
+        <div>
+            {% if es_invitado %}
+            <h2 class="text-xs-bold text-muted mb-0">Modo Invitado</h2>
+            <p class="h3 fw-900 mb-0" style="font-weight: 900;">Vista Previa</p>
+            {% else %}
+            <h2 class="text-xs-bold text-muted mb-0">¡Hola de nuevo, {{ user.first_name|default:user.username }}!</h2>
+            <p class="h3 fw-900 mb-0" style="font-weight: 900;">Dashboard Nutricional</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="d-none d-md-flex align-items-center gap-3 card-custom px-4 py-2 shadow-sm"
+        style="border: 1px solid rgba(0, 0, 0, 0.08); box-sizing: border-box;">
+        <span class="material-symbols-outlined fs-2" style="color: var(--primary);">local_fire_department</span>
+        <div>
+            <p class="text-xs-bold text-muted mb-0">Racha Actual</p>
+            <span class="fw-bold fs-5" id="streak-counter">{{ mensaje_racha|default:"¡Comienza hoy!" }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <main class="col-lg-8">
+        {% if informe %}
+        <section class="card-custom hero-card p-4 p-md-5 mb-4 position-relative">
+            {% if es_invitado %}<div class="lock-overlay"><span
+                    class="material-symbols-outlined fs-2 text-white mb-2">lock</span><span
+                    class="badge bg-white text-dark rounded-pill fw-bold border-0 px-3 py-2">ANÁLISIS DE CALORÍAS</span>
+            </div>
+            <div class="blur-preview">{% endif %}
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <p class="text-xs-bold text-white-50 mb-1">Calorías Restantes</p>
+                        <h3 class="display-3 fw-900 mb-4" style="font-weight: 900;">{{ informe.plan.calorias_dia }}
+                            <small class="fs-4 fw-normal opacity-75">kcal</small>
+                        </h3>
+                        <div class="mb-2 d-flex justify-content-between text-xs-bold opacity-75">
+                            <span>Consumido: <span id="calorias-consumidas">0</span> kcal</span>
+                            <span>Objetivo: {{ informe.plan.calorias_dia }} kcal</span>
+                        </div>
+                        <div class="progress"
+                            style="height: 12px; border-radius: 10px; background: rgba(255,255,255,0.2);">
+                            <div class="progress-bar bg-white shadow-sm" id="progress-calorias"
+                                style="width: 0%; border-radius: 10px;"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex justify-content-center mt-4 mt-md-0">
+                        <div class="position-relative" style="width: 170px; height: 170px;">
+                            <svg class="svg-chart w-100 h-100">
+                                <circle cx="85" cy="85" r="75" fill="none" stroke="rgba(255,255,255,0.2)"
+                                    stroke-width="12"></circle>
+                                <circle cx="85" cy="85" r="75" fill="none" stroke="white" stroke-width="12"
+                                    stroke-dasharray="471" stroke-dashoffset="471" stroke-linecap="round"></circle>
+                            </svg>
+                            <div class="position-absolute top-50 start-50 translate-middle glass-inner d-flex flex-column align-items-center justify-content-center"
+                                style="width: 130px; height: 130px;">
+                                <span class="h2 fw-900 mb-0" id="porcentaje-calorias">0%</span>
+                                <span class="text-xs-bold" style="font-size: 0.6rem;">Meta Diaria</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if es_invitado %}
+            </div>{% endif %}
+        </section>
+
+        <h3 class="h5 fw-900 mb-4">Distribución de Nutrientes</h3>
+        <div class="position-relative mb-5">
+            {% if es_invitado %}<div class="lock-overlay" style="z-index: 20;"><span
+                    class="material-symbols-outlined fs-1 text-primary mb-2">lock</span><span
+                    class="badge bg-dark text-white rounded-pill fw-bold border-0 px-3 py-2">MACRONUTRIENTES</span>
+            </div>
+            <div class="blur-preview">{% endif %}
+                <div class="row g-3">
+                    <div class="col-md-4 col-sm-6">
+                        <div class="macro-mini-card border-bottom border-primary border-4">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="icon-box bg-primary bg-opacity-10 text-primary p-2 rounded-circle"><span
+                                        class="material-symbols-outlined fs-5">fitness_center</span></div><span
+                                    class="badge bg-light text-muted fw-bold border header-badge">Proteína</span>
+                            </div>
+                            <div>
+                                <h4 class="h4 fw-900 mb-1"><span id="consumo-proteina">0</span>g</h4>
+                                <div class="d-flex justify-content-between x-small text-muted fw-bold mb-1">
+                                    <span>Progreso</span><span>{{ informe.plan.proteinas_g }}g Meta</span>
+                                </div>
+                                <div class="progress"
+                                    style="height: 6px; border-radius: 3px; background-color: rgba(0,0,0,0.05);">
+                                    <div class="progress-bar bg-primary" id="bar-proteina" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <div class="macro-mini-card border-bottom border-4 border-warning">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="icon-box bg-warning text-warning p-2 rounded-circle"><span
+                                        class="material-symbols-outlined fs-5">bakery_dining</span></div><span
+                                    class="badge bg-light text-muted fw-bold border header-badge">Carbos</span>
+                            </div>
+                            <div>
+                                <h4 class="h4 fw-900 mb-1"><span id="consumo-carbos">0</span>g</h4>
+                                <div class="d-flex justify-content-between x-small text-muted fw-bold mb-1">
+                                    <span>Progreso</span><span>{{ informe.plan.carbohidratos_g }}g Meta</span>
+                                </div>
+                                <div class="progress"
+                                    style="height: 6px; border-radius: 3px; background-color: rgba(0,0,0,0.05);">
+                                    <div class="progress-bar bg-warning" id="bar-carbos" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <div class="macro-mini-card border-bottom border-4 border-danger">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="icon-box bg-danger text-danger p-2 rounded-circle"><span
+                                        class="material-symbols-outlined fs-5">oil_barrel</span></div><span
+                                    class="badge bg-light text-muted fw-bold border header-badge">Grasas</span>
+                            </div>
+                            <div>
+                                <h4 class="h4 fw-900 mb-1"><span id="consumo-grasas">0</span>g</h4>
+                                <div class="d-flex justify-content-between x-small text-muted fw-bold mb-1">
+                                    <span>Progreso</span><span>{{ informe.plan.grasas_g }}g Meta</span>
+                                </div>
+                                <div class="progress"
+                                    style="height: 6px; border-radius: 3px; background-color: rgba(0,0,0,0.05);">
+                                    <div class="progress-bar bg-danger" id="bar-grasas" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if es_invitado %}
+            </div>{% endif %}
+        </div>
+        {% else %}
+        <div class="card-custom p-5 text-center mb-4">
+            <span class="material-symbols-outlined display-1 text-muted mb-3">clinical_notes</span>
+            <h3 class="fw-900">Perfil Incompleto</h3>
+            <p class="text-muted">Necesitamos conocer tu altura, peso y edad para calcular tu plan nutricional elite.
+            </p>
+            <a href="{% url 'base:perfil' %}" class="btn btn-success rounded-pill px-4 py-2 fw-bold"
+                style="background-color: var(--primary-elite); border-color: var(--primary-elite);">Completar Perfil</a>
+        </div>
+        {% endif %}
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="h5 fw-900 mb-0">Comidas Sugeridas</h3>
+            <a href="{% url 'base:planes' %}" hx-get="{% url 'base:planes' %}" hx-target="#main-content"
+                hx-select="#main-content" hx-swap="outerHTML" hx-push-url="true"
+                class="fw-bold text-decoration-none small" style="color: var(--primary);">Ver plan completo</a>
+        </div>
+        <div class="row g-3">
+            {% for receta in recetas_sugeridas %}
+            <div class="col-6 col-md-3">
+                <div class="card-custom h-100 position-relative overflow-hidden shadow-sm"
+                    style="transition: transform 0.3s ease;">
+                    <div class="meal-img position-relative"
+                        style="background-image: url('{% if receta.imagen_url %}{{ receta.imagen_url }}{% else %}https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=300{% endif %}'); height: 120px; background-size: cover; background-position: center;">
+                        <button
+                            class="favorite-btn position-absolute {% if receta.id in favoritas_ids %}active{% endif %}"
+                            style="top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 50%; border: none; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; z-index: 5;"
+                            onclick="toggleFavorite('{{ receta.id }}', this)">
+                            <span
+                                class="material-symbols-outlined fs-6 {% if receta.id in favoritas_ids %}text-primary{% else %}text-muted{% endif %}">favorite</span>
+                        </button>
+                        <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-50">
+                            <span class="text-white fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">{{
+                                receta.get_tipo_dieta_display|upper }}</span>
+                        </div>
+                    </div>
+                    <div class="p-3">
+                        <p class="fw-bold mb-1 text-truncate" style="font-size: 0.9rem;">{{ receta.titulo }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small fw-bold">{{ receta.calorias }} kcal</span>
+                            <a href="{% url 'base:planes' %}?receta={{ receta.id }}"
+                                class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center"
+                                style="width: 25px; height: 25px; background-color: var(--primary); border: none;"><span
+                                    class="material-symbols-outlined"
+                                    style="font-size: 14px; color: white;">arrow_forward</span></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <aside class="col-lg-4">
+        <div class="card-custom p-4 mb-4 border-0 shadow-lg position-relative overflow-hidden"
+            style="background: linear-gradient(135deg, #12140d 0%, #1e2615 100%);">
+            <div class="position-absolute"
+                style="top: -20px; right: -20px; width: 100px; height: 100px; background: var(--primary); filter: blur(60px); opacity: 0.3;">
+            </div>
+            <div class="d-flex align-items-center gap-3 mb-3 position-relative" style="z-index: 2;">
+                <div class="d-flex align-items-center justify-content-center"
+                    style="width: 48px; height: 48px; border-radius: 12px; background: rgba(133, 200, 26, 0.15);"><span
+                        class="material-symbols-outlined text-primary fs-3">psychology</span></div>
+                <div>
+                    <h4 class="fw-800 h6 mb-0 text-white" style="letter-spacing: 0.5px;">Coach IA nunut</h4>
+                    <span class="text-xs-bold text-primary" style="font-size: 0.6rem; opacity: 0.8;">Análisis
+                        Activo</span>
+                </div>
+            </div>
+            <div class="position-relative mb-3" style="z-index: 2;">
+                <p class="small text-white opacity-90 mb-0 ps-2 italic lh-base"
+                    style="font-size: 0.85rem; font-weight: 500; border-left: 2px solid var(--primary);">{{
+                    recomendacion_ia }}</p>
+            </div>
+            <div class="d-flex gap-2 mb-0" style="z-index: 2; position: relative;"><span
+                    class="badge rounded-pill bg-primary bg-opacity-20 text-white x-small fw-bold border border-white border-opacity-10"
+                    style="font-size: 0.6rem; padding: 4px 10px; letter-spacing: 0.5px;">#INTELIGENCIA-VITAL</span><span
+                    class="badge rounded-pill bg-primary bg-opacity-40 text-white x-small fw-bold border border-primary border-opacity-10"
+                    style="font-size: 0.6rem; padding: 4px 10px; letter-spacing: 0.5px;">#NUNUT-ELITE</span></div>
+        </div>
+
+        <div class="card-custom p-4 mb-4 border-start border-4 border-info position-relative overflow-hidden"
+            style="border-color: #3abff8 !important; background: linear-gradient(145deg, var(--bg-content), rgba(58, 191, 248, 0.05));">
+            {% if es_invitado %}<div class="lock-overlay"><span
+                    class="material-symbols-outlined fs-2 text-info">lock</span></div>
+            <div class="blur-preview">{% endif %}
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="bg-info bg-opacity-10 p-2 rounded-circle"><span
+                                class="material-symbols-outlined text-info fs-3">water_drop</span></div>
+                        <h4 class="fw-900 h5 mb-0">Hidratación</h4>
+                    </div>
+                    <span class="badge bg-info bg-opacity-20 text-white rounded-pill text-xs-bold px-3 py-2"
+                        id="water-percentage">{{ registro_agua.porcentaje|default:"0" }} % Meta</span>
+                </div>
+                <div class="d-flex align-items-center justify-content-center gap-4 mb-4">
+                    <button class="btn btn-water rounded-circle d-flex align-items-center justify-content-center p-0"
+                        onclick="updateWater(-1)"><span class="material-symbols-outlined fs-5">remove</span></button>
+                    <div class="d-flex flex-wrap justify-content-center gap-2" id="water-glasses-container"
+                        style="max-width: 180px;"></div>
+                    <button class="btn btn-water rounded-circle d-flex align-items-center justify-content-center p-0"
+                        onclick="updateWater(1)"><span class="material-symbols-outlined fs-5">add</span></button>
+                </div>
+                <div class="text-center">
+                    <h4 class="h2 fw-900 mb-0"><span
+                            id="water-liters">{{registro_agua.litros|default:"0.0"|floatformat:1 }}</span><small
+                            class="text-muted h6">/
+                            <span id="meta-liters-display">{{ registro_agua.meta_litros|default:"2.0" }}</span>
+                            Lts</small></h4>
+                    <p class="text-xs-bold text-muted mb-0">Vasos: <span id="current-vasos-display">{{
+                            registro_agua.cantidad_vasos|default:"0" }}</span> / <span id="meta-vasos-display">{{
+                            registro_agua.meta_vasos|default:"8" }}</span></p>
+                </div>
+                {% if es_invitado %}
+            </div>{% endif %}
+        </div>
+
+        <div class="card-custom p-4 mb-4 border-start border-4 position-relative shadow-sm"
+            style="border-color: var(--primary) !important; border-radius: 20px; background: #fff;">
+            {% if es_invitado %}<div class="lock-overlay" style="border-radius: 20px;"><span
+                    class="material-symbols-outlined fs-1 text-primary">lock</span></div>
+            <div class="blur-preview">{% endif %}
+                <div class="d-flex align-items-center gap-2 mb-4"><span class="material-symbols-outlined fs-2"
+                        style="color: var(--primary);">bedtime</span>
+                    <h4 class="fw-900 h5 mb-0">Sueño</h4>
+                </div>
+                <div class="sleep-input-group mb-4">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div
+                                class="p-3 bg-light rounded-4 border border-opacity-10 text-center position-relative overflow-hidden">
+                                <span
+                                    class="material-symbols-outlined position-absolute top-0 start-0 m-2 text-muted opacity-25">bedtime</span><label
+                                    class="x-small fw-bold text-muted text-uppercase d-block mb-2">Dormir</label><input
+                                    type="time" id="sleep-start"
+                                    class="form-control form-control-lg fw-900 text-center bg-transparent border-0 p-0 fs-3"
+                                    style="color: var(--bg-dark-elite);" value="23:00" onchange="calculateSleep()" />
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div
+                                class="p-3 bg-light rounded-4 border border-opacity-10 text-center position-relative overflow-hidden">
+                                <span
+                                    class="material-symbols-outlined position-absolute top-0 start-0 m-2 text-muted opacity-25">wb_sunny</span><label
+                                    class="x-small fw-bold text-muted text-uppercase d-block mb-2">Despertar</label><input
+                                    type="time" id="sleep-end"
+                                    class="form-control form-control-lg fw-900 text-center bg-transparent border-0 p-0 fs-3"
+                                    style="color: var(--bg-dark-elite);" value="07:00" onchange="calculateSleep()" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex align-items-center bg-dark px-4 py-2 rounded-pill shadow-sm"><span
+                            class="text-white opacity-75 fw-normal me-2">Total:</span><span
+                            class="text-white fw-900 fs-4" id="sleep-total-display">8.0</span><span
+                            class="text-white opacity-75 small ms-1">horas</span></div><input type="hidden"
+                        id="sleep-slider" value="8.0" />
+                </div>
+                <div class="mb-4 text-center">
+                    <label class="small fw-bold mb-3 text-muted text-uppercase d-block"
+                        style="letter-spacing: 1px;">Nivel de Energía</label>
+                    <div class="d-flex justify-content-between gap-1 p-1 rounded-4 bg-light border"> {% for i in
+                        "12345"|make_list %}<input type="radio" class="btn-check" name="energy-level"
+                            id="energy-{{ i }}" value="{{ i }}" {% if sueno_hoy.calidad|slugify==i %}checked{% elif not
+                            sueno_hoy and i=="3" %}checked{% endif %} /><label
+                            class="btn btn-sm btn-outline-light border-0 flex-grow-1 py-2 rounded-3 text-dark fw-bold energy-btn"
+                            for="energy-{{ i }}" onclick="selectEnergy(this)"><span class="d-block fs-3 mb-1">{% if i ==
+                                "1" %}😴{% elif i == "2" %}😪{% elif i == "3" %}😐{% elif i == "4" %}😊{% elif i == "5"
+                                %}🚀{% endif %}</span>
+                            <span class="d-block x-small lh-1 opacity-75">{% if i == "1" %}Baja{% elif i == "2" %}Leve{%
+                                elif i == "3" %}Normal{% elif i == "4" %}Bien{% elif i == "5" %}Excelente{% endif
+                                %}</span></label>{% endfor %}
+                    </div>
+                </div>
+                <div class="text-center">
+                    <p class="small text-muted mb-3 fst-italic" id="sleep-status">{% if sueno_hoy %}¡Registro de hoy
+                        guardado!{% else %}Registra tu sueño de anoche{% endif %}</p>
+                    <button
+                        class="btn btn-success w-100 py-3 rounded-4 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2"
+                        style="background: var(--primary-elite); border: none;" onclick="saveSleep()"><span
+                            class="material-symbols-outlined">save</span>Guardar Registro</button>
+                </div>
+                {% if es_invitado %}
+            </div>{% endif %}
+        </div>
+
+        <div class="card-custom p-4 border-dashed position-relative"
+            style="background: linear-gradient(145deg, var(--bg-light-elite), white); border-color: rgba(133, 200, 26, 0.2);">
+            {% if es_invitado %}<div class="lock-overlay"><span
+                    class="material-symbols-outlined fs-2 text-primary">lock</span><a href="{% url 'base:registro' %}"
+                    class="btn btn-sm btn-dark rounded-pill mt-2">Crear Cuenta</a></div>
+            <div class="blur-preview">{% endif %}
+                <h4 class="fw-900 h5 mb-4 text-brand">Análisis Semanal</h4>
+                <div class="d-flex justify-content-between mb-3 border-bottom pb-3"
+                    style="border-color: rgba(0,0,0,0.05) !important;">
+                    <div><span class="text-muted small fw-bold text-uppercase d-block mb-1">Consumo Diario</span>
+                        <h5 class="fw-900 mb-0">{{ analisis_semanal.calorias }} <small
+                                class="text-muted fs-6 fw-normal">kcal</small></h5>
+                    </div>
+                    <div class="text-center d-flex align-items-center"><span
+                            class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1">Avg 7 días</span>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between mb-4 border-bottom pb-3"
+                    style="border-color: rgba(0,0,0,0.05) !important;">
+                    <div><span class="text-muted small fw-bold text-uppercase d-block mb-1">Descanso</span>
+                        <h5 class="fw-900 mb-0">{{ analisis_semanal.sueno }} <small
+                                class="text-muted fs-6 fw-normal">horas</small></h5>
+                    </div>
+                    <div class="text-center d-flex align-items-center"><span
+                            class="badge bg-info bg-opacity-10 text-info rounded-pill px-2 py-1">Avg 7 días</span></div>
+                </div>
+                <button class="btn btn-outline-success w-100 py-3 text-xs-bold rounded-4"
+                    style="border-color: var(--primary-elite); color: var(--primary-dark-elite);"
+                    onclick="downloadReport()"><span class="material-symbols-outlined"
+                        style="vertical-align: middle; font-size: 20px;">download</span>Descargar Informe PDF</button>
+                {% if es_invitado %}
+            </div>{% endif %}
+        </div>
+    </aside>
+</div>
+{% endif %}
+
+<div id="page-data" style="display: none;" data-is-guest="{{ es_invitado|yesno:'true,false' }}"
+    data-csrf-token="{{ csrf_token }}" data-has-report="{% if informe %}true{% else %}false{% endif %}"
+    data-water-current="{{ registro_agua.cantidad_vasos|default:0 }}"
+    data-water-meta="{{ registro_agua.meta_vasos|default:8 }}"
+    data-goal-cals="{{ informe.plan.calorias_dia|default:2000 }}"
+    data-goal-prot="{{ informe.plan.proteinas_g|default:150 }}"
+    data-goal-carb="{{ informe.plan.carbohidratos_g|default:200 }}"
+    data-goal-fat="{{ informe.plan.grasas_g|default:60 }}"></div>
+
+<script>
+    const pageData = document.getElementById('page-data').dataset;
+    window.appState = {
+        isGuest: pageData.isGuest === 'true',
+        isAdmin: {{ request.user.is_staff | yesno: "true,false" }},
+    csrfToken: pageData.csrfToken,
+        hasReport: pageData.hasReport === 'true',
+            goals: { cals: parseInt(pageData.goalCals), prot: parseInt(pageData.goalProt), carb: parseInt(pageData.goalCarb), fat: parseInt(pageData.goalFat) }
+    };
+    window.currentWater = parseInt(pageData.waterCurrent);
+    window.metaWater = parseInt(pageData.waterMeta);
+
+    window.toggleFavorite = function (recetaId, btn) {
+        if (window.appState.isGuest) { showToast('Inicia sesión para favoritos', 'warning'); return; }
+        const icon = btn.querySelector('.material-symbols-outlined');
+        fetch(`/api/toggle_favorito/${recetaId}/`, { method: 'POST', headers: { 'X-CSRFToken': window.appState.csrfToken, 'Content-Type': 'application/json' } })
+            .then(res => res.json()).then(data => {
+                if (data.status === 'success') {
+                    if (data.is_favorite) { btn.classList.add('active'); icon.classList.remove('text-muted'); icon.classList.add('text-primary'); showToast('Añadido', 'success'); }
+                    else { btn.classList.remove('active'); icon.classList.remove('text-primary'); icon.classList.add('text-muted'); showToast('Eliminado', 'info'); }
+                }
+            }).catch(err => { console.error(err); showToast('Error', 'error'); });
+    };
+
+    window.renderGlasses = function () {
+        const container = document.getElementById('water-glasses-container');
+        if (!container) return;
+        container.innerHTML = '';
+        for (let i = 1; i <= window.metaWater; i++) {
+            const glass = document.createElement('span');
+            glass.className = `material-symbols-outlined water-glass ${i <= window.currentWater ? 'active' : ''}`;
+            glass.innerText = 'local_drink';
+            container.appendChild(glass);
+        }
+    };
+
+    window.updateWater = function (cambio) {
+        if (window.appState.isGuest) { showToast('Regístrate para hidratación', 'info'); return; }
+        const nuevoValor = Math.max(0, window.currentWater + cambio);
+        if (nuevoValor === window.currentWater && cambio !== 0) return;
+        fetch('/api/actualizar_agua/', { method: 'POST', headers: { 'X-CSRFToken': window.appState.csrfToken, 'Content-Type': 'application/json' }, body: JSON.stringify({ cambio: cambio }) })
+            .then(res => res.json()).then(data => {
+                if (data.status === 'success') {
+                    window.currentWater = data.cantidad_vasos; window.metaWater = data.meta_vasos;
+                    document.getElementById('water-liters').innerText = data.litros.toFixed(1);
+                    document.getElementById('meta-liters-display').innerText = (data.meta_vasos * 0.25).toFixed(1);
+                    document.getElementById('water-percentage').innerText = data.porcentaje + '% Meta';
+                    document.getElementById('current-vasos-display').innerText = data.cantidad_vasos;
+                    document.getElementById('meta-vasos-display').innerText = data.meta_vasos;
+                    window.renderGlasses();
+                    if (cambio > 0) showToast('¡Vaso registrado! 💧', 'success');
+                }
+            }).catch(err => { console.error(err); showToast('Error', 'error'); });
+    };
+
+    window.loadDailyConsumption = function () {
+        if (window.appState.isGuest || !window.appState.hasReport) return;
+        fetch('/api/comidas_hoy/', { headers: { 'X-CSRFToken': window.appState.csrfToken } })
+            .then(res => res.json()).then(data => {
+                if (data.status === 'success') {
+                    const consumo = data.consumo;
+                    const metas = { calorias: window.appState.goals.cals, proteinas: window.appState.goals.prot, carbos: window.appState.goals.carb, grasas: window.appState.goals.fat };
+                    const calPct = Math.min(Math.round((consumo.calorias / metas.calorias) * 100), 100);
+                    const calEl = document.getElementById('calorias-consumidas');
+                    if (calEl) { calEl.innerText = consumo.calorias; document.getElementById('porcentaje-calorias').innerText = calPct + '%'; document.getElementById('progress-calorias').style.width = calPct + '%'; }
+                    updateMacroCircle('proteina', consumo.proteinas, metas.proteinas);
+                    updateMacroCircle('carbos', consumo.carbos, metas.carbos);
+                    updateMacroCircle('grasas', consumo.grasas, metas.grasas);
+                }
+            }).catch(err => console.error('Error:', err));
+    };
+
+    function updateMacroCircle(macro, consumido, meta) {
+        const pct = Math.min(Math.round((consumido / meta) * 100), 100);
+        const circle = document.getElementById('bar-' + macro);
+        const consumoSpan = document.getElementById('consumo-' + macro);
+        if (circle && consumoSpan) { circle.style.width = pct + '%'; consumoSpan.innerText = consumido; }
+    }
+
+    window.calculateSleep = function () {
+        const startInput = document.getElementById('sleep-start'); const endInput = document.getElementById('sleep-end'); const slider = document.getElementById('sleep-slider');
+        if (!startInput || !endInput) return;
+        let start = startInput.value; let end = endInput.value;
+        let dateStart = new Date(`2000-01-01T${start}`); let dateEnd = new Date(`2000-01-01T${end}`);
+        if (dateEnd <= dateStart) dateEnd.setDate(dateEnd.getDate() + 1);
+        let diff = (dateEnd - dateStart) / (1000 * 60 * 60);
+        let total = Math.round(diff * 10) / 10;
+        const display = document.getElementById('sleep-total-display'); if (display) display.innerText = total; if (slider) slider.value = total;
+    };
+
+    window.saveSleep = function () {
+        if (window.appState.isGuest) { showToast('Regístrate', 'info'); return; }
+        const slider = document.getElementById('sleep-slider'); const hours = parseFloat(slider.value);
+        const qualityInput = document.querySelector('input[name="energy-level"]:checked'); const quality = qualityInput ? parseInt(qualityInput.value) : 3;
+        const btn = document.querySelector('button[onclick="saveSleep()"]'); const originalText = btn ? btn.innerHTML : '';
+        if (btn) { btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>...'; btn.disabled = true; }
+        fetch('/api/guardar_sueno/', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': window.appState.csrfToken }, body: JSON.stringify({ horas: hours, calidad: quality }) })
+            .then(res => res.json()).then(data => {
+                if (data.status === 'success') { showToast('¡Guardado! 🌙', 'success'); const bl = document.getElementById('sleep-status'); if (bl) { bl.innerText = '¡Guardado!'; bl.className = 'small text-success fw-bold mb-3'; } }
+            }).catch(err => showToast('Error', 'error')).finally(() => { if (btn) { btn.innerHTML = 'Listo'; setTimeout(() => { btn.innerHTML = originalText; btn.disabled = false; }, 2000); } });
+    };
+
+    window.downloadReport = function () {
+        if (window.appState.isGuest) { showToast('Regístrate', 'info'); return; }
+        showToast('Generando...', 'info');
+        fetch('/api/generar_informe_pdf/', { method: 'POST', headers: { 'X-CSRFToken': window.appState.csrfToken } })
+            .then(res => res.ok ? res.blob() : Promise.reject()).then(blob => {
+                const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `informe.pdf`; document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); a.remove();
+            }).catch(err => showToast('Error', 'error'));
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (window.appState.isAdmin && document.querySelector('.profile-trigger')) {
+            const pBtn = document.querySelector('.profile-trigger');
+            pBtn.href = "javascript:void(0)";
+            if (pBtn.getAttribute('hx-get')) pBtn.removeAttribute('hx-get');
+            pBtn.onclick = (e) => { e.preventDefault(); handleLogout(); };
+        }
+        if (window.loadDailyConsumption) window.loadDailyConsumption();
+        if (window.renderGlasses) window.renderGlasses();
+        if (window.calculateSleep) window.calculateSleep();
+        if (window.initAdminCharts) window.initAdminCharts();
+    });
+
+    window.curarAdmin = function (id, accion) {
+        if (!confirm('¿Deseas ' + accion + ' esta receta?')) return;
+        fetch(`/api/curar_receta/${id}/`, { method: 'POST', headers: { 'X-CSRFToken': window.appState.csrfToken, 'Content-Type': 'application/x-www-form-urlencoded' }, body: `accion=${accion}` })
+            .then(res => res.json()).then(data => { if (data.status === 'success') { showToast('Acción completada', 'success'); location.reload(); } });
+    };
+
+    window.initAdminCharts = function () {
+        const isDarkMode = document.body.classList.contains('dark-mode');
+        const textColor = isDarkMode ? '#a0a0a0' : '#4b5563';
+        const gridColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+
+        if (document.getElementById('adminEvolutionChart')) {
+            const evoData = JSON.parse(document.getElementById('evolution-json').textContent);
+            new Chart(document.getElementById('adminEvolutionChart'), {
+                type: 'line',
+                data: {
+                    labels: evoData.labels,
+                    datasets: [{
+                        label: 'Nuevos Usuarios',
+                        data: evoData.values,
+                        borderColor: '#00cec9',
+                        backgroundColor: 'rgba(0, 206, 201, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#00cec9',
+                        pointBorderColor: '#fff',
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, labels: { color: textColor, font: { weight: '800', size: 10 } } },
+                        tooltip: { backgroundColor: '#1e293b', titleFont: { weight: '800' }, padding: 12, borderRadius: 12 }
+                    },
+                    scales: {
+                        y: { grid: { color: gridColor }, ticks: { color: textColor } },
+                        x: { grid: { display: false }, ticks: { color: textColor } }
+                    }
+                }
+            });
+        }
+
+        if (document.getElementById('adminGenderChart')) {
+            const genData = JSON.parse(document.getElementById('gender-json').textContent);
+            const h = genData.find(g => g.genero === 'H')?.count || 0;
+            const m = genData.find(g => g.genero === 'M')?.count || 0;
+            new Chart(document.getElementById('adminGenderChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Hombres', 'Mujeres'],
+                    datasets: [{
+                        data: [h, m],
+                        backgroundColor: ['#0984e3', '#fd79a8'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: { display: true, position: 'bottom', labels: { color: textColor, padding: 20, usePointStyle: true, font: { weight: 'bold' } } }
+                    }
+                }
+            });
+        }
+
+        if (document.getElementById('adminAgeChart')) {
+            const ageData = JSON.parse(document.getElementById('age-json').textContent);
+            new Chart(document.getElementById('adminAgeChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['18-25', '26-35', '36-50', '50+'],
+                    datasets: [{
+                        label: 'Usuarios',
+                        data: [ageData.e18_25, ageData.e26_35, ageData.e36_50, ageData.e50plus],
+                        backgroundColor: '#85c81a',
+                        borderRadius: 8,
+                        hoverBackgroundColor: '#00cec9'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } },
+                        x: { grid: { display: false }, ticks: { color: textColor } }
+                    }
+                }
+            });
+        }
+
+        if (document.getElementById('adminObjectivesChart')) {
+            const objData = JSON.parse(document.getElementById('objectives-json').textContent);
+            const lose = objData.find(o => o.objetivo === 'PERDER')?.count || 0;
+            const ga = objData.find(o => o.objetivo === 'GANAR')?.count || 0;
+            const ma = objData.find(o => o.objetivo === 'MANTENER')?.count || 0;
+            new Chart(document.getElementById('adminObjectivesChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['Perder Peso', 'Ganar Masa', 'Mantener'],
+                    datasets: [{
+                        data: [lose, ga, ma],
+                        backgroundColor: ['#ff7675', '#00b894', '#00cec9'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'bottom', labels: { color: textColor, padding: 15, usePointStyle: true } }
+                    }
+                }
+            });
+        }
+    };
+</script>
+
+{% if es_admin_view %}
+{{ charts.evolucion|json_script:"evolution-json" }}
+{{ charts.dist_genero|json_script:"gender-json" }}
+{{ charts.dist_edad|json_script:"age-json" }}
+{{ charts.dist_objetivos|json_script:"objectives-json" }}
+{% endif %}
+{% endblock %}

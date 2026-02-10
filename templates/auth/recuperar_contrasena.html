@@ -1,0 +1,289 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Contraseña - Nunut</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #85c81a;
+            --primary-dark: #6ba314;
+            --bg-page: #f8faf5;
+            --bg-content: #ffffff;
+            --text-main: #1a1c18;
+            --text-secondary: #666;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8faf5 0%, #eef7e2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Quicksand', sans-serif;
+            color: var(--text-main);
+        }
+
+        .card {
+            background: white;
+            padding: 50px 40px;
+            border-radius: 40px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: var(--primary);
+        }
+
+        .logo {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 25px;
+            letter-spacing: -1.5px;
+        }
+
+        h2 {
+            font-weight: 800;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            margin-left: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 20px;
+            border-radius: 18px;
+            border: 2px solid #f0f0f0;
+            background-color: #f9f9f9;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: #fff;
+            box-shadow: 0 5px 15px rgba(133, 200, 26, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 18px;
+            border-radius: 20px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(133, 200, 26, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(133, 200, 26, 0.3);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 30px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+        }
+
+        .reset-step {
+            display: block;
+            margin-top: 15px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-decoration: underline;
+        }
+
+        /* TOAST NOTIFICATIONS */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast-notification {
+            min-width: 300px;
+            background: white;
+            border-radius: 15px;
+            padding: 15px 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 5px solid #85c81a;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .toast-notification.error, .toast-notification.danger {
+            border-left-color: #ff4757;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="toast-container" id="toast-container"></div>
+
+    <div class="card">
+        <div class="logo">nunut</div>
+        
+        {% if step == 1 %}
+            <h2>Recuperar acceso</h2>
+            <p>Ingresa tu correo electrónico para recibir un código de verificación de 6 dígitos.</p>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Email de tu cuenta</label>
+                    <input type="email" name="email" placeholder="ejemplo@correo.com" required autofocus>
+                </div>
+                <button type="submit">Enviar Código</button>
+            </form>
+
+        {% elif step == 2 %}
+            <h2>Verifica tu correo</h2>
+            <p>Hemos enviado un código a <strong>{{ request.session.reset_email }}</strong>. Por favor, ingrésalo abajo.</p>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Código de verificación</label>
+                    <input type="text" name="code" placeholder="000000" maxlength="6" pattern="\d{6}" required
+                        style="letter-spacing: 8px; text-align: center; font-size: 1.8rem;" autocomplete="one-time-code">
+                </div>
+                <button type="submit">Verificar código</button>
+                <a href="?restart=true" class="reset-step">¿No es tu correo? Cambiarlo</a>
+            </form>
+
+        {% elif step == 3 %}
+            <h2>Nueva contraseña</h2>
+            <p>Casi listo. Define tu nueva contraseña de acceso.</p>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Nueva contraseña</label>
+                    <input type="password" name="new_password" placeholder="••••••••" required minlength="8">
+                </div>
+                <div class="form-group">
+                    <label>Confirmar contraseña</label>
+                    <input type="password" name="confirm_password" placeholder="••••••••" required minlength="8">
+                </div>
+                <button type="submit">Actualizar Contraseña</button>
+            </form>
+        {% endif %}
+
+        <a href="{% url 'base:iniciar_sesion' %}" class="back-link">
+            <i class="fas fa-arrow-left"></i>
+            Volver al inicio
+        </a>
+    </div>
+
+    <script>
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            // Mapeo de tags de Django a clases CSS
+            const typeClass = (type === 'error' || type === 'danger') ? 'error' : 'success';
+            
+            toast.className = `toast-notification ${typeClass}`;
+            toast.innerHTML = `
+                <i class="fas ${typeClass === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}" 
+                   style="color: ${typeClass === 'success' ? '#85c81a' : '#ff4757'}"></i>
+                <span style="font-size: 0.9rem; font-weight: 600;">${message}</span>
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = '0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const el = document.getElementById('messages-data');
+            if (el) {
+                try {
+                    const data = JSON.parse(el.getAttribute('data-messages'));
+                    data.forEach(m => showToast(m.msg, m.tag));
+                } catch (e) { console.error("Error al leer mensajes:", e); }
+            }
+        });
+    </script>
+
+    {% if messages %}
+    <div id="messages-data" data-messages='[
+        {% for message in messages %}
+            {"msg": "{{ message|escapejs }}", "tag": "{{ message.tags }}"}{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ]'></div>
+    {% endif %}
+</body>
+</html>

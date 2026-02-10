@@ -1,0 +1,568 @@
+{% extends base_template %}
+{% load static %}
+
+{% block title %}Diario Nutricional | nunut{% endblock %}
+
+{% block extra_head %}
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+
+<style>
+    :root {
+        --primary-elite: #85c81a;
+        --primary-dark-elite: #6fb015;
+        --bg-light-elite: #f7f8f6;
+        --bg-dark-elite: #1b2111;
+        --accent-blue: #3b82f6;
+        --accent-orange: #f97316;
+        --accent-yellow: #eab308;
+    }
+
+    .diario-elite {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--bg-light-elite);
+        min-height: 100vh;
+    }
+
+    body.dark-mode .diario-elite {
+        background-color: var(--bg-dark-elite);
+        color: white;
+    }
+
+    /* Cards Elite */
+    .card-custom {
+        background: white;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 1.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    body.dark-mode .card-custom {
+        background: #1a1d14;
+        border-color: rgba(133, 200, 26, 0.2);
+        box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.3);
+    }
+
+    /* Calendario Semanal Elite */
+    .calendar-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .calendar-day-btn {
+        flex: 1;
+        aspect-ratio: 1/1.2;
+        border-radius: 1rem;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        background: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        color: #64748b;
+    }
+
+    body.dark-mode .calendar-day-btn {
+        background: #252a1c;
+        border-color: rgba(255, 255, 255, 0.05);
+        color: #94a3b8;
+    }
+
+    .calendar-day-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .calendar-day-btn.active {
+        background: var(--primary-elite);
+        color: white;
+        border-color: var(--primary-elite);
+        box-shadow: 0 8px 20px rgba(133, 200, 26, 0.3);
+    }
+
+    .calendar-day-btn.active .day-name {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .calendar-day-btn.active .day-num {
+        color: white;
+    }
+
+    .day-name {
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+    }
+
+    .day-num {
+        font-size: 1.1rem;
+        font-weight: 900;
+    }
+
+    /* Hero Progress */
+    .hero-stat-card {
+        background: linear-gradient(135deg, var(--primary-elite), var(--primary-dark-elite));
+        color: white;
+        border: none;
+        position: relative;
+    }
+
+    .stat-circle {
+        position: relative;
+        width: 120px;
+        height: 120px;
+    }
+
+    .stat-circle svg {
+        transform: rotate(-90deg);
+    }
+
+    .stat-circle circle {
+        fill: none;
+        stroke-width: 10;
+        stroke-linecap: round;
+    }
+
+    .stat-circle .bg {
+        stroke: rgba(255, 255, 255, 0.2);
+    }
+
+    .stat-circle .progress {
+        stroke: white;
+        stroke-dasharray: 314;
+        stroke-dashoffset: 314;
+        transition: stroke-dashoffset 1s ease;
+    }
+
+    /* Calculator Section */
+    .calculator-input {
+        background: var(--bg-light-elite);
+        border: 2px solid transparent;
+        border-radius: 1rem;
+        padding: 1rem;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    body.dark-mode .calculator-input {
+        background: #0f1108;
+        color: white;
+    }
+
+    .calculator-input:focus {
+        border-color: var(--primary-elite);
+        background: white;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(133, 200, 26, 0.1);
+    }
+
+    .macro-pill {
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: white;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    body.dark-mode .macro-pill {
+        background: #252a1c;
+    }
+
+    /* Meal Timeline */
+    .meal-timeline-item {
+        position: relative;
+        padding-left: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .meal-timeline-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: -1.5rem;
+        width: 2px;
+        background: rgba(133, 200, 26, 0.2);
+    }
+
+    .meal-timeline-item:last-child::before {
+        display: none;
+    }
+
+    .meal-timeline-dot {
+        position: absolute;
+        left: -4px;
+        top: 8px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--primary-elite);
+        box-shadow: 0 0 0 4px rgba(133, 200, 26, 0.1);
+    }
+
+    .text-xs-bold {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Animaciones */
+    @keyframes fadeInSlide {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fadeInSlide 0.4s ease forwards;
+    }
+</style>
+{% endblock %}
+
+{% block container_class %}container max-w-6xl diario-elite py-4{% endblock %}
+
+{% block content %}
+<div id="diario-content"
+    class="animate-fade-in position-relative {% if not user.is_authenticated or user.username == 'invitado' %}app-locked{% endif %}">
+    {% if not user.is_authenticated or user.username == 'invitado' %}
+    <div class="position-absolute top-50 start-50 translate-middle d-flex align-items-center justify-content-center w-100 h-100"
+        style="z-index: 100; min-height: 400px;">
+        <div class="text-center p-5 bg-white dark-mode-bg-dark rounded-4 shadow-lg border dark-mode-border-subtle"
+            style="max-width: 400px;">
+            <div class="bg-light dark-mode-bg-dark rounded-circle d-inline-flex align-items-center justify-content-center mb-4"
+                style="width: 80px; height: 80px;">
+                <span class="material-symbols-outlined display-4 text-muted opacity-50">lock</span>
+            </div>
+            <h2 class="fw-black mb-2">Diario Personal</h2>
+            <p class="text-muted mb-4">Lleva un registro detallado de tus comidas y macros. Regístrate para comenzar tu
+                viaje.</p>
+            <a href="{% url 'base:registro' %}"
+                class="btn btn-primary rounded-pill px-5 fw-bold py-3 shadow-sm w-100">Crear Cuenta Gratis</a>
+            <a href="{% url 'base:iniciar_sesion' %}"
+                class="btn btn-link text-muted fw-bold mt-3 text-decoration-none small">¿Ya tienes cuenta? Ingresa
+                aquí</a>
+        </div>
+    </div>
+    {% endif %}
+    <!-- Header: Calendario Semanal Compacto -->
+    <header class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h1 class="h3 fw-900 mb-0" style="font-weight: 900;">Mi Diario</h1>
+                <p class="text-muted small fw-600 mb-0">{{ current_date|date:"l, d F Y" }}</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-white card-custom border-0 rounded-circle p-2 shadow-sm"
+                    hx-get="{% url 'base:diario' %}?date={{ prev_week }}" hx-target="#diario-content"
+                    hx-push-url="true">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <button class="btn btn-white card-custom border-0 rounded-circle p-2 shadow-sm"
+                    hx-get="{% url 'base:diario' %}?date={{ next_week }}" hx-target="#diario-content"
+                    hx-push-url="true">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+            </div>
+
+            <div class="calendar-container">
+                {% for dia in semana %}
+                <a href="?date={{ dia.fecha_iso }}" hx-get="{% url 'base:diario' %}?date={{ dia.fecha_iso }}"
+                    hx-target="#diario-content" hx-push-url="true"
+                    class="calendar-day-btn {% if dia.is_active %}active{% endif %}">
+                    <span class="day-name">{{ dia.nombre }}</span>
+                    <span class="day-num">{{ dia.dia_num }}</span>
+                    {% if dia.is_today %}
+                    <div
+                        style="width: 4px; height: 4px; border-radius: 50%; background: currentColor; margin-top: 4px;">
+                    </div>
+                    {% endif %}
+                </a>
+                {% endfor %}
+            </div>
+    </header>
+
+    <div class="row g-4">
+        <!-- Columna Izquierda: Resumen y Calculadora -->
+        <div class="col-lg-7">
+            <!-- Hero Stats -->
+            <div class="card-custom hero-stat-card p-4 mb-4">
+                <div class="row align-items-center">
+                    <div class="col-sm-6">
+                        <span class="text-xs-bold opacity-75">Resumen del Día</span>
+                        <h2 class="display-5 fw-900 mb-3" style="font-weight: 900;">{{ consumo.calorias }} <small
+                                class="fs-4 fw-normal opacity-75">kcal</small></h2>
+
+                        <div class="d-flex flex-column gap-2 mb-2">
+                            <div class="d-flex justify-content-between small fw-bold">
+                                <span>Progreso</span>
+                                <span>{{ progress.calorias }}%</span>
+                            </div>
+                            <div class="progress"
+                                style="height: 8px; border-radius: 4px; background: rgba(255,255,255,0.2);">
+                                <div class="progress-bar bg-white"
+                                    style="width: {{ progress.calorias }}%; border-radius: 4px;"></div>
+                            </div>
+                            {% if progress.faltan_kcal > 0 %}
+                            <p class="small mb-0 opacity-75 fw-bold">Te faltan {{ progress.faltan_kcal }} kcal para tu
+                                meta.</p>
+                            {% else %}
+                            <p class="small mb-0 opacity-100 fw-bold">¡Meta alcanzada! 🔥</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-sm-6 d-flex justify-content-center mt-3 mt-sm-0">
+                        <div class="stat-circle">
+                            <svg viewBox="0 0 120 120" style="width: 120px; height: 120px;">
+                                <circle class="bg" cx="60" cy="60" r="50"></circle>
+                                <circle class="progress" cx="60" cy="60" r="50"
+                                    style="stroke-dashoffset: calc(314 - (314 * {{ progress.calorias }}) / 100);">
+                                </circle>
+                            </svg>
+                            <div class="position-absolute top-50 start-50 translate-middle text-center">
+                                <span class="h3 fw-900 mb-0 d-block">{{ progress.calorias }}%</span>
+                                <span class="text-xs-bold" style="font-size: 0.5rem;">CUMPLIDO</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calculador / Reconocedor Moderno -->
+            <section class="card-custom mb-4 p-4">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="icon-box bg-success bg-opacity-10 text-primary">
+                        <span class="material-symbols-outlined">calculate</span>
+                    </div>
+                    <div>
+                        <h3 class="h5 fw-900 mb-0">Reconocedor Nutricional</h3>
+                        <p class="text-muted small mb-0">Calcula macros al instante de cualquier comida</p>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-9">
+                        <input type="text" id="food-search" class="calculator-input w-100"
+                            placeholder="Ej: 200g de pechuga de pollo a la plancha"
+                            oninput="simulateCalculation(this.value)">
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-success w-100 h-100 rounded-4 fw-bold"
+                            style="background: var(--primary-elite); border: none;" onclick="addMealFromCalculator()">
+                            Añadir
+                        </button>
+                    </div>
+                </div>
+
+                <div id="calculator-preview" class="mt-4 p-3 rounded-4 bg-light border border-opacity-10 d-none">
+                    <div class="row row-cols-3 g-2">
+                        <div class="col">
+                            <div class="text-center">
+                                <span class="text-xs-bold text-muted d-block mb-1">Proteínas</span>
+                                <span id="calc-prot" class="h5 fw-900 text-primary mb-0">0g</span>
+                            </div>
+                        </div>
+                        <div class="col border-start border-end">
+                            <div class="text-center">
+                                <span class="text-xs-bold text-muted d-block mb-1">Carbos</span>
+                                <span id="calc-carb" class="h5 fw-900 text-warning mb-0">0g</span>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="text-center">
+                                <span class="text-xs-bold text-muted d-block mb-1">Grasas</span>
+                                <span id="calc-fat" class="h5 fw-900 text-danger mb-0">0g</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3 pt-3 border-top">
+                        <span class="text-xs-bold text-muted">Total Estimado:</span>
+                        <span id="calc-kcal" class="h4 fw-900 ms-2">0 kcal</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Columna Derecha: Timeline de Comidas -->
+        <div class="col-lg-5">
+            <section class="card-custom p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="h5 fw-900 mb-0">Línea de Tiempo</h3>
+                    <span class="badge rounded-pill bg-light text-dark fw-bold px-3 py-2 border">Hoy</span>
+                </div>
+
+                <div class="meal-timeline mt-2">
+                    {% for comida in comidas %}
+                    <div class="meal-timeline-item">
+                        <div class="meal-timeline-dot"></div>
+                        <div
+                            class="d-flex justify-content-between align-items-start bg-light bg-opacity-50 p-3 rounded-4 border border-opacity-10 transition-all hover-shadow">
+                            <div>
+                                <span class="text-xs-bold text-muted">{{ comida.hora|time:"H:i" }}</span>
+                                <h4 class="h6 fw-900 mb-1 d-block">{{ comida.nombre }}</h4>
+                                <div class="d-flex gap-2">
+                                    <span class="badge bg-primary bg-opacity-10 text-primary x-small fw-bold">{{
+                                        comida.calorias }} kcal</span>
+                                    <span class="badge bg-info bg-opacity-10 text-info x-small fw-bold">{{
+                                        comida.proteinas }}g P</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-link text-muted p-0">
+                                <span class="material-symbols-outlined fs-5">more_vert</span>
+                            </button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5">
+                        <div class="icon-box bg-light rounded-circle p-4 mb-3">
+                            <span class="material-symbols-outlined fs-1 text-muted">restaurant</span>
+                        </div>
+                        <p class="text-muted fw-bold">No has registrado comidas aún.</p>
+                        <button class="btn btn-sm btn-outline-success rounded-pill fw-bold"
+                            onclick="document.getElementById('food-search').focus()">
+                            Empezar ahora
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Resumen de Macros Reales -->
+                <div class="mt-4 pt-4 border-top">
+                    <h4 class="text-xs-bold text-muted mb-3">Distribución Real</h4>
+                    <div class="d-flex flex-column gap-3">
+                        <div>
+                            <div class="d-flex justify-content-between small fw-bold mb-1">
+                                <span>Proteínas</span>
+                                <span>{{ consumo.proteinas }}g / {{ plan.proteinas_g }}g</span>
+                            </div>
+                            <div class="progress"
+                                style="height: 6px; border-radius: 3px; background: rgba(0,0,0,0.05);">
+                                <div class="progress-bar bg-primary" style="width: {{ progress.proteinas }}%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="d-flex justify-content-between small fw-bold mb-1">
+                                <span>Carbohidratos</span>
+                                <span>{{ consumo.carbos }}g / {{ plan.carbohidratos_g }}g</span>
+                            </div>
+                            <div class="progress"
+                                style="height: 6px; border-radius: 3px; background: rgba(0,0,0,0.05);">
+                                <div class="progress-bar bg-warning" style="width: {{ progress.carbos }}%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="d-flex justify-content-between small fw-bold mb-1">
+                                <span>Grasas</span>
+                                <span>{{ consumo.grasas }}g / {{ plan.grasas_g }}g</span>
+                            </div>
+                            <div class="progress"
+                                style="height: 6px; border-radius: 3px; background: rgba(0,0,0,0.05);">
+                                <div class="progress-bar bg-danger" style="width: {{ progress.grasas }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<!-- Lógica del Reconocedor (Simulación de IA Core) -->
+<script>
+    function simulateCalculation(val) {
+        const preview = document.getElementById('calculator-preview');
+        if (val.length < 3) {
+            preview.classList.add('d-none');
+            return;
+        }
+
+        preview.classList.remove('d-none');
+
+        // Lógica simple de simulación de reconocimiento (esto en pro sería un fetch a una API de IA)
+        let kcal = 0, p = 0, c = 0, f = 0;
+
+        const lower = val.toLowerCase();
+        if (lower.includes('pollo')) { p = 25; kcal = 165; f = 3.6; }
+        else if (lower.includes('arroz')) { c = 28; kcal = 130; p = 2.7; }
+        else if (lower.includes('huevo')) { p = 13; kcal = 155; f = 11; }
+        else if (lower.includes('carne')) { p = 26; kcal = 250; f = 15; }
+        else { p = 5; c = 10; f = 2; kcal = 100; }
+
+        // Si hay números, escalar
+        const match = val.match(/\d+/);
+        if (match) {
+            const qty = parseInt(match[0]) / 100;
+            kcal = Math.round(kcal * qty);
+            p = Math.round(p * qty);
+            c = Math.round(c * qty);
+            f = Math.round(f * qty);
+        }
+
+        document.getElementById('calc-prot').innerText = p + 'g';
+        document.getElementById('calc-carb').innerText = c + 'g';
+        document.getElementById('calc-fat').innerText = f + 'g';
+        document.getElementById('calc-kcal').innerText = kcal + ' kcal';
+    }
+
+    function addMealFromCalculator() {
+        const food = document.getElementById('food-search').value;
+        const kcal = parseInt(document.getElementById('calc-kcal').innerText);
+        const p = parseInt(document.getElementById('calc-prot').innerText);
+        const c = parseInt(document.getElementById('calc-carb').innerText);
+        const f = parseInt(document.getElementById('calc-fat').innerText);
+
+        if (!food) return;
+
+        // Aquí iría el fetch real a /api/guardar_comida/
+        showToast('Guardando comida...', 'info');
+
+        const csrftoken = '{{ csrf_token }}';
+
+        fetch('/api/guardar_comida/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify({
+                nombre: food,
+                calorias: kcal,
+                proteinas: p,
+                carbos: c,
+                grasas: f,
+                fecha: '{{ current_date|date:"Y-m-d" }}'
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showToast('Comida registrada exitosamente 🔥', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast('Error al guardar: ' + data.message, 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Error de conexión', 'error');
+            });
+    }
+</script>
+{% endblock %}
