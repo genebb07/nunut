@@ -118,7 +118,7 @@
     }
 
     .favorite-btn.active .material-symbols-outlined {
-        color: var(--heart-active);
+        color: var(--primary);
         font-variation-settings: 'FILL' 1;
     }
 
@@ -639,7 +639,10 @@
         padding-bottom: 12px;
         scrollbar-width: none;
     }
-    .calendar-week-strip::-webkit-scrollbar { display: none; }
+
+    .calendar-week-strip::-webkit-scrollbar {
+        display: none;
+    }
 
     .day-card-mini {
         min-width: 75px;
@@ -661,12 +664,33 @@
         box-shadow: 0 8px 16px -4px rgba(132, 199, 26, 0.3);
         transform: translateY(-4px);
     }
-    .day-card-mini.active .day-name, .day-card-mini.active .day-number { color: white !important; }
 
-    .day-name { font-size: 0.6rem; font-weight: 800; color: #9ca3af; text-transform: uppercase; margin-bottom: 2px; }
-    .day-number { font-size: 1.1rem; font-weight: 900; color: #111827; margin-bottom: 6px; }
+    .day-card-mini.active .day-name,
+    .day-card-mini.active .day-number {
+        color: white !important;
+    }
 
-    .meal-icons { display: flex; gap: 4px; margin-top: 4px; }
+    .day-name {
+        font-size: 0.6rem;
+        font-weight: 800;
+        color: #9ca3af;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+    }
+
+    .day-number {
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: #111827;
+        margin-bottom: 6px;
+    }
+
+    .meal-icons {
+        display: flex;
+        gap: 4px;
+        margin-top: 4px;
+    }
+
     .meal-icon-circle {
         width: 20px;
         height: 20px;
@@ -678,25 +702,65 @@
         color: #9ca3af;
         transition: all 0.3s ease;
     }
-    .meal-icon-circle .material-symbols-outlined { font-size: 12px; }
-    
-    .day-card-mini.active .meal-icon-circle { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); }
-    
-    .meal-icon-circle.active.bg-warning { background: #fbbf24 !important; color: white !important; }
-    .meal-icon-circle.active.bg-success { background: #34d399 !important; color: white !important; }
-    .meal-icon-circle.active.bg-info { background: #818cf8 !important; color: white !important; }
 
-    .day-card-mini.active .meal-icon-circle.active { background: white !important; }
-    .day-card-mini.active .meal-icon-circle.active.bg-warning { color: #fbbf24 !important; }
-    .day-card-mini.active .meal-icon-circle.active.bg-success { color: #34d399 !important; }
-    .day-card-mini.active .meal-icon-circle.active.bg-info { color: #818cf8 !important; }
+    .meal-icon-circle .material-symbols-outlined {
+        font-size: 12px;
+    }
 
-    .meal-icon-circle:not(.active) { display: none; }
+    .day-card-mini.active .meal-icon-circle {
+        background: rgba(255, 255, 255, 0.2);
+        color: rgba(255, 255, 255, 0.6);
+    }
 
-    .day-detail-panel { animation: slideUp 0.3s ease-out; }
+    .meal-icon-circle.active.bg-warning {
+        background: #fbbf24 !important;
+        color: white !important;
+    }
+
+    .meal-icon-circle.active.bg-success {
+        background: #34d399 !important;
+        color: white !important;
+    }
+
+    .meal-icon-circle.active.bg-info {
+        background: #818cf8 !important;
+        color: white !important;
+    }
+
+    .day-card-mini.active .meal-icon-circle.active {
+        background: white !important;
+    }
+
+    .day-card-mini.active .meal-icon-circle.active.bg-warning {
+        color: #fbbf24 !important;
+    }
+
+    .day-card-mini.active .meal-icon-circle.active.bg-success {
+        color: #34d399 !important;
+    }
+
+    .day-card-mini.active .meal-icon-circle.active.bg-info {
+        color: #818cf8 !important;
+    }
+
+    .meal-icon-circle:not(.active) {
+        display: none;
+    }
+
+    .day-detail-panel {
+        animation: slideUp 0.3s ease-out;
+    }
+
     @keyframes slideUp {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     /* Detail view styles (from provided design) */
@@ -1059,21 +1123,23 @@
             <!-- WEEK STRIP -->
             <div class="calendar-week-strip mb-4">
                 {% for dia in semana_calendario %}
-                <div class="day-card-mini {% if dia.is_active %}active{% endif %}" 
-                     id="card-{{ dia.fecha|date:'Y-m-d' }}"
-                     onclick="selectCalendarDay('{{ dia.fecha|date:'Y-m-d' }}')">
+                <div class="day-card-mini {% if dia.is_active %}active{% endif %}"
+                    id="card-{{ dia.fecha|date:'Y-m-d' }}" onclick="selectCalendarDay('{{ dia.fecha|date:'Y-m-d' }}')">
                     <span class="day-name">{{ dia.nombre }}</span>
                     <span class="day-number">{{ dia.dia_num }}</span>
                     <div class="meal-icons">
                         {% regroup dia.comidas by categoria as comidas_por_categoria %}
                         {% for cat in comidas_por_categoria %}
-                            {% if cat.grouper == 'desayuno' %}
-                                <div class="meal-icon-circle active bg-warning"><span class="material-symbols-outlined">wb_sunny</span></div>
-                            {% elif cat.grouper == 'almuerzo' %}
-                                <div class="meal-icon-circle active bg-success"><span class="material-symbols-outlined">restaurant</span></div>
-                            {% elif cat.grouper == 'cena' %}
-                                <div class="meal-icon-circle active bg-info"><span class="material-symbols-outlined">nights_stay</span></div>
-                            {% endif %}
+                        {% if cat.grouper == 'desayuno' %}
+                        <div class="meal-icon-circle active bg-warning"><span
+                                class="material-symbols-outlined">wb_sunny</span></div>
+                        {% elif cat.grouper == 'almuerzo' %}
+                        <div class="meal-icon-circle active bg-success"><span
+                                class="material-symbols-outlined">restaurant</span></div>
+                        {% elif cat.grouper == 'cena' %}
+                        <div class="meal-icon-circle active bg-info"><span
+                                class="material-symbols-outlined">nights_stay</span></div>
+                        {% endif %}
                         {% endfor %}
                     </div>
                 </div>
@@ -1083,25 +1149,28 @@
             <!-- DETAIL SECTION -->
             <div id="calendar-day-details">
                 {% for dia in semana_calendario %}
-                <div id="detail-{{ dia.fecha|date:'Y-m-d' }}" class="day-detail-panel {% if not dia.is_active %}d-none{% endif %}">
+                <div id="detail-{{ dia.fecha|date:'Y-m-d' }}"
+                    class="day-detail-panel {% if not dia.is_active %}d-none{% endif %}">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="fw-bold m-0 text-dark">{{ dia.nombre }} {{ dia.dia_num }}</h4>
                         <button onclick="openAddMealModal('{{ dia.fecha|date:'Y-m-d' }}')"
-                                class="btn btn-sm py-2 px-3 fw-bold rounded-3 d-flex align-items-center gap-1"
-                                style="background: rgba(132, 199, 26, 0.1); color: var(--primary-dark); font-size: 0.75rem;">
+                            class="btn btn-sm py-2 px-3 fw-bold rounded-3 d-flex align-items-center gap-1"
+                            style="background: rgba(132, 199, 26, 0.1); color: var(--primary-dark); font-size: 0.75rem;">
                             <span class="material-symbols-outlined" style="font-size: 18px;">add</span> AÑADIR COMIDA
                         </button>
                     </div>
 
                     <div class="d-flex flex-column gap-2">
                         {% for comida in dia.comidas %}
-                        <div class="p-3 bg-white rounded-4 shadow-sm border border-light d-flex align-items-center gap-3">
+                        <div
+                            class="p-3 bg-white rounded-4 shadow-sm border border-light d-flex align-items-center gap-3">
                             <div class="size-10 rounded-circle d-flex align-items-center justify-content-center flex-shrink-0
                                 {% if comida.categoria == 'desayuno' %}bg-warning{% elif comida.categoria == 'almuerzo' %}bg-success{% else %}bg-info{% endif %} bg-opacity-10 
                                 {% if comida.categoria == 'desayuno' %}text-warning{% elif comida.categoria == 'almuerzo' %}text-success{% else %}text-info{% endif %}"
                                 style="width: 40px; height: 40px;">
                                 <span class="material-symbols-outlined">
-                                    {% if comida.categoria == 'desayuno' %}wb_sunny{% elif comida.categoria == 'almuerzo' %}restaurant{% else %}nights_stay{% endif %}
+                                    {% if comida.categoria == 'desayuno' %}wb_sunny{% elif comida.categoria ==
+                                    'almuerzo' %}restaurant{% else %}nights_stay{% endif %}
                                 </span>
                             </div>
                             <div class="flex-grow-1 min-width-0">
@@ -1534,9 +1603,9 @@
             const diet = params.get('diet');
             const cat = params.get('cat');
             const diff = params.get('diff');
-            
+
             const dateParam = params.get('date');
-            
+
             if (q) {
                 const queryInput = document.querySelector('input[name="q"]');
                 if (queryInput) queryInput.value = q;
@@ -1553,7 +1622,7 @@
                 const diffSelect = document.getElementById('filter-dificultad');
                 if (diffSelect) diffSelect.value = diff;
             }
-            
+
             if (tab) {
                 switchInnerTab(tab);
             } else {

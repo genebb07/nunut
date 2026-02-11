@@ -1,6 +1,7 @@
 import os
 import json
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -15,34 +16,32 @@ def generar_receta_ia(request):
         return JsonResponse({'success': False, 'error': 'API Key de Gemini no configurada en settings.py.'}, status=500)
 
     try:
-        genai.configure(api_key=api_key)
+        client = genai.Client(api_key=api_key)
         
         # Auto-detect available model
         available_models = []
         try:
-            for m in genai.list_models():
-                if 'generateContent' in m.supported_generation_methods:
-                    available_models.append(m.name)
+            for m in client.models.list():
+                available_models.append(m.name)
         except Exception as list_err:
             print(f"Could not list models: {list_err}")
         
         # Try models in order of preference
         model_name = None
-        preferred_models = ['models/gemini-1.5-flash', 'models/gemini-pro', 'models/gemini-1.0-pro']
+        preferred_models = ['gemini-1.5-flash', 'gemini-pro']
         
+        # Clean names for comparison if needed
+        available_names = [m.split('/')[-1] for m in available_models]
+
         for pref in preferred_models:
-            if pref in available_models:
+            if pref in available_names:
                 model_name = pref
                 break
         
-        if not model_name and available_models:
-            model_name = available_models[0]
-        
-        if not model_name:
-            return JsonResponse({'success': False, 'error': 'No hay modelos disponibles para tu API key.'}, status=500)
+        if not model_name and preferred_models:
+            model_name = preferred_models[0]
         
         print(f"Using model: {model_name}")
-        model = genai.GenerativeModel(model_name)
         
         perfil = request.user.perfil
         dieta = perfil.get_tipo_dieta_display()
@@ -114,7 +113,7 @@ def generar_receta_ia(request):
         Los pasos DEBEN estar numerados y ser claros y detallados.
         """
         
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(model=model_name, contents=prompt)
         text_resp = response.text.replace('```json', '').replace('```', '').strip()
         
         try:
@@ -171,24 +170,20 @@ def generar_plan_ia(request):
         return JsonResponse({'success': False, 'error': 'API Key no configurada en settings.py.'}, status=500)
 
     try:
-        genai.configure(api_key=api_key)
+        client = genai.Client(api_key=api_key)
         
         # Auto-detect available model
         available_models = []
         try:
-            for m in genai.list_models():
-                if 'generateContent' in m.supported_generation_methods:
-                    available_models.append(m.name)
+            for m in client.models.list():
+                available_models.append(m.name)
         except Exception as list_err:
             print(f"Could not list models: {list_err}")
         
-        # Prefer flash for speed
-        model_name = next((m for m in ['models/gemini-1.5-flash', 'models/gemini-pro'] if m in available_models), available_models[0] if available_models else None)
+        available_names = [m.split('/')[-1] for m in available_models]
+        model_name = next((m for m in ['gemini-1.5-flash', 'gemini-pro'] if m in available_names), 'gemini-1.5-flash')
         
-        if not model_name:
-            return JsonResponse({'success': False, 'error': 'No hay modelos disponibles.'}, status=500)
-        
-        model = genai.GenerativeModel(model_name)
+        print(f"Using model for plan: {model_name}")
         
         perfil = request.user.perfil
         informe = perfil.generar_informe_nutricional()
@@ -257,14 +252,14 @@ def generar_plan_ia(request):
         ]
         """
         
-        safety = [
+        config = {'safety_settings': [
             {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
             {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
             {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
             {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
-        ]
+        ]}
         
-        response = model.generate_content(prompt, safety_settings=safety)
+        response = client.models.generate_content(model=model_name, contents=prompt, config=config)
         text_resp = response.text.strip()
         print(f"DEBUG Plan IA Raw Resp: {text_resp[:200]}...") # Log first 200 chars
 
@@ -455,68 +450,63 @@ def analizar_comida_ia(request):
         if not api_key:
              return JsonResponse({'success': False, 'error': 'No se encontraron alimentos en la BD y no hay API Key.'}, status=404)
 
-        genai.configure(api_key=api_key)
-        
-        # Auto-detect available model
-        available_models = []
         try:
-            for m in genai.list_models():
-                if 'generateContent' in m.supported_generation_methods:
-                    available_models.append(m.name)
-        except: pass
-        
-        model_name = next((m for m in ['models/gemini-1.5-flash', 'models/gemini-pro'] if m in available_models), available_models[0] if available_models else None)
-        
-        if not model_name:
-            return JsonResponse({'success': False, 'error': 'No hay modelos disponibles.'}, status=500)
-        
-        model = genai.GenerativeModel(model_name)
-        
-        prompt = f"""
-        Eres un nutricionista experto. Analiza la siguiente descripción de comida y proporciona un análisis nutricional detallado.
-        
-        DESCRIPCIÓN DE LA COMIDA:
-        "{descripcion_comida}"
-        
-        INSTRUCCIONES:
-        1. Identifica todos los ingredientes principales
-        2. Estima las cantidades aproximadas
-        3. Calcula los valores nutricionales totales
-        4. Proporciona un desglose de macronutrientes
-        5. Incluye micronutrientes relevantes (vitaminas y minerales)
-        
-        Responde EXCLUSIVAMENTE con un objeto JSON válido (sin texto extra, sin markdown) con esta estructura EXACTA:
-        {{
-            "titulo": "Nombre descriptivo del plato",
-            "descripcion": "Descripción breve del análisis",
-            "calorias": 0,
-            "proteinas": 0,
-            "carbohidratos": 0,
-            "grasas": 0,
-            "fibra": 0,
-            "ingredientes": [
-                {{"nombre": "Ingrediente 1", "cantidad": "100g"}},
-                {{"nombre": "Ingrediente 2", "cantidad": "50g"}}
-            ],
-            "micronutrientes": {{
-                "vitamina_a": 120,
-                "vitamina_c": 88,
-                "hierro": 24,
-                "magnesio": 45,
-                "potasio": 32,
-                "zinc": 15
+            client = genai.Client(api_key=api_key, http_options={'api_version': 'v1'})
+            
+            prompt = f"""
+            Actúa como un Nutricionista Jefe experto con acceso a bases de datos globales. Analiza la siguiente comida:
+            "{descripcion_comida}"
+            
+            INSTRUCCIONES:
+            1. Identifica TODO lo mencionado (alimentos sueltos, platos compuestos, bebidas, extras).
+            2. Si es un plato (ej: "Lasaña"), desglosa sus ingredientes lógicos estimados.
+            3. Calcula Calorías, Proteínas, Carbohidratos, Grasas y Fibra.
+            4. Sé lo más preciso posible basándote en porciones estándar.
+            
+            Responde EXCLUSIVAMENTE con un objeto JSON válido:
+            {{
+                "titulo": "Nombre corto y visual",
+                "descripcion": "Explicación breve de por qué es saludable o no",
+                "calorias": 0,
+                "proteinas": 0,
+                "carbohidratos": 0,
+                "grasas": 0,
+                "fibra": 0,
+                "ingredientes": [
+                    {{"nombre": "Elemento", "cantidad": "porción estimada"}}
+                ],
+                "micronutrientes": {{
+                    "vitamina_a": 0, "vitamina_c": 0, "hierro": 0, "magnesio": 0, "potasio": 0, "zinc": 0
+                }}
             }}
-        }}
-        """
-        
-        response = model.generate_content(prompt)
-        text_resp = response.text.replace('```json', '').replace('```', '').strip()
-        analysis_data = json.loads(text_resp)
-        
-        return JsonResponse({
-            'success': True,
-            'analisis': analysis_data
-        })
+            """
+            
+            response = client.models.generate_content(model='gemini-1.5-flash', contents=prompt)
+            text_resp = response.text
+            import re
+            json_match = re.search(r'\{.*\}', text_resp, re.DOTALL)
+            if json_match:
+                analysis_data = json.loads(json_match.group())
+                return JsonResponse({
+                    'success': True,
+                    'analisis': analysis_data
+                })
+            else:
+                return JsonResponse({'success': False, 'error': 'La IA no devolvió un formato válido.'})
+
+        except Exception as e:
+            error_str = str(e)
+            if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
+                return JsonResponse({
+                    'success': False, 
+                    'error_type': 'QUOTA_EXCEEDED',
+                    'error': 'Has superado el límite de peticiones gratuitas. Por favor, espera un minuto e inténtalo de nuevo.'
+                }, status=429)
+            elif "400" in error_str:
+                return JsonResponse({'success': False, 'error': 'Error en la petición: Asegúrate de que el texto sea claro.'}, status=400)
+            
+            print(f"DEBUG ERROR ANALIZAR: {error_str}")
+            return JsonResponse({'success': False, 'error': f"Error en la IA: {error_str}"}, status=500)
 
     except json.JSONDecodeError:
         return JsonResponse({'success': False, 'error': 'JSON inválido'}, status=400)
@@ -526,69 +516,69 @@ def analizar_comida_ia(request):
 
 @login_required
 def transcribir_audio(request):
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
-    
-    if not request.FILES.get('audio_file'):
-        return JsonResponse({'success': False, 'error': 'No se recibió archivo de audio'}, status=400)
-    
-    from django.core.files.storage import default_storage
-    from django.core.files.base import ContentFile
-    import os
-    import time
-    import traceback
-    
-    audio_file = request.FILES['audio_file']
-    api_key = getattr(settings, 'GEMINI_API_KEY', None)
-    
-    if not api_key:
-        return JsonResponse({'success': False, 'error': 'API Key no configurada'}, status=500)
-
-    # 1. Guardar temporalmente usando el storage de Django (más robusto)
-    # Generar un nombre único para evitar colisiones
-    temp_filename = f"audio_{int(time.time())}_{audio_file.name}"
-    path = default_storage.save(f'tmp/{temp_filename}', ContentFile(audio_file.read()))
-    full_path = default_storage.path(path)
-    
-    try:
-        genai.configure(api_key=api_key)
+    if request.method == 'POST' and request.FILES.get('audio_file'):
+        audio_file = request.FILES['audio_file']
+        audio_data = audio_file.read()
         
-        # 2. Subir a Gemini
-        uploaded_file = genai.upload_file(full_path)
-        
-        # 3. Esperar procesamiento (max 20s)
-        attempts = 0
-        while uploaded_file.state.name == "PROCESSING" and attempts < 20:
-            time.sleep(1)
-            uploaded_file = genai.get_file(uploaded_file.name)
-            attempts += 1
-            
-        if uploaded_file.state.name == "FAILED":
-            raise Exception("El procesamiento del audio falló en los servidores de Google.")
-            
-        # 4. Transcribir
-        model = genai.GenerativeModel("models/gemini-1.5-flash")
-        prompt = "Actúa como un transcriptor experto. Transcribe este audio exactamente palabra por palabra en español. Si solo hay silencio o ruido, responde 'SILENCIO'. No añadas introducciones."
-        
-        response = model.generate_content([prompt, uploaded_file])
-        transcription = response.text.strip()
-        
-        if "SILENCIO" in transcription.upper():
-            transcription = ""
-            
-        return JsonResponse({'success': True, 'text': transcription})
-
-    except Exception as e:
-        traceback.print_exc()
-        return JsonResponse({'success': False, 'error': f"Error en la IA: {str(e)}"}, status=500)
-        
-    finally:
-        # 5. Limpiar siempre
         try:
-            if default_storage.exists(path):
-                default_storage.delete(path)
-        except: pass
-        try:
-            if 'uploaded_file' in locals():
-                genai.delete_file(uploaded_file.name)
-        except: pass
+            api_key = getattr(settings, 'GEMINI_API_KEY', None)
+            if not api_key:
+                return JsonResponse({'success': False, 'error': 'API Key no configurada'}, status=500)
+                
+            client = genai.Client(api_key=api_key, http_options={'api_version': 'v1'})
+            
+            # PROMPT OPTIMIZADO: Pedimos JSON puro para evitar errores de lectura
+            prompt = """
+            Analiza el audio adjunto:
+            1. Transcribe el texto íntegramente.
+            2. Extrae calorías, proteínas, carbohidratos y grasas basados en lo mencionado.
+            Responde exclusivamente en este formato JSON:
+            {"text": "texto transcrito", "calorias": 0, "proteinas": 0, "carbohidratos": 0, "grasas": 0}
+            """
+
+            # IMPORTANTE: Nombre del modelo sin el prefijo "models/"
+            response = client.models.generate_content(
+                model="gemini-1.5-flash", 
+                contents=[
+                    prompt,
+                    types.Part.from_bytes(data=audio_data, mime_type="audio/webm")
+                ]
+            )
+
+            # LIMPIEZA DE RESPUESTA: A veces la IA devuelve ```json { ... } ```
+            raw_text = response.text
+            import re
+            match = re.search(r'\{.*\}', raw_text, re.DOTALL)
+            
+            if match:
+                import json
+                try:
+                    data_json = json.loads(match.group())
+                    return JsonResponse({
+                        'success': True,
+                        'text': data_json.get('text', ''),
+                        'analisis': data_json
+                    })
+                except:
+                    pass
+            
+            return JsonResponse({'success': True, 'text': raw_text.strip()})
+
+        except Exception as e:
+            error_str = str(e)
+            if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
+                return JsonResponse({
+                    'success': False, 
+                    'error_type': 'QUOTA_EXCEEDED',
+                    'error': 'Has superado el límite de peticiones (RPM/TPM). Espera un momento antes de volver a grabar.'
+                }, status=429)
+            elif "404" in error_str:
+                return JsonResponse({'success': False, 'error': 'Modelo no encontrado. Estamos revisando la configuración.'}, status=404)
+            
+            print(f"DEBUG ERROR TRANSCRIPCION: {error_str}")
+            return JsonResponse({
+                'success': False, 
+                'error': f"Error en la IA: {error_str}"
+            }, status=500)
+
+    return JsonResponse({'success': False, 'error': 'Petición inválida'}, status=400)

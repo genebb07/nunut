@@ -6,179 +6,169 @@
 {% block extra_head %}
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
     rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
 <style>
-    :root {
-        --primary-lime: #85c81a;
-        --primary-dark: #65a30d;
+    /* Redesigned Minimalist Aesthetics */
+    .analyzer-container {
+        background: #f8fafc !important;
+        /* Extremely subtle off-white for contrast */
+        min-height: 100vh;
     }
 
-    /* Glass Effect Utilities */
-    .glass-panel {
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-    }
-
-    .nav-capsule-glass {
-        background: rgba(255, 255, 255, 0.5);
-        backdrop-filter: blur(8px);
-    }
-
-    .nav-capsule-glass .nav-link {
-        color: #64748b;
-        transition: all 0.3s ease;
-    }
-
-    .nav-capsule-glass .nav-link:hover {
-        background: rgba(0, 0, 0, 0.02);
-        color: #334155;
-    }
-
-    .nav-capsule-glass .nav-link.active {
+    .analyzer-card {
         background: white;
-        color: var(--primary-lime);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border-radius: 40px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        font-family: 'Quicksand', sans-serif;
     }
 
-    /* Mic Button */
-    .mic-button-glass {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #ffffff, #f0fdf4);
-        border: 1px solid rgba(133, 200, 26, 0.1);
-        color: var(--primary-lime);
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    body.dark-mode .analyzer-container {
+        background: var(--bg-page) !important;
+    }
+
+    .analyzer-title {
+        font-weight: 900 !important;
+        letter-spacing: -2px;
+        color: #1a1a1a;
+    }
+
+    .mic-wrap {
         position: relative;
-        z-index: 10;
+        width: 140px;
+        height: 140px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    .mic-button-glass:hover {
-        transform: scale(1.1);
-        box-shadow: 0 10px 40px rgba(133, 200, 26, 0.2);
-        color: var(--primary-dark);
-    }
-
-    .mic-button-glass.listening {
-        background: var(--primary-lime) !important;
-        background-image: none !important;
-        color: white !important;
-        border-color: var(--primary-lime) !important;
-        box-shadow: 0 10px 30px rgba(133, 200, 26, 0.4);
-        transform: scale(1.15);
-    }
-
-    .mic-icon {
-        font-size: 40px;
-        transition: transform 0.3s ease;
-    }
-
-    .mic-button-glass.listening .mic-icon {
-        animation: pulse-icon 1s infinite alternate;
-    }
-
-    @keyframes pulse-icon {
-        from {
-            transform: scale(1);
-        }
-
-        to {
-            transform: scale(1.2);
-        }
-    }
-
-    /* Pulse Rings */
-    .ring-pulse {
-        position: absolute;
+    .mic-button-minimal {
+        width: 90px;
+        height: 90px;
         border-radius: 50%;
-        border: 2px solid var(--primary-lime);
-        opacity: 0;
-        transform: scale(0.5);
+        background: white;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        color: #1a1a1a;
+        cursor: pointer;
+        z-index: 10;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    .mic-button-glass.listening~.position-absolute .ring-pulse {
-        animation: ripple 2s infinite cubic-bezier(0, 0.2, 0.8, 1);
+    .mic-button-minimal:hover {
+        transform: scale(1.05);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
     }
 
-    @keyframes ripple {
+    .mic-button-minimal.listening {
+        background: white;
+        color: #1a1a1a;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+
+    .recording-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(34, 197, 94, 0.1);
+        color: #166534;
+        padding: 6px 16px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        margin-bottom: 1rem;
+    }
+
+    body.dark-mode .recording-badge {
+        background: rgba(34, 197, 94, 0.2);
+        color: #4ade80;
+    }
+
+    @keyframes pulse-green {
         0% {
-            transform: scale(0.3);
-            opacity: 0.5;
-            border-width: 4px;
+            transform: scale(0.9);
+            opacity: 1;
+        }
+
+        50% {
+            transform: scale(1.2);
+            opacity: 0.6;
         }
 
         100% {
-            transform: scale(1.2);
-            opacity: 0;
-            border-width: 0px;
+            transform: scale(0.9);
+            opacity: 1;
         }
     }
 
-    .transcription-glass {
-        background: rgba(255, 255, 255, 0.6);
-        backdrop-filter: blur(4px);
-        border: 1px solid rgba(0, 0, 0, 0.03);
+    @keyframes pulse-out {
+        0% {
+            transform: scale(0.8);
+            opacity: 0.3;
+        }
+
+        100% {
+            transform: scale(1.4);
+            opacity: 0;
+        }
+    }
+
+    .transcription-area {
+        background: #f8fafc;
+        border-radius: 24px;
+        border: 1px solid rgba(0, 0, 0, 0.02);
+        min-height: 100px;
+        width: 100%;
+        margin-top: 2rem;
+    }
+
+    .stats-card-minimal {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 1.25rem;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
         transition: all 0.3s ease;
     }
 
-    /* Custom Scrollbar for Ingredients */
-    #ingredientsList::-webkit-scrollbar {
-        width: 6px;
+    .stats-card-minimal:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     }
 
-    #ingredientsList::-webkit-scrollbar-track {
-        background: transparent;
+    .macro-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
     }
 
-    #ingredientsList::-webkit-scrollbar-thumb {
-        background: rgba(0, 0, 0, 0.1);
-        border-radius: 10px;
-    }
-
-    body.dark-mode .desktop-header {
-        background: rgba(20, 20, 20, 0.8) !important;
-    }
-
-    body.dark-mode h1,
-    body.dark-mode h2,
-    body.dark-mode h3,
-    body.dark-mode h4,
-    body.dark-mode h5,
-    body.dark-mode p,
-    body.dark-mode span,
-    body.dark-mode div {
-        color: #e5e7eb !important;
-    }
-
-    body.dark-mode .text-muted {
-        color: #9ca3af !important;
-    }
-
-    body.dark-mode .card {
-        background: #1f2937 !important;
+    /* Dark Mode Improvements */
+    body.dark-mode .analyzer-card {
+        background: #111827;
         border-color: rgba(255, 255, 255, 0.05);
     }
 
-    body.dark-mode .transcription-glass {
-        background: rgba(0, 0, 0, 0.3);
-        border-color: rgba(255, 255, 255, 0.05);
+    body.dark-mode .mic-button-minimal {
+        background: #1f2937;
+        color: white;
     }
 
-    body.dark-mode .nav-capsule-glass {
-        background: rgba(0, 0, 0, 0.3);
-        border-color: rgba(255, 255, 255, 0.05) !important;
+    body.dark-mode .transcription-area {
+        background: #1f2937;
     }
 
-    body.dark-mode .mic-button-glass {
-        background: linear-gradient(135deg, #374151, #1f2937);
-        border-color: rgba(255, 255, 255, 0.1);
-    }
-
-    body.dark-mode .nav-link.active {
-        background: #374151 !important;
-        color: var(--primary-lime) !important;
+    body.dark-mode .stats-card-minimal {
+        background: #1f2937;
     }
 
     /* Modal Glass */
@@ -255,213 +245,242 @@
         color: var(--primary-lime);
         border-color: var(--primary-lime);
     }
+
+    /* Mode Toggle Switch - Fluid Movement */
+    .mode-toggle-wrapper {
+        background: #f1f5f9;
+        padding: 5px;
+        border-radius: 100px;
+        display: inline-flex;
+        position: relative;
+        gap: 0;
+        margin-bottom: 2.5rem;
+        z-index: 1;
+        overflow: hidden;
+    }
+
+    .mode-btn {
+        border: none;
+        background: transparent;
+        padding: 12px 30px;
+        border-radius: 100px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #64748b;
+        transition: color 0.4s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+        z-index: 2;
+        width: 140px;
+        justify-content: center;
+    }
+
+    .mode-btn.active {
+        color: #1a1a1a;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .toggle-pill {
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        height: calc(100% - 10px);
+        width: calc(50% - 5px);
+        background: white;
+        border-radius: 100px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        z-index: 0;
+    }
+
+    .mode-toggle-wrapper[data-mode="text"] .toggle-pill {
+        transform: translateX(100%);
+    }
+
+    body.dark-mode .mode-toggle-wrapper {
+        background: #1f2937;
+    }
+
+    body.dark-mode .toggle-pill {
+        background: #374151;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    body.dark-mode .mode-btn.active {
+        color: white;
+    }
 </style>
 {% endblock %}
 
-{% block container_class %}container-fluid analyzer-container py-4{% endblock %}
+{% block container_class %}container analyzer-container{% endblock %}
 
 {% block content %}
+{% csrf_token %}
 
-<!-- Header with Glassmorphism -->
-<div class="desktop-header d-flex justify-content-between align-items-center mb-5 p-4 rounded-4 shadow-sm"
-    style="background: rgba(255,255,255,0.8); backdrop-filter: blur(10px);">
-    <div>
-        <h1 class="h2 fw-bolder mb-1 text-dark" style="letter-spacing: -0.5px;">Analizador IA</h1>
-        <p class="text-muted mb-0 fw-medium">Escanea o describe tus comidas para un análisis nutricional preciso.</p>
-    </div>
-    <div class="d-flex align-items-center gap-3">
-        <span class="badge rounded-pill bg-light text-dark border px-3 py-2 fw-bold d-flex align-items-center gap-2">
-            <span class="material-symbols-outlined text-success" style="font-size: 18px;">database</span>
-            Base Local + Gemini 1.5
-        </span>
-    </div>
-</div>
+<!-- NEW MINIMALIST UI -->
+<div class="row justify-content-center">
+    <div class="col-12 col-xxl-10">
 
-<div class="row g-4">
-    <!-- Input Section (Left) -->
-    <div class="col-12 col-xl-7">
-        <div class="card border-0 shadow-lg rounded-5 overflow-hidden position-relative h-100"
-            style="background: linear-gradient(145deg, #ffffff, #f5f7fa);">
-
-            <!-- Tab Navigation Capsules -->
-            <div class="d-flex justify-content-center pt-4 pb-2">
-                <ul class="nav nav-pills nav-capsule-glass p-1 rounded-pill bg-light border" role="tablist">
-                    <li class="nav-item m-1" role="presentation">
-                        <button class="nav-link active rounded-pill px-4 fw-bold d-flex align-items-center gap-2"
-                            data-bs-toggle="pill" data-bs-target="#voice-tab" type="button" role="tab">
-                            <span class="material-symbols-outlined">mic</span> Voz
-                        </button>
-                    </li>
-                    <li class="nav-item m-1" role="presentation">
-                        <button class="nav-link rounded-pill px-4 fw-bold d-flex align-items-center gap-2"
-                            data-bs-toggle="pill" data-bs-target="#text-tab" type="button" role="tab">
-                            <span class="material-symbols-outlined">keyboard</span> Texto
-                        </button>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="tab-content h-100 d-flex flex-column">
-                <!-- Voice Tab -->
-                <div class="tab-pane fade show active p-4 flex-grow-1 d-flex flex-column align-items-center justify-content-center text-center position-relative"
-                    id="voice-tab" role="tabpanel">
-
-                    <!-- Pulse Rings Background -->
-                    <div class="position-absolute top-50 start-50 translate-middle w-100 h-100 d-flex align-items-center justify-content-center"
-                        style="z-index: 0; pointer-events: none; opacity: 0.5;">
-                        <div class="ring-pulse" style="width: 300px; height: 300px;"></div>
-                        <div class="ring-pulse" style="width: 450px; height: 450px; animation-delay: 0.5s;"></div>
-                    </div>
-
-                    <div class="position-relative z-1 mb-4">
-                        <button class="mic-button-glass d-flex align-items-center justify-content-center shadow-lg"
-                            id="micButton" onclick="toggleVoiceRecording()">
-                            <span class="material-symbols-outlined mic-icon">mic</span>
-                        </button>
-                    </div>
-
-                    <h2 class="fw-bolder mb-2 text-dark" id="voiceStatus" style="letter-spacing: -0.5px;">Toca para
-                        grabar</h2>
-                    <p class="text-muted fw-medium mb-4" id="voiceHint" style="max-width: 400px;">
-                        "He comido 150g de pollo a la plancha con 200g de arroz blanco y aguacate..."
-                    </p>
-
-                    <!-- Live Transcription Box -->
-                    <div class="transcription-glass w-100 p-4 rounded-4 text-start mb-3 position-relative overflow-hidden"
-                        style="min-height: 120px; max-width: 550px;">
-                        <div id="listeningIndicator"
-                            class="position-absolute top-0 end-0 m-3 px-2 py-1 rounded-pill bg-success bg-opacity-10 text-success fw-bold d-flex align-items-center gap-2"
-                            style="font-size: 0.7rem; display: none !important;">
-                            <div class="spinner-grow spinner-grow-sm" role="status"></div> GRABANDO
-                        </div>
-                        <p id="transcriptionText" class="mb-0 fw-medium text-dark h5"
-                            style="line-height: 1.6; color: #4b5563;">
-                            <span class="text-muted opacity-50">Tu transcripción aparecerá aquí...</span>
-                        </p>
-                    </div>
-
-                    <div class="d-flex gap-2 w-100 justify-content-center" style="max-width: 550px;">
-                        <button
-                            class="btn btn-dark rounded-pill py-3 px-5 flex-grow-1 fw-bold shadow-lg d-none align-items-center justify-content-center gap-2"
-                            id="analyzeVoiceBtn" onclick="analyzeFood()">
-                            <span class="material-symbols-outlined">auto_awesome</span> ANALIZAR
-                        </button>
-                    </div>
+        <!-- Top bar with Error Alert Area -->
+        <div id="errorAlert"
+            class="alert alert-danger d-none rounded-4 border-0 shadow-sm mb-4 animate__animated animate__fadeIn">
+            <div class="d-flex align-items-center gap-3">
+                <span class="material-symbols-outlined">error</span>
+                <div class="flex-grow-1">
+                    <h6 class="mb-0 fw-bold">Algo salió mal</h6>
+                    <small id="errorMsgText">Error detallado aquí</small>
                 </div>
-
-                <!-- Text Tab -->
-                <div class="tab-pane fade p-5 h-100" id="text-tab" role="tabpanel">
-                    <h3 class="fw-bolder mb-3 text-dark">Escribe tu comida</h3>
-                    <div class="position-relative">
-                        <textarea
-                            class="form-control form-control-lg border-0 bg-light rounded-4 p-4 shadow-inner text-input-modern"
-                            id="textInput" placeholder="Ej: 2 huevos revueltos con jamón y una tostada integral..."
-                            style="min-height: 250px; resize: none;"></textarea>
-                        <button
-                            class="btn btn-dark position-absolute bottom-0 end-0 m-3 rounded-pill px-4 py-2 fw-bold shadow-sm d-flex align-items-center gap-2"
-                            onclick="analyzeFood()">
-                            Analizar <span class="material-symbols-outlined"
-                                style="font-size: 18px;">arrow_forward</span>
-                        </button>
-                    </div>
-                </div>
+                <button type="button" class="btn-close"
+                    onclick="this.parentElement.parentElement.classList.add('d-none')"></button>
             </div>
         </div>
-    </div>
 
-    <!-- Output Section (Right) -->
-    <div class="col-12 col-xl-5">
-        <!-- Empty State -->
-        <div id="emptyAnalysisState"
-            class="card border-0 shadow-sm rounded-5 h-100 d-flex align-items-center justify-content-center p-5 text-center bg-white">
-            <div class="mb-4 bg-light rounded-circle p-4 d-inline-flex">
-                <span class="material-symbols-outlined text-muted" style="font-size: 48px;">restaurant_menu</span>
-            </div>
-            <h4 class="fw-bold text-dark mb-2">Esperando comida</h4>
-            <p class="text-muted text-balance">Usa el micrófono o escribe para obtener un desglose nutricional detallado
-                al instante.</p>
-        </div>
+        <div class="row g-4 scroll-mt-large">
+            <!-- LEFT: INPUT & INTERACTION -->
+            <div class="col-12 col-lg-6">
+                <div class="analyzer-card p-5 h-100">
+                    <div class="d-flex flex-column align-items-center text-center">
+                        <h1 class="analyzer-title mb-1 display-6">Analiza tu plato</h1>
+                        <p class="text-muted mb-4">Voz o texto, nuestra IA lo entiende todo.</p>
 
-        <!-- Result Content (Hidden by default) -->
-        <div id="analysisResultContent" class="d-none h-100 d-flex flex-column gap-3">
-
-            <!-- Main Macros Card -->
-            <div class="card border-0 shadow-lg rounded-5 overflow-hidden text-white position-relative"
-                style="background: linear-gradient(135deg, #111827 0%, #1f2937 100%);">
-                <div class="position-absolute top-0 end-0 p-3 opacity-25">
-                    <span class="material-symbols-outlined"
-                        style="font-size: 120px; transform: rotate(-15deg) translate(20px, -20px);">bolt</span>
-                </div>
-                <div class="card-body p-4 position-relative z-1">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <span
-                            class="badge bg-white bg-opacity-10 backdrop-blur border border-white border-opacity-10 text-white px-3 py-2 rounded-pill">
-                            Total Energético
-                        </span>
-                        <button class="btn btn-success rounded-pill px-3 py-1 fw-bold fs-7 shadow-lg border-0"
-                            onclick="showCalendarModal()">
-                            <i class="fas fa-plus me-1"></i> Guardar
-                        </button>
-                    </div>
-                    <div class="d-flex align-items-baseline gap-2 mb-4">
-                        <h2 class="display-3 fw-bolder mb-0" id="totalCalories">0</h2>
-                        <span class="h4 text-white text-opacity-75">kcal</span>
-                    </div>
-
-                    <!-- Mini Macro Bars -->
-                    <div class="d-flex gap-2 mt-auto">
-                        <div class="flex-grow-1 p-2 rounded-3 bg-white bg-opacity-10 backdrop-blur">
-                            <span class="d-block text-white text-opacity-50 fs-7 fw-bold mb-1">PROT</span>
-                            <span class="fw-bolder fs-5" id="miniProtVal">0g</span>
+                        <!-- Toggle Switch -->
+                        <div class="mode-toggle-wrapper" data-mode="voice">
+                            <div class="toggle-pill"></div>
+                            <button id="btnVoice" class="mode-btn active" onclick="switchMode('voice')">
+                                <span class="material-symbols-outlined">mic</span> Voz
+                            </button>
+                            <button id="btnText" class="mode-btn" onclick="switchMode('text')">
+                                <span class="material-symbols-outlined">edit_note</span> Texto
+                            </button>
                         </div>
-                        <div class="flex-grow-1 p-2 rounded-3 bg-white bg-opacity-10 backdrop-blur">
-                            <span class="d-block text-white text-opacity-50 fs-7 fw-bold mb-1">CARB</span>
-                            <span class="fw-bolder fs-5" id="miniCarbVal">0g</span>
-                        </div>
-                        <div class="flex-grow-1 p-2 rounded-3 bg-white bg-opacity-10 backdrop-blur">
-                            <span class="d-block text-white text-opacity-50 fs-7 fw-bold mb-1">GRAS</span>
-                            <span class="fw-bolder fs-5" id="miniFatVal">0g</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Detailed Stats Grid -->
-            <div class="row g-3">
-                <div class="col-6">
-                    <div class="card border-0 shadow-sm rounded-4 p-3 h-100" style="background-color: #ecfdf5;">
-                        <span class="fw-bold text-success mb-2 d-block fs-7">PROTEÍNA</span>
-                        <h3 class="fw-bolder text-dark mb-1" id="totalProtein">0g</h3>
-                        <div class="progress" style="height: 6px; background: rgba(16, 185, 129, 0.2);">
-                            <div class="progress-bar bg-success" id="proteinBar" style="width: 0%"></div>
+                        <!-- Voice Section -->
+                        <div id="voice-container" class="w-100">
+                            <div class="mic-wrap mb-4 mx-auto" id="micWrapper">
+                                <button class="mic-button-minimal" id="micButton" onclick="toggleVoiceRecording()">
+                                    <span class="material-symbols-outlined" style="font-size: 36px;">mic</span>
+                                </button>
+                            </div>
+
+                            <div id="recordingIndicator" class="d-none">
+                                <div class="recording-badge">
+                                    <span
+                                        style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block; animation: pulse-green 1s infinite;"></span>
+                                    Grabando
+                                </div>
+                            </div>
+
+                            <h4 id="voiceStatus" class="fw-bold mb-2">Presiona para hablar</h4>
+                            <p id="voiceHint" class="text-muted small px-4 mb-4" style="line-height: 1.4;">"He comido un
+                                salmón a la plancha con espárragos"</p>
+
+                            <div class="transcription-area p-4 text-start">
+                                <p id="transcriptionText" class="mb-0 fw-medium lead" style="color: #334155;">
+                                    <span class="opacity-25">Tu transcripción aparecerá aquí...</span>
+                                </p>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="card border-0 shadow-sm rounded-4 p-3 h-100" style="background-color: #eff6ff;">
-                        <span class="fw-bold text-primary mb-2 d-block fs-7">CARBOHIDRATOS</span>
-                        <h3 class="fw-bolder text-dark mb-1" id="totalCarbs">0g</h3>
-                        <div class="progress" style="height: 6px; background: rgba(59, 130, 246, 0.2);">
-                            <div class="progress-bar bg-primary" id="carbsBar" style="width: 0%"></div>
+
+                        <!-- Text Section -->
+                        <div id="text-container" class="w-100 d-none">
+                            <div class="p-2">
+                                <textarea id="textInput" class="form-control rounded-5 border-0 bg-light p-4 fs-5"
+                                    rows="6"
+                                    placeholder="Ej: Plato de pasta con tomate y queso parmesano..."></textarea>
+                                <p class="text-muted small mt-3">Escribe los detalles de tu comida para un análisis
+                                    preciso.</p>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-3 w-100 mt-5">
+                            <button id="analyzeMainBtn" class="btn btn-dark w-100 rounded-pill py-3 fw-bold shadow-sm"
+                                onclick="analyzeFood()">
+                                Analizar Ahora
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Ingredients List -->
-            <div class="card border-0 shadow-sm rounded-4 p-4 flex-grow-1">
-                <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
-                    <span class="material-symbols-outlined text-muted">restaurant</span>
-                    Ingredientes
-                </h5>
-                <div class="d-flex flex-column gap-2 overflow-auto" id="ingredientsList" style="max-height: 200px;">
-                    <!-- JS injected -->
+            <!-- RIGHT: RESULTS -->
+            <div class="col-12 col-lg-6">
+                <!-- Empty State -->
+                <div id="emptyAnalysisState"
+                    class="analyzer-card p-5 h-100 d-flex flex-column align-items-center justify-content-center text-center opacity-75">
+                    <div class="mb-4 text-muted">
+                        <span class="material-symbols-outlined" style="font-size: 80px; opacity: 0.1;">fastfood</span>
+                    </div>
+                    <h3 class="fw-bold">Sin datos aún</h3>
+                    <p class="text-muted">Procesa una comida para ver el desglose nutricional profesional aquí.</p>
+                </div>
+
+                <!-- Result Content -->
+                <div id="analysisResultContent" class="d-none h-100 flex-column gap-4">
+                    <!-- Main Summary -->
+                    <div class="analyzer-card p-4 p-md-5 overflow-hidden border-0 shadow-lg"
+                        style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <h2 id="totalCalories" class="display-3 fw-900 mb-0" style="letter-spacing: -2px;">0
+                                </h2>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="text-white text-opacity-50 fw-bold fs-7 uppercase">kcal totales</span>
+                                    <span
+                                        class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 py-1 px-3 rounded-pill fw-black x-small">ANALIZADO</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-success px-4 py-2 rounded-pill fw-bold shadow-sm"
+                                onclick="showCalendarModal()">
+                                <span class="material-symbols-outlined fs-5 align-middle me-1">calendar_today</span>
+                                Guardar
+                            </button>
+                        </div>
+                        <p id="dishDescription" class="text-white text-opacity-75 lead mb-0 fw-medium">Describe tu plato
+                            para empezar.</p>
+                    </div>
+
+                    <!-- Macro Breakdown Minimalist -->
+                    <div class="row g-2">
+                        <div class="col-4">
+                            <div class="stats-card-minimal text-center border-0 shadow-sm"
+                                style="background: rgba(34, 197, 94, 0.05);">
+                                <span class="text-success fs-8 fw-900 mb-1 d-block">PROT</span>
+                                <h4 id="totalProtein" class="fw-black mb-0" style="color: #166534;">0g</h4>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stats-card-minimal text-center border-0 shadow-sm"
+                                style="background: rgba(59, 130, 246, 0.05);">
+                                <span class="text-primary fs-8 fw-900 mb-1 d-block">CARB</span>
+                                <h4 id="totalCarbs" class="fw-black mb-0" style="color: #1e40af;">0g</h4>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stats-card-minimal text-center border-0 shadow-sm"
+                                style="background: rgba(245, 158, 11, 0.05);">
+                                <span class="text-warning fs-8 fw-900 mb-1 d-block">GRASA</span>
+                                <h4 id="miniFatVal" class="fw-black mb-0" style="color: #92400e;">0g</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ingredients -->
+                    <div class="analyzer-card p-4 flex-grow-1">
+                        <h6 class="fw-black mb-3 px-2">DETALLE DE INGREDIENTES</h6>
+                        <div id="ingredientsList" class="d-flex flex-column gap-2 overflow-auto"
+                            style="max-height: 250px;">
+                            <!-- Injected -->
+                        </div>
+                    </div>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
+
 
 
 <!-- Calendar Modal Glass -->
@@ -489,329 +508,339 @@
 </div>
 
 <script>
-    // Global variables
-    let isRecording = false;
-    let mediaRecorder = null;
-    let audioChunks = [];
-    let currentAnalysis = null;
-    let selectedDate = null;
+    if (typeof window.analizadorIniciado === 'undefined') {
+        window.analizadorIniciado = true;
 
-    // Tab Persistence
-    document.querySelectorAll('button[data-bs-toggle="pill"]').forEach(pill => {
-        pill.addEventListener('shown.bs.tab', (e) => {
-            const tabId = e.target.getAttribute('data-bs-target').replace('#', '');
-            const url = new URL(window.location);
-            url.searchParams.set('tab', tabId);
-            window.history.replaceState({}, '', url);
-        });
-    });
+        // --- Global Config & State ---
+        var isRecording = isRecording || false;
+        var mediaRecorder = mediaRecorder || null;
+        var audioChunks = audioChunks || [];
+        var currentAnalysis = currentAnalysis || null;
+        var selectedDate = selectedDate || null;
+        var audioContext = audioContext || null;
+        var analyser = analyser || null;
+        var animationId = animationId || null;
+        var recognition = recognition || null;
 
-    window.addEventListener('load', () => {
-        const params = new URLSearchParams(window.location.search);
-        const tab = params.get('tab');
-        if (tab) {
-            const triggerEl = document.querySelector(`button[data-bs-target="#${tab}"]`);
-            if (triggerEl) {
-                if (typeof bootstrap !== 'undefined' && bootstrap.Tab) {
-                    const tabTrigger = new bootstrap.Tab(triggerEl);
-                    tabTrigger.show();
-                } else {
-                    triggerEl.click();
-                }
+        function initRecognition() {
+            if (recognition) return;
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRec();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = 'es-ES';
+                recognition.onresult = (e) => {
+                    let fullText = '';
+                    for (let i = 0; i < e.results.length; i++) fullText += e.results[i][0].transcript + ' ';
+                    const el = document.getElementById('transcriptionText');
+                    if (el) {
+                        el.textContent = fullText;
+                        el.classList.add('fw-bold', 'text-dark');
+                    }
+                    const analyzeBtn = document.getElementById('analyzeMainBtn');
+                    if (analyzeBtn && fullText.trim().length > 5) analyzeBtn.classList.remove('d-none');
+                };
             }
         }
-    });
+        initRecognition();
 
-    // Live Transcription (UX Feedback)
-    let recognition = null;
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-        recognition = new SpeechRec();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'es-ES';
+        // --- Core Interaction Functions ---
 
-        recognition.onresult = (e) => {
-            let fullText = '';
-            for (let i = 0; i < e.results.length; i++) {
-                fullText += e.results[i][0].transcript + ' ';
-            }
-            const el = document.getElementById('transcriptionText');
-            if (el) {
-                el.textContent = fullText;
-                el.classList.add('fw-bold', 'text-dark');
+        window.switchMode = function (mode) {
+            const wrapper = document.querySelector('.mode-toggle-wrapper');
+            if (wrapper) wrapper.setAttribute('data-mode', mode);
+
+            const vContainer = document.getElementById('voice-container');
+            const tContainer = document.getElementById('text-container');
+            const btnV = document.getElementById('btnVoice');
+            const btnT = document.getElementById('btnText');
+
+            if (mode === 'voice') {
+                if (vContainer) vContainer.classList.remove('d-none');
+                if (tContainer) tContainer.classList.add('d-none');
+                if (btnV) btnV.classList.add('active');
+                if (btnT) btnT.classList.remove('active');
+            } else {
+                if (vContainer) vContainer.classList.add('d-none');
+                if (tContainer) tContainer.classList.remove('d-none');
+                if (btnV) btnV.classList.remove('active');
+                if (btnT) btnT.classList.add('active');
             }
         };
 
-        recognition.onerror = (e) => {
-            console.warn("Speech recognition error:", e.error);
-        };
-    }
-
-    async function toggleVoiceRecording() {
-        if (isRecording) {
-            stopVoiceRecording();
-        } else {
-            // "Confirm bonito" antes de pedir permiso real
-            showConfirmModal({
-                title: 'Activar Micrófono',
-                message: 'Usaremos la IA para transcribir lo que digas. ¿Deseas comenzar la grabación?',
-                icon: 'mic',
-                yesText: 'Empezar ahora',
-                onConfirm: () => {
+        window.toggleVoiceRecording = async function () {
+            if (isRecording) {
+                stopVoiceRecording();
+            } else {
+                if (typeof showConfirmModal === 'function') {
+                    showConfirmModal({
+                        title: 'Activar Micrófono',
+                        message: 'Usaremos la IA para transcribir lo que digas. ¿Deseas comenzar la grabación?',
+                        icon: 'mic',
+                        yesText: 'Empezar ahora',
+                        onConfirm: () => {
+                            startVoiceRecording();
+                        }
+                    });
+                } else {
                     startVoiceRecording();
                 }
-            });
-        }
-    }
-
-    // Voice Visualizer Variables
-    let audioContext = null;
-    let analyser = null;
-    let animationId = null;
-
-    async function startVoiceRecording() {
-        const micButton = document.getElementById('micButton');
-        const voiceStatus = document.getElementById('voiceStatus');
-        const voiceHint = document.getElementById('voiceHint');
-        const listeningIndicator = document.getElementById('listeningIndicator');
-
-        try {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                throw new Error("HTTPS o navegador moderno requerido para grabar.");
             }
+        };
 
-            const stream = await navigator.mediaDevices.getUserMedia({
-                audio: { echoCancellation: true, noiseSuppression: true }
-            });
+        async function startVoiceRecording() {
+            const micButton = document.getElementById('micButton');
+            const micWrapper = document.getElementById('micWrapper');
+            const voiceStatus = document.getElementById('voiceStatus');
+            const voiceHint = document.getElementById('voiceHint');
+            const listeningIndicator = document.getElementById('listeningIndicator');
 
-            isRecording = true;
-            micButton.classList.add('listening');
-            voiceStatus.textContent = 'Grabando...';
-            voiceHint.textContent = 'Habla ahora, te escucho con IA.';
-            listeningIndicator.style.setProperty('display', 'flex', 'important');
-            if (navigator.vibrate) navigator.vibrate(50);
-
-            // --- VOICE VISUALIZER SYNC ---
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            analyser = audioContext.createAnalyser();
-            const source = audioContext.createMediaStreamSource(stream);
-            source.connect(analyser);
-            analyser.fftSize = 256;
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-
-            function updateVisuals() {
-                if (!isRecording) return;
-                analyser.getByteFrequencyData(dataArray);
-
-                let sum = 0;
-                for (let i = 0; i < bufferLength; i++) {
-                    sum += dataArray[i];
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error("HTTPS o navegador moderno requerido para grabar.");
                 }
-                const average = sum / bufferLength;
-                const scale = 1 + (average / 150); // Sensibilidad ajustable
 
-                micButton.style.transform = `scale(${Math.max(1.15, scale)})`;
-
-                // Actualizar anillos de pulso
-                document.querySelectorAll('.ring-pulse').forEach((ring, index) => {
-                    const ringScale = scale * (1 + (index * 0.2));
-                    ring.style.transform = `scale(${ringScale})`;
-                    ring.style.opacity = (average / 255) + (0.2 / (index + 1));
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: { echoCancellation: true, noiseSuppression: true }
                 });
 
-                animationId = requestAnimationFrame(updateVisuals);
-            }
-            updateVisuals();
-            // -----------------------------
+                isRecording = true;
+                if (micButton) micButton.classList.add('listening');
+                if (micWrapper) micWrapper.classList.add('recording-active');
+                if (voiceStatus) {
+                    voiceStatus.textContent = 'Estamos escuchando...';
+                }
+                const recInd = document.getElementById('recordingIndicator');
+                if (recInd) recInd.classList.remove('d-none');
 
-            // Start Live Text Feedback (Optional UX)
-            if (recognition) {
+                if (voiceHint) voiceHint.classList.add('opacity-50');
+                if (navigator.vibrate) navigator.vibrate(50);
+
+                // --- VOICE VISUALIZER ---
                 try {
-                    recognition.start();
-                } catch (e) {
-                    console.warn("Speech recognition network skip:", e);
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    analyser = audioContext.createAnalyser();
+                    const source = audioContext.createMediaStreamSource(stream);
+                    source.connect(analyser);
+                    analyser.fftSize = 256;
+                    const bufferLength = analyser.frequencyBinCount;
+                    const dataArray = new Uint8Array(bufferLength);
+
+                    let smoothedAverage = 0;
+                    const updateVisuals = () => {
+                        if (!isRecording) return;
+                        analyser.getByteFrequencyData(dataArray);
+                        let sum = 0;
+                        for (let i = 0; i < bufferLength; i++) sum += dataArray[i];
+                        const average = sum / bufferLength;
+
+                        // Smoothed scaling logic
+                        smoothedAverage += (average - smoothedAverage) * 0.15;
+                        const scale = 1 + (smoothedAverage / 120);
+
+                        if (micButton) micButton.style.transform = `scale(${scale})`;
+                        animationId = requestAnimationFrame(updateVisuals);
+                    };
+                    updateVisuals();
+                } catch (vizErr) {
+                    console.warn("Visualizer failed:", vizErr);
+                }
+
+                if (recognition) {
+                    try { recognition.start(); } catch (e) { }
+                }
+
+                const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
+                mediaRecorder = new MediaRecorder(stream, { mimeType });
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: mimeType });
+                    await sendAudioToServer(audioBlob);
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+
+            } catch (err) {
+                console.error("Grabación fallida:", err);
+                isRecording = false;
+                if (micButton) micButton.classList.remove('listening');
+                if (micWrapper) micWrapper.classList.remove('recording-active');
+                if (voiceStatus) voiceStatus.textContent = 'Error';
+                if (typeof showToast === 'function') showToast(err.message, 'error');
+            }
+        }
+
+        function stopVoiceRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                if (recognition) try { recognition.stop(); } catch (e) { }
+                isRecording = false;
+                if (animationId) cancelAnimationFrame(animationId);
+                if (audioContext) audioContext.close();
+
+                const micButton = document.getElementById('micButton');
+                const micWrapper = document.getElementById('micWrapper');
+                if (micButton) {
+                    micButton.classList.remove('listening');
+                    micButton.style.transform = '';
+                }
+                if (micWrapper) micWrapper.classList.remove('recording-active');
+                const recInd = document.getElementById('recordingIndicator');
+                if (recInd) recInd.classList.add('d-none');
+
+                const voiceStatus = document.getElementById('voiceStatus');
+                if (voiceStatus) voiceStatus.textContent = 'Procesando...';
+            }
+        }
+
+        async function sendAudioToServer(blob) {
+            const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+            const csrfToken = csrfInput ? csrfInput.value : '';
+            const formData = new FormData();
+            formData.append('audio_file', blob, 'recording.webm');
+
+            try {
+                const response = await fetch('/api/transcribir_audio/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken },
+                    body: formData
+                });
+
+                const data = await response.json().catch(() => ({ success: false, error: "Respuesta no válida del servidor" }));
+
+                if (response.ok && data.success) {
                     const el = document.getElementById('transcriptionText');
-                    if (el) el.textContent = "Dictado en vivo no disponible (red), el análisis de alta calidad se verá al finalizar...";
+                    if (el && data.text) {
+                        el.textContent = data.text;
+                        el.classList.add('fw-bold', 'text-dark');
+                    }
+                    const voiceStatus = document.getElementById('voiceStatus');
+                    if (voiceStatus) voiceStatus.textContent = '¡Listo!';
+
+                    const analyzeBtn = document.getElementById('analyzeMainBtn');
+                    if (analyzeBtn) analyzeBtn.classList.remove('d-none');
+
+                    if (data.analisis) currentAnalysis = data.analisis;
+                } else {
+                    // Manejo específico de cuotas / límites
+                    if (data.error_type === 'QUOTA_EXCEEDED') {
+                        showError('⏳ ' + data.error);
+                        const voiceStatus = document.getElementById('voiceStatus');
+                        if (voiceStatus) voiceStatus.textContent = 'Límite alcanzado';
+                        return;
+                    }
+
+                    if (!data.text) {
+                        throw new Error(data.error || "Error desconocido");
+                    } else {
+                        const el = document.getElementById('transcriptionText');
+                        if (el) el.textContent = data.text;
+                        console.warn("Error secundario silenciado:", data.error);
+                    }
                 }
-            }
-
-            // MediaRecorder for high quality audio
-            const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/wav'];
-            const supportedType = types.find(type => MediaRecorder.isTypeSupported(type));
-
-            mediaRecorder = new MediaRecorder(stream, supportedType ? { mimeType: supportedType } : {});
-            audioChunks = [];
-
-            mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
-            mediaRecorder.onstop = async () => {
-                const audioBlob = new Blob(audioChunks, { type: supportedType || 'audio/webm' });
-                await sendAudioToServer(audioBlob);
-                stream.getTracks().forEach(track => track.stop());
-            };
-
-            mediaRecorder.start();
-
-        } catch (err) {
-            console.error("Grabación fallida:", err);
-            isRecording = false;
-            micButton.classList.remove('listening');
-            voiceStatus.textContent = 'Error de micro';
-            showToast(err.message, 'error');
-        }
-    }
-
-    function stopVoiceRecording() {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-            mediaRecorder.stop();
-            if (recognition) try { recognition.stop(); } catch (e) { }
-            isRecording = false;
-
-            // Detener visualizador
-            if (animationId) cancelAnimationFrame(animationId);
-            if (audioContext) audioContext.close();
-
-            const micButton = document.getElementById('micButton');
-            micButton.classList.remove('listening');
-            micButton.style.transform = ''; // Reset scale
-
-            document.getElementById('voiceStatus').textContent = 'Procesando...';
-            document.getElementById('listeningIndicator').style.setProperty('display', 'none', 'important');
-        }
-    }
-
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
-    async function sendAudioToServer(blob) {
-        const formData = new FormData();
-        formData.append('audio_file', blob, 'recording.webm');
-        try {
-            const response = await fetch('/api/transcribir_audio/', {
-                method: 'POST',
-                headers: { 'X-CSRFToken': getCookie('csrftoken') },
-                body: formData
-            });
-            const data = await response.json();
-            if (data.success && data.text) {
+            } catch (error) {
+                console.error("Transcription error:", error);
                 const el = document.getElementById('transcriptionText');
-                el.textContent = data.text;
-                el.classList.add('fw-bold', 'text-dark');
-                document.getElementById('voiceStatus').textContent = '¡Listo!';
-                document.getElementById('analyzeVoiceBtn').classList.replace('d-none', 'd-flex');
-            } else if (data.success && !data.text) {
-                showToast('No se detectó voz clara.', 'warning');
-                resetVoiceUI();
-            } else { throw new Error(data.error); }
-        } catch (error) {
-            console.error("Server transcription error:", error);
-            showToast('Error de servidor: ' + error.message, 'error');
-            resetVoiceUI();
-        }
-    }
-
-    function resetVoiceUI() {
-        document.getElementById('voiceStatus').textContent = 'Toca para grabar';
-        document.getElementById('voiceHint').textContent = '"He comido un poke..."';
-    }
-
-    // Analyze Food
-    async function analyzeFood() {
-        // Get description from active tab
-        const activeTab = document.querySelector('.tab-pane.active');
-        let description = '';
-
-        if (activeTab.id === 'voice-tab') {
-            description = document.getElementById('transcriptionText').textContent;
-        } else {
-            description = document.getElementById('textInput').value;
-        }
-
-        description = description.replace('Tu transcripción aparecerá aquí...', '').trim();
-
-        if (!description) {
-            showToast('Por favor describe tu comida primero', 'warning');
-            return;
-        }
-
-        // Show loading state implies hiding empty state? 
-        // Let's use a toast for specific "Analyzing" status or overlay.
-        showToast('Analizando comida...', 'info');
-
-        try {
-            const response = await fetch('/api/analizar_comida_ia/', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ descripcion: description })
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                currentAnalysis = data.analisis;
-                displayAnalysis(data.analisis);
-                showToast('¡Análisis completado!', 'success');
-            } else {
-                showToast('Error: ' + data.error, 'error');
+                if (!el || !el.textContent || el.textContent.includes('aparecerá aquí')) {
+                    showError('❌ Error al transcribir: ' + error.message);
+                }
             }
-        } catch (error) {
-            console.error('Error analyzing food:', error);
-            showToast('Error al analizar la comida', 'error');
-        }
-    }
-
-    function displayAnalysis(analysis) {
-        // Switch views
-        const emptyState = document.getElementById('emptyAnalysisState');
-        const resultContent = document.getElementById('analysisResultContent');
-        if (emptyState) emptyState.classList.add('d-none');
-        if (resultContent) {
-            resultContent.classList.remove('d-none');
-            resultContent.classList.add('d-flex');
         }
 
-        // Update summary cards
-        const updateText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-        updateText('totalCalories', analysis.calorias || 0);
-        updateText('totalProtein', (analysis.proteinas || 0) + 'g');
-        updateText('totalCarbs', (analysis.carbohidratos || 0) + 'g');
-        updateText('miniProtVal', (analysis.proteinas || 0) + 'g');
-        updateText('miniCarbVal', (analysis.carbohidratos || 0) + 'g');
-        updateText('miniFatVal', (analysis.grasas || 0) + 'g');
+        window.analyzeFood = async function () {
+            const textContainer = document.getElementById('text-container');
+            let description = "";
 
-        // Calculate percentages
-        const proteinGoal = Number("{{ plan.proteinas_g|default:150 }}");
-        const carbsGoal = Number("{{ plan.carbohidratos_g|default:200 }}");
-        const proteinPercent = Math.min(Math.round((analysis.proteinas / proteinGoal) * 100), 100);
-        const carbsPercent = Math.min(Math.round((analysis.carbohidratos / carbsGoal) * 100), 100);
+            if (textContainer && !textContainer.classList.contains('d-none')) {
+                const input = document.getElementById('textInput');
+                description = input ? input.value : "";
+            } else {
+                const el = document.getElementById('transcriptionText');
+                description = el ? el.textContent : "";
+                description = description.replace('Tu transcripción aparecerá aquí...', '').trim();
+            }
 
-        const pBar = document.getElementById('proteinBar');
-        const cBar = document.getElementById('carbsBar');
-        if (pBar) pBar.style.width = proteinPercent + '%';
-        if (cBar) cBar.style.width = carbsPercent + '%';
+            await performAnalysis(description);
+        };
 
-        // Ingredients logic
-        const ingredientsList = document.getElementById('ingredientsList');
-        if (ingredientsList) {
-            if (analysis.ingredientes && analysis.ingredientes.length > 0) {
-                ingredientsList.innerHTML = analysis.ingredientes.map(ing => `
-                    <div class="d-flex align-items-center gap-3 p-3 rounded-4 bg-light border border-light">
+        async function performAnalysis(description) {
+            if (!description) {
+                showError('Por favor describe tu comida primero.');
+                return;
+            }
+
+            const errorAlert = document.getElementById('errorAlert');
+            if (errorAlert) errorAlert.classList.add('d-none');
+            if (typeof showToast === 'function') showToast('Analizando tu plato...', 'info');
+
+            const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+            const csrfToken = csrfInput ? csrfInput.value : '';
+
+            try {
+                const response = await fetch('/api/analizar_comida_ia/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ descripcion: description })
+                });
+
+                const data = await response.json().catch(() => ({ success: false, error: "Error de formato en el servidor" }));
+
+                if (data.success) {
+                    currentAnalysis = data.analisis;
+                    displayAnalysis(data.analisis);
+                    if (typeof showToast === 'function') showToast('¡Análisis completado!', 'success');
+                } else {
+                    if (data.error_type === 'QUOTA_EXCEEDED') {
+                        showError('⏳ ' + data.error);
+                    } else {
+                        showError(data.error || 'No pudimos procesar la información.');
+                    }
+                }
+            } catch (error) {
+                console.error('Analysis error:', error);
+                showError('Error de red o servidor.');
+            }
+        }
+
+        function showError(msg) {
+            const alert = document.getElementById('errorAlert');
+            const text = document.getElementById('errorMsgText');
+            if (alert && text) {
+                text.textContent = msg;
+                alert.classList.remove('d-none');
+                alert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            if (typeof showToast === 'function') showToast(msg, 'error');
+        }
+
+        function displayAnalysis(analysis) {
+            const emptyState = document.getElementById('emptyAnalysisState');
+            const resultContent = document.getElementById('analysisResultContent');
+            if (emptyState) emptyState.classList.add('d-none');
+            if (resultContent) {
+                resultContent.classList.remove('d-none');
+                resultContent.classList.add('d-flex');
+            }
+
+            const updateText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+            updateText('totalCalories', analysis.calorias || 0);
+            updateText('totalProtein', (analysis.proteinas || 0) + 'g');
+            updateText('totalCarbs', (analysis.carbohidratos || 0) + 'g');
+            updateText('miniFatVal', (analysis.grasas || 0) + 'g');
+            updateText('dishDescription', analysis.descripcion || '');
+
+            const ingredientsList = document.getElementById('ingredientsList');
+            if (ingredientsList) {
+                if (analysis.ingredientes && analysis.ingredientes.length > 0) {
+                    ingredientsList.innerHTML = analysis.ingredientes.map(ing => `
+                    <div class="d-flex align-items-center gap-3 p-3 rounded-4 bg-light border border-light mb-2">
                         <div class="bg-white p-2 rounded-circle shadow-sm">
                             <span class="material-symbols-outlined text-muted fs-5">nutrition</span>
                         </div>
@@ -822,123 +851,126 @@
                         <span class="material-symbols-outlined text-success">check_circle</span>
                     </div>
                 `).join('');
-            } else {
-                ingredientsList.innerHTML = '<p class="text-muted small">No se detectaron ingredientes específicos.</p>';
+                } else {
+                    ingredientsList.innerHTML = '<p class="text-muted small px-3">No se detectaron ingredientes específicos.</p>';
+                }
             }
         }
-    }
 
-    // Calendar Modal Functions
-    function showCalendarModal() {
-        if (!currentAnalysis) {
-            showToast('Primero analiza una comida', 'warning');
-            return;
+        window.showCalendarModal = function () {
+            if (!currentAnalysis) {
+                if (typeof showToast === 'function') showToast('Primero analiza una comida', 'warning');
+                return;
+            }
+            const modal = document.getElementById('calendarModal');
+            if (modal) modal.classList.add('show');
+            renderMiniCalendar();
+        };
+
+        window.hideCalendarModal = function () {
+            const modal = document.getElementById('calendarModal');
+            if (modal) modal.classList.remove('show');
+            selectedDate = null;
+        };
+
+        function renderMiniCalendar() {
+            const container = document.getElementById('miniCalendarDays');
+            if (!container) return;
+            container.innerHTML = '';
+            const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            const today = new Date();
+            for (let i = 0; i < 7; i++) {
+                const date = new Date();
+                date.setDate(today.getDate() + i);
+                const dateStr = date.toISOString().split('T')[0];
+                const isToday = i === 0;
+                const chip = document.createElement('div');
+                chip.className = 'date-chip-glass flex-shrink-0';
+                chip.dataset.date = dateStr;
+                chip.onclick = function () {
+                    document.querySelectorAll('.date-chip-glass').forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedDate = dateStr;
+                };
+                chip.innerHTML = `
+                <small class="d-block text-muted mb-1" style="font-size: 0.75rem;">${isToday ? 'Hoy' : days[date.getDay()]}</small>
+                <span class="day-number fw-bold fs-4">${date.getDate()}</span>
+            `;
+                container.appendChild(chip);
+            }
         }
 
-        document.getElementById('calendarModal').classList.add('show');
-        renderMiniCalendar();
-    }
+        window.confirmAddToCalendar = async function () {
+            if (!selectedDate) {
+                if (typeof showToast === 'function') showToast('Selecciona una fecha', 'warning');
+                return;
+            }
+            const btn = document.getElementById('confirmAddBtn');
+            const originalText = btn ? btn.innerHTML : "";
+            if (btn) {
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
+                btn.disabled = true;
+            }
 
-    function hideCalendarModal() {
-        document.getElementById('calendarModal').classList.remove('show');
-        selectedDate = null;
-    }
+            const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+            const csrfToken = csrfInput ? csrfInput.value : '';
 
-    function renderMiniCalendar() {
-        const container = document.getElementById('miniCalendarDays');
-        container.innerHTML = '';
+            try {
+                const response = await fetch('/api/guardar_comida/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        fecha: selectedDate,
+                        nombre: currentAnalysis.titulo || 'Comida Analizada',
+                        calorias: currentAnalysis.calorias || 0,
+                        proteinas: currentAnalysis.proteinas || 0,
+                        carbos: currentAnalysis.carbohidratos || 0,
+                        grasas: currentAnalysis.grasas || 0,
+                        hora: new Date().toTimeString().split(' ')[0]
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    if (typeof showToast === 'function') showToast('¡Comida añadida!', 'success');
+                    hideCalendarModal();
+                    location.reload();
+                } else {
+                    showError('Error: ' + data.error);
+                }
+            } catch (error) {
+                showError('Error de servidor.');
+            } finally {
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
+        };
 
-        const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-        const today = new Date();
+        // --- Tab & Window Initialization ---
 
-        for (let i = 0; i < 7; i++) {
-            const date = new Date();
-            date.setDate(today.getDate() + i);
-            const dateStr = date.toISOString().split('T')[0];
-            const isToday = i === 0;
-
-            const chip = document.createElement('div');
-            chip.className = 'date-chip-glass flex-shrink-0';
-            chip.dataset.date = dateStr;
-            chip.onclick = function () {
-                document.querySelectorAll('.date-chip-glass').forEach(c => c.classList.remove('selected'));
-                this.classList.add('selected');
-                selectedDate = dateStr;
-            };
-
-            chip.innerHTML = `
-            <small class="d-block text-muted mb-1" style="font-size: 0.75rem;">${isToday ? 'Hoy' : days[date.getDay()]}</small>
-            <span class="day-number fw-bold fs-4">${date.getDate()}</span>
-        `;
-
-            container.appendChild(chip);
-        }
-    }
-
-    async function confirmAddToCalendar() {
-        if (!selectedDate) {
-            showToast('Selecciona una fecha', 'warning');
-            return;
-        }
-
-        if (!currentAnalysis) {
-            showToast('No hay análisis para guardar', 'error');
-            return;
-        }
-
-        const btn = document.getElementById('confirmAddBtn');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
-        btn.disabled = true;
-
-        try {
-            // Create a meal entry from the analysis
-            const response = await fetch('/api/guardar_comida/', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    fecha: selectedDate,
-                    nombre: currentAnalysis.titulo || 'Comida Analizada',
-                    calorias: currentAnalysis.calorias || 0,
-                    proteinas: currentAnalysis.proteinas || 0,
-                    carbos: currentAnalysis.carbohidratos || 0,
-                    grasas: currentAnalysis.grasas || 0,
-                    hora: new Date().toTimeString().split(' ')[0]
-                })
+        document.querySelectorAll('button[data-bs-toggle="pill"]').forEach(pill => {
+            pill.addEventListener('shown.bs.tab', (e) => {
+                const tabId = e.target.getAttribute('data-bs-target').replace('#', '');
+                const url = new URL(window.location);
+                url.searchParams.set('tab', tabId);
+                window.history.replaceState({}, '', url);
             });
+        });
 
-            const data = await response.json();
-
-            if (data.success) {
-                showToast('¡Comida añadida al calendario!', 'success');
-                hideCalendarModal();
-
-                // Reset form
-                document.getElementById('transcriptionText').textContent = 'Tu transcripción aparecerá aquí...';
-                document.getElementById('textInput').value = '';
-
-                // Hide results and show empty state
-                document.getElementById('analysisResultContent').classList.add('d-none');
-                document.getElementById('analysisResultContent').classList.remove('d-flex');
-                document.getElementById('emptyAnalysisState').classList.remove('d-none');
-
-                document.getElementById('analyzeVoiceBtn').classList.add('d-none');
-                document.getElementById('analyzeVoiceBtn').classList.remove('d-flex');
-
-                currentAnalysis = null;
-            } else {
-                showToast('Error al guardar: ' + data.error, 'error');
+        const params = new URLSearchParams(window.location.search);
+        const tab = params.get('tab');
+        if (tab) {
+            const triggerEl = document.querySelector(`button[data-bs-target="#${tab}"]`);
+            if (triggerEl) {
+                if (typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+                    (new bootstrap.Tab(triggerEl)).show();
+                } else triggerEl.click();
             }
-        } catch (error) {
-            console.error('Error saving meal:', error);
-            showToast('Error al guardar la comida', 'error');
-        } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
         }
-    }
+    } // Fin comprobación analizadorIniciado
 </script>
 {% endblock %}
