@@ -587,7 +587,8 @@
 
                 <div class="sidebar-extra">
                     <span class="badge bg-brand-soft text-green px-3 py-2 small shadow-sm mb-3">
-                        {% if user.perfil.somatotipo %} {{ user.perfil.get_somatotipo_display }} {% else %} Optimización Activa {% endif %}
+                        {% if user.perfil.somatotipo %} {{ user.perfil.get_somatotipo_display }} {% else %} Optimización
+                        Activa {% endif %}
                     </span>
 
                     <div class="d-grid gap-2 mt-2">
@@ -642,7 +643,7 @@
                         {% endfor %}
 
                         <!-- Fillers to keep alignment if needed (optional logic, kept simple for now) -->
-                        {% if logros|length < 4 and logros|length > 0 %}
+                        {% if logros|length < 4 and logros|length> 0 %}
                             {% for i in "123"|make_list %}
                             {% if forloop.counter <= 4|add:"-"|add:logros.count %} <div
                                 class="d-flex flex-column align-items-center gap-1 opacity-25">
@@ -704,7 +705,14 @@
                         </div>
                         <div class="mb-1">
                             <span class="x-small fw-black text-brand d-block text-lowercase">
-                                {% if user.perfil.porcentaje_grasa %}{% if user.perfil.genero == 'M' %}{% if user.perfil.porcentaje_grasa < 6 %}extremo bajo{% elif user.perfil.porcentaje_grasa < 14 %}atlético{% elif user.perfil.porcentaje_grasa < 18 %}fitness{% elif user.perfil.porcentaje_grasa < 25 %}normal{% else %}alto{% endif %}{% else %}{% if user.perfil.porcentaje_grasa < 14 %}extremo bajo{% elif user.perfil.porcentaje_grasa < 21 %}atlético{% elif user.perfil.porcentaje_grasa < 25 %}fitness{% elif user.perfil.porcentaje_grasa < 32 %}normal{% else %}alto{% endif %}{% endif %}{% else %}sin datos{% endif %} </span>
+                                {% if user.perfil.porcentaje_grasa %}{% if user.perfil.genero == 'M' %}{% if
+                                user.perfil.porcentaje_grasa < 6 %}extremo bajo{% elif user.perfil.porcentaje_grasa < 14
+                                    %}atlético{% elif user.perfil.porcentaje_grasa < 18 %}fitness{% elif
+                                    user.perfil.porcentaje_grasa < 25 %}normal{% else %}alto{% endif %}{% else %}{% if
+                                    user.perfil.porcentaje_grasa < 14 %}extremo bajo{% elif user.perfil.porcentaje_grasa
+                                    < 21 %}atlético{% elif user.perfil.porcentaje_grasa < 25 %}fitness{% elif
+                                    user.perfil.porcentaje_grasa < 32 %}normal{% else %}alto{% endif %}{% endif %}{%
+                                    else %}sin datos{% endif %} </span>
                         </div>
                         <h4 class="fw-black mb-0">{{ user.perfil.porcentaje_grasa|default:"—" }}%</h4>
                     </div>
@@ -719,14 +727,20 @@
                         </div>
                         <div class="mb-1">
                             <span class="x-small fw-black text-brand d-block text-lowercase">
-                                {% if imc %}{% if imc < 18.5 %}bajo peso{% elif imc < 25 %}normal{% elif imc < 30 %}sobrepeso{% else %}obesidad{% endif %}{% else %}sin datos{% endif %} </span>
+                                {% if imc %}{% if imc < 18.5 %}bajo peso{% elif imc < 25 %}normal{% elif imc < 30
+                                    %}sobrepeso{% else %}obesidad{% endif %}{% else %}sin datos{% endif %} </span>
                         </div>
-                        <h4 class="fw-black mb-1">{{ imc|default:"—" }}<small class="fs-6 fw-normal ms-1">{% if imc %}kg/m²{% endif %}</small></h4>
+                        <h4 class="fw-black mb-1">{{ imc|default:"—" }}<small class="fs-6 fw-normal ms-1">{% if imc
+                                %}kg/m²{% endif %}</small></h4>
 
                         <div class="border-top pt-2 mt-2">
                             <span class="x-small text-muted fw-bold d-block lh-1" id="muscle-mass-display"
                                 style="font-size: 0.65rem;">
-                                {% if peso_actual and user.perfil.porcentaje_grasa %}{% with grasa_decimal=user.perfil.porcentaje_grasa|div:100 %}{% with masa_grasa=peso_actual|mul:grasa_decimal %}💪 {{ peso_actual|sub:masa_grasa|floatformat:1 }}kg músculo{% endwith %}{% endwith %}{% endif %}
+                                {% if peso_actual and user.perfil.porcentaje_grasa %}{% with
+                                grasa_decimal=user.perfil.porcentaje_grasa|div:100 %}{% with
+                                masa_grasa=peso_actual|mul:grasa_decimal %}💪 {{
+                                peso_actual|sub:masa_grasa|floatformat:1 }}kg músculo{% endwith %}{% endwith %}{% endif
+                                %}
                             </span>
                         </div>
                     </div>
@@ -861,7 +875,6 @@
 
         </div>
 
-        <!-- Closing Central Column -->
     </div>
 
     <!-- Right Sidebar -->
@@ -883,7 +896,8 @@
                         <span class="fw-bold small">Modo oscuro</span>
                     </div>
                     <div class="form-check form-switch mb-0">
-                        <input id="perfil-dark-mode-toggle" class="form-check-input" type="checkbox" {% if user.perfil.modo_oscuro %}checked {% endif %} onclick="toggleTheme()"
+                        <input id="perfil-dark-mode-toggle" class="form-check-input" type="checkbox" {% if
+                            user.perfil.modo_oscuro %}checked {% endif %} onclick="toggleTheme()"
                             aria-label="Alternar modo oscuro">
                     </div>
                 </div>

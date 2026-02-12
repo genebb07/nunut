@@ -26,6 +26,10 @@
         --macro-fats-text: #fbc02d;
     }
 
+    .cursor-pointer {
+        cursor: pointer !important;
+    }
+
     .btn-primary-custom {
         display: flex;
         align-items: center;
@@ -356,14 +360,17 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(255, 255, 255, 0.98);
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
         z-index: 2000;
         display: none;
-        overflow-y: auto;
     }
 
     .recipe-creator-overlay.show {
-        display: block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
     }
 
     /* Recipe Detail Popup (Modal) */
@@ -560,18 +567,19 @@
     .recipe-creator-container {
         width: 100%;
         max-width: 800px;
-        margin: 0 auto;
         background: white;
         border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         border: 1px solid #eee;
-        min-height: 100vh;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
     }
 
     @media (min-width: 768px) {
         .recipe-creator-container {
-            margin: 2rem auto;
-            min-height: auto;
+            width: 90%;
         }
     }
 
@@ -1069,6 +1077,32 @@
                                 style="background: rgba(0,0,0,0.6); font-size: 0.65rem; backdrop-filter: blur(4px);">
                                 {{ receta.tipo_dieta }}
                             </span>
+
+                            <!-- Edit/Delete Actions for Owner -->
+                            {% if user.is_authenticated and user.perfil and not receta.perfil_creador or receta.perfil_creador == user.perfil %}
+                            <div class="position-absolute top-0 start-0 m-2">
+                                <div class="dropdown">
+                                    <button class="favorite-btn" type="button" data-bs-toggle="dropdown"
+                                        aria-expanded="false" onclick="event.stopPropagation()">
+                                        <span class="material-symbols-outlined text-dark">more_vert</span>
+                                    </button>
+                                    <ul class="dropdown-menu shadow border-0 rounded-4 p-2">
+                                        <li><button class="dropdown-item rounded-3 small fw-bold mb-1"
+                                            onclick="event.stopPropagation(); editRecipe({{ receta.id }})"
+                                            aria-label="Modificar receta" title="Modificar receta">
+                                            <span
+                                                class="material-symbols-outlined fs-6 align-middle me-2">edit</span>Modificar receta
+                                            </button></li>
+                                        <li><button class="dropdown-item rounded-3 small fw-bold text-danger"
+                                            onclick="event.stopPropagation(); deleteRecipe({{ receta.id }})"
+                                            aria-label="Eliminar receta" title="Eliminar receta">
+                                            <span
+                                                class="material-symbols-outlined fs-6 align-middle me-2">delete</span>Eliminar receta
+                                            </button></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
 
                         <div class="p-2 p-md-3 d-flex flex-column flex-grow-1">
@@ -1369,48 +1403,147 @@
     <!-- Creator Overlay -->
     <div class="recipe-creator-overlay" id="recipeOverlay">
         <div class="recipe-creator-container">
-            <form id="recipeCreatorForm" hx-post="{% url 'base:crear_receta' %}" hx-swap="none"
-                hx-on::after-request="if(event.detail.successful) { location.reload(); }">
-                {% csrf_token %}
-                <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-                    <span class="material-symbols-outlined cursor-pointer"
-                        onclick="document.getElementById('recipeOverlay').classList.remove('show')">arrow_back</span>
-                    <h5 class="fw-bold m-0">Nueva Receta</h5>
-                    <div style="width: 24px;"></div>
+            <form id="recipeCreatorForm" onsubmit="submitRecipeForm(event)">
+                <div class="d-flex justify-content-between align-items-center p-3 border-bottom sticky-top bg-white"
+                    style="border-radius: 20px 20px 0 0; z-index: 10;">
+                    <span class="material-symbols-outlined cursor-pointer" onclick="closeCreator()">arrow_back</span>
+                    <h5 class="fw-bold m-0" id="creatorTitle">Nueva Receta</h5>
+                    <button type="submit" class="btn btn-primary-custom btn-sm" id="saveRecipeBtn">Guardar</button>
                 </div>
-                <div class="p-4">
-                    <div class="mb-3">
-                        <label class="small fw-bold text-muted mb-1 text-uppercase">Título</label>
-                        <input name="titulo" class="form-control bg-light border-0 py-2 fw-bold" required
-                            placeholder="Ej. Pollo con Arroz">
+
+                <div class="p-4" style="max-height: 60vh; overflow-y: auto;">
+                    <!-- Basic Info -->
+                    <div class="mb-4">
+                        <label class="small fw-bold text-muted mb-1 text-uppercase">Título del Plato</label>
+                        <input name="titulo" id="inputTitulo" class="form-control bg-light border-0 py-2 fw-bold"
+                            required placeholder="Ej. Pollo al Limón">
                     </div>
-                    <div class="row g-3 mb-3">
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <label class="small fw-bold text-muted mb-1 text-uppercase">Tiempo</label>
+                            <input name="tiempo" id="inputTiempo" class="form-control bg-light border-0 py-2 fw-bold"
+                                placeholder="Ej. 30 min">
+                        </div>
+                        <div class="col-6">
+                            <label class="small fw-bold text-muted mb-1 text-uppercase">Categoría</label>
+                            <select name="categoria" id="inputCategoria" class="form-select bg-light border-0 fw-bold">
+                                {% for cat in categorias_receta %}<option value="{{ cat }}">{{ cat|capfirst }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                         <div class="col-6">
                             <label class="small fw-bold text-muted mb-1 text-uppercase">Dieta</label>
-                            <select name="dieta" class="form-select bg-light border-0 fw-bold">
+                            <select name="dieta" id="inputDieta" class="form-select bg-light border-0 fw-bold">
                                 {% for code, name in opciones_dieta.items %}<option value="{{ code }}">{{ name }}
                                 </option>{% endfor %}
                             </select>
                         </div>
                         <div class="col-6">
-                            <label class="small fw-bold text-muted mb-1 text-uppercase">Categoría</label>
-                            <select name="categoria" class="form-select bg-light border-0 fw-bold">
-                                {% for cat in categorias_receta %}<option value="{{ cat }}">{{ cat|capfirst }}</option>
-                                {% endfor %}
+                            <label class="small fw-bold text-muted mb-1 text-uppercase">Dificultad</label>
+                            <select name="dificultad" id="inputDificultad"
+                                class="form-select bg-light border-0 fw-bold">
+                                <option value="Fácil">Fácil</option>
+                                <option value="Media" selected>Media</option>
+                                <option value="Difícil">Difícil</option>
                             </select>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="small fw-bold text-muted mb-1 text-uppercase">Calorías</label>
-                        <input type="number" name="calorias" class="form-control bg-light border-0 py-2 fw-bold"
-                            placeholder="0">
-                    </div>
+
+                    <!-- Image Input -->
                     <div class="mb-4">
-                        <label class="small fw-bold text-muted mb-1 text-uppercase">Detalles</label>
-                        <textarea name="descripcion" rows="4" class="form-control bg-light border-0 fw-bold"
-                            placeholder="Ingredientes y pasos..."></textarea>
+                        <label class="small fw-bold text-muted mb-1 text-uppercase">Imagen del Plato</label>
+                        <div class="d-flex gap-2">
+                            <input type="text" name="imagen_url" id="inputImgUrl"
+                                class="form-control bg-light border-0 py-2" placeholder="URL de imagen (opcional)">
+                        </div>
+                        <div class="mt-2">
+                            <input type="file" name="imagen_file" id="inputImgFile" class="form-control form-control-sm"
+                                accept="image/*">
+                            <div class="form-text small">O sube una foto desde tu dispositivo</div>
+                        </div>
                     </div>
-                    <button class="btn btn-primary-custom w-100 justify-content-center py-3">Guardar Receta</button>
+
+                    <hr class="my-4">
+
+                    <!-- Ingredients -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">grocery</span> Ingredientes
+                        </h6>
+
+                        <div class="position-relative mb-3">
+                            <input type="text" id="searchIngrediente"
+                                class="form-control bg-white border shadow-sm rounded-pill px-4"
+                                placeholder="🔍 Buscar ingrediente (ej. Pollo, Arroz)..."
+                                onkeyup="searchIngredientes(this.value)" autocomplete="off">
+                            <div id="searchResults"
+                                class="list-group position-absolute w-100 mt-1 shadow rounded-4 overflow-hidden"
+                                style="z-index: 1000; display:none;"></div>
+                        </div>
+
+                        <div class="text-center text-muted small py-3 fst-italic" id="emptyIngMsg">No hay
+                            ingredientes añadidos</div>
+
+                        <div id="addedIngredientsList" class="d-flex flex-column gap-2 mb-3">
+                            <!-- JS injected items -->
+                        </div>
+
+                        <!-- Manual Add Button -->
+                        <button type="button" class="btn btn-sm btn-outline-secondary w-100 rounded-pill dashed-border"
+                            onclick="addManualIngredient()">
+                            + Añadir ingrediente manual
+                        </button>
+                    </div>
+
+                    <!-- Macros Calculation -->
+                    <div class="card bg-light border-0 rounded-4 p-3 mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold m-0 text-uppercase small text-muted">Información Nutricional</h6>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="autoCalcToggle" checked
+                                    onchange="toggleAutoCalc()">
+                                <label class="form-check-label small fw-bold" for="autoCalcToggle">Auto-calcular</label>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 text-center">
+                            <div class="col-3">
+                                <label class="small fw-bold text-muted d-block">Kcal</label>
+                                <input name="calorias" id="inputKcal" type="number"
+                                    class="form-control form-control-sm border-0 fw-bold text-center" readonly
+                                    value="0">
+                            </div>
+                            <div class="col-3">
+                                <label class="small fw-bold text-primary d-block">Prot</label>
+                                <input name="proteinas" id="inputProt" type="number"
+                                    class="form-control form-control-sm border-0 fw-bold text-center text-primary"
+                                    readonly value="0">
+                            </div>
+                            <div class="col-3">
+                                <label class="small fw-bold text-warning d-block">Carbs</label>
+                                <input name="carbos" id="inputCarbs" type="number"
+                                    class="form-control form-control-sm border-0 fw-bold text-center text-warning"
+                                    readonly value="0">
+                            </div>
+                            <div class="col-3">
+                                <label class="small fw-bold text-info d-block">Grasas</label>
+                                <input name="grasas" id="inputFats" type="number"
+                                    class="form-control form-control-sm border-0 fw-bold text-center text-info" readonly
+                                    value="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Steps / Description -->
+                    <div class="mb-4">
+                        <label class="small fw-bold text-muted mb-1 text-uppercase">Preparación / Pasos</label>
+                        <textarea name="descripcion" id="inputDesc" rows="6"
+                            class="form-control bg-light border-0 fw-medium"
+                            placeholder="Describe los pasos de la preparación..."></textarea>
+                        <div class="form-text small">Los ingredientes se añadirán automáticamente al final de la
+                            descripción.</div>
+                    </div>
                 </div>
             </form>
         </div>
@@ -1497,6 +1630,13 @@
             const url = new URL(window.location);
             url.searchParams.set('tab', tabId);
             window.history.replaceState({}, '', url);
+        }
+
+        function getLocalIsoDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
 
         function selectCalendarDay(dateStr) {
@@ -1669,48 +1809,91 @@
             // Parse description into ingredients and steps
             const temp = document.createElement('div');
             temp.innerHTML = d.desc || '';
-            const fullText = temp.innerText || '';
+            let fullText = temp.innerText || '';
+
+            // Normalize keywords
+            fullText = fullText.replace(/INGREDIENTS:|Ignredientes:/gi, 'INGREDIENTES:');
+            fullText = fullText.replace(/PREPARACI(O|Ó)N:|Pasos:/gi, 'PREPARACIÓN:');
 
             let ingredientsHtml = '';
             let stepsHtml = '';
 
-            if (fullText.toUpperCase().includes('INGREDIENTES')) {
-                const parts = fullText.split(/PREPARACI|PREPARACIÓN/);
-                ingredientsHtml = parts[0].replace(/INGREDIENTES:\s*/i, '').trim();
-                stepsHtml = (parts[1] || '').trim();
+            // Regex to find sections
+            // 1. Ingredients section starts with INGREDIENTES: and goes until PREPARACIÓN: or End of String
+            const ingMatch = fullText.match(/INGREDIENTES:([\s\S]*?)(?=PREPARACIÓN:|$)/i);
+
+            // 2. Steps section starts with PREPARACIÓN: and goes until End of String
+            const stepsMatch = fullText.match(/PREPARACIÓN:([\s\S]*)/i);
+
+            // 3. Intro/Description is everything before the first recognized section
+            const introMatch = fullText.split(/INGREDIENTES:|PREPARACIÓN:/i)[0];
+
+            if (ingMatch) {
+                ingredientsHtml = ingMatch[1].trim();
+            }
+
+            if (stepsMatch) {
+                stepsHtml = stepsMatch[1].trim();
+                // If there is an intro, we can show it too if needed, but usually Steps are enough
             } else {
-                // Fallback: show whole description as steps
-                stepsHtml = fullText;
+                // If no "PREPARACIÓN:" keyword found, assume the intro IS the steps (Manual Recipe Case)
+                // UNLESS it's empty
+                if (introMatch && introMatch.trim().length > 0) {
+                    stepsHtml = introMatch.trim();
+                }
             }
 
             // Populate ingredients: if ingredientsHtml contains lines, convert to cards
             const ingContainer = document.getElementById('detailIngredients');
             ingContainer.innerHTML = '';
             if (ingredientsHtml) {
-                ingredientsHtml.split(/\n|\r\n/).map(s => s.trim()).filter(Boolean).forEach(line => {
+                ingredientsHtml.split(/\n|\r\n/).map(s => s.trim()).filter(line => line.length > 2).forEach(line => {
+                    // Clean bullet points
+                    line = line.replace(/^[\-\•\*\+]\s*/, '');
                     const card = document.createElement('div');
-                    card.className = 'custom-card p-3 d-flex justify-content-between align-items-center';
-                    card.innerHTML = `<div class="d-flex align-items-center gap-3"><span class="material-symbols-outlined" style="color: var(--primary-color);">check_circle</span><span class="fw-medium">${line}</span></div>`;
+                    card.className = 'custom-card p-3 d-flex justify-content-between align-items-center mb-2';
+                    card.innerHTML = `<div class="d-flex align-items-center gap-3"><span class="material-symbols-outlined text-success">check_circle</span><span class="fw-medium">${line}</span></div>`;
                     ingContainer.appendChild(card);
                 });
+            } else {
+                ingContainer.innerHTML = '<div class="text-muted small fst-italic">No se especifican ingredientes.</div>';
             }
 
             // Populate steps area
             const stepsContainer = document.getElementById('detailSteps');
             stepsContainer.innerHTML = '';
             if (stepsHtml) {
-                // split by numbered or line breaks
-                const stepLines = stepsHtml.split(/\n|\r\n/).map(s => s.trim()).filter(Boolean);
-                if (stepLines.length > 0) {
+                // split by numbered or line breaks if reasonable length
+                // Simple numbered regex: 1. Step one
+                const stepLines = stepsHtml.split(/(?=\d+\.\s)/).map(s => s.trim()).filter(Boolean);
+
+                if (stepLines.length > 1) {
                     stepLines.forEach((line, idx) => {
+                        // Clean number
+                        line = line.replace(/^\d+\.\s*/, '');
                         const wrapper = document.createElement('div');
-                        wrapper.className = 'd-flex gap-3';
-                        wrapper.innerHTML = `<div class="step-number">${idx + 1}</div><p class="small mb-0">${line}</p>`;
+                        wrapper.className = 'd-flex gap-3 mb-3';
+                        wrapper.innerHTML = `
+                            <div class="flex-shrink-0 d-flex justify-content-center align-items-center bg-primary text-white rounded-circle fw-bold" 
+                                 style="width: 28px; height: 28px; font-size: 14px;">${idx + 1}</div>
+                            <p class="small mb-0 text-muted" style="line-height: 1.6;">${line}</p>`;
                         stepsContainer.appendChild(wrapper);
                     });
                 } else {
-                    stepsContainer.innerHTML = `<p class="small">${stepsHtml}</p>`;
+                    // Fallback splitting by newlines if no numbers found
+                    const rawLines = stepsHtml.split(/\n+/).filter(l => l.length > 5);
+                    rawLines.forEach((line, idx) => {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'd-flex gap-3 mb-3';
+                        wrapper.innerHTML = `
+                            <div class="flex-shrink-0 d-flex justify-content-center align-items-center bg-light text-muted rounded-circle fw-bold border" 
+                                 style="width: 28px; height: 28px; font-size: 14px;">${idx + 1}</div>
+                            <p class="small mb-0 text-muted" style="line-height: 1.6;">${line}</p>`;
+                        stepsContainer.appendChild(wrapper);
+                    });
                 }
+            } else {
+                stepsContainer.innerHTML = '<div class="text-muted small">Sin instrucciones detalladas.</div>';
             }
 
             // Show overlay popup
@@ -1776,7 +1959,7 @@
             for (let i = 0; i < 7; i++) {
                 const date = new Date();
                 date.setDate(today.getDate() + i);
-                const dateStr = date.toISOString().split('T')[0];
+                const dateStr = getLocalIsoDate(date);
                 const isToday = i === 0;
 
                 const dayData = caloriasData[dateStr] || { calorias: 0, meta: 2000 };
@@ -1963,7 +2146,7 @@
             });
         }
         function confirmAddRecipe(id, title, forceDate) {
-            const targetDate = forceDate || selectedDate || new Date().toISOString().split('T')[0];
+            const targetDate = forceDate || selectedDate || getLocalIsoDate(new Date());
 
             // Duplicate check
             const isDuplicate = scheduledRecipes[targetDate] && scheduledRecipes[targetDate].includes(title);
@@ -2049,7 +2232,7 @@
         function addAllToCalendar() {
             if (!window.currentAiPlan) return;
             const ids = window.currentAiPlan.map(m => m.id);
-            const today = new Date().toISOString().split('T')[0];
+            const today = getLocalIsoDate(new Date());
 
             showConfirmModal({
                 title: 'Guardar plan IA',
@@ -2069,5 +2252,396 @@
             });
         }
 
+
+    </script>
+
+    <script>
+        // ==========================================
+        // RECIPE CREATOR & INGREDIENT LOGIC
+        // ==========================================
+
+        let recipeIngredients = []; // {id, name, quantity, kcal_100, prot_100...}
+        let isAutoCalc = true;
+        let editingRecipeId = null;
+
+        function closeCreator() {
+            document.getElementById('recipeOverlay').classList.remove('show');
+            recipeIngredients = [];
+            editingRecipeId = null;
+            document.getElementById('recipeCreatorForm').reset();
+            renderIngredientsList();
+        }
+
+        function toggleAutoCalc() {
+            isAutoCalc = document.getElementById('autoCalcToggle').checked;
+            const inputs = ['inputKcal', 'inputProt', 'inputCarbs', 'inputFats'];
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                el.readOnly = isAutoCalc;
+                if (isAutoCalc) el.classList.add('bg-light');
+                else el.classList.remove('bg-light');
+            });
+            if (isAutoCalc) calculateTotals();
+        }
+
+        let searchDebounce;
+        let lastSearchResults = [];
+
+        // Tabla de conversión (g por unidad estándar)
+        // Basado en estándares culinarios internacionales
+        // Taza (Cup) = 240 ml
+        // Cucharada (Tbsp) = 15 ml
+        // Cucharadita (Tsp) = 5 ml
+
+        const conversionTable = {
+            'arroz': { cup: 185, unit: 1 },      // Crudo
+            'avena': { cup: 90, unit: 1 },       // Copos
+            'harina': { cup: 125, unit: 1 },     // Trigo común
+            'azucar': { cup: 200, unit: 1 },     // Blanca
+            'miel': { cup: 340, unit: 1 },       // Densidad ~1.4 (Puro néctar) -> 1 Cda ~21g
+            'leche': { cup: 245, unit: 1 },      // Líquida (densidad ~1.03)
+            'agua': { cup: 240, unit: 1 },       // Líquida
+            'aceite': { cup: 216, unit: 1 },     // Densidad ~0.92 -> 1 Cda ~13.5-14g
+            'mantequilla': { cup: 227, unit: 1 },// Sólida
+            'huevo': { cup: 240, unit: 50 },     // ~50g por unidad mediana/grande
+            'platano': { cup: 150, unit: 120 },  // ~120g por unidad med
+            'manzana': { cup: 125, unit: 180 },  // ~180g por unidad med
+            'pollo': { cup: 140, unit: 200 },    // ~200g media pechuga
+            'carne': { cup: 140, unit: 200 },    // ~200g bistec promedio
+            'pan': { cup: 60, unit: 30 },        // ~30g rebanada molde
+            'queso': { cup: 110, unit: 30 }      // ~30g rebanada/loncha
+        };
+
+        function getConversionFactor(name, unit) {
+            const lower = name.toLowerCase();
+            // Buscar coincidencia parcial (ej. "Miel de abeja" -> "miel")
+            let key = Object.keys(conversionTable).find(k => lower.includes(k));
+            const density = key ? conversionTable[key] : null;
+
+            if (unit === 'g') return 1;
+
+            // Volúmenes Estándar (aproximación densidad=1 si no se conoce)
+            const cupWeight = density ? density.cup : 240; // Default 240g (Agua)
+
+            if (unit === 'taza') return cupWeight;
+            if (unit === 'cda') return cupWeight / 16;   // 1 Taza = 16 Cucharadas
+            if (unit === 'cdta') return cupWeight / 48;  // 1 Taza = 48 Cucharaditas
+
+            // Unidades
+            if (unit === 'unidad') return density ? density.unit : 100; // Default 100g
+
+            return 1;
+        }
+
+        function searchIngredientes(query) {
+            clearTimeout(searchDebounce);
+            const resDiv = document.getElementById('searchResults');
+            if (query.length < 2) {
+                resDiv.style.display = 'none';
+                return;
+            }
+
+            searchDebounce = setTimeout(async () => {
+                resDiv.innerHTML = '<div class="p-3 text-center text-muted"><span class="spinner-border spinner-border-sm"></span></div>';
+                resDiv.style.display = 'block';
+
+                try {
+                    const res = await fetch(`/api/buscar_alimentos/?q=${query}`);
+                    const data = await res.json();
+                    lastSearchResults = data.results || [];
+
+                    if (data.warning) {
+                        resDiv.innerHTML = `
+                            <div class="p-2 text-center small text-danger fw-bold border border-danger bg-danger-subtle rounded mb-2">
+                                <span class="material-symbols-outlined align-middle fs-6">warning</span> ${data.message}
+                            </div>
+                            <div class="text-center small">
+                                <a href="#" onclick="addManualIngredient()" class="btn btn-sm btn-outline-secondary">
+                                    Agregar manualmente de todos modos
+                                </a>
+                            </div>`;
+                        return;
+                    }
+
+                    if (lastSearchResults.length === 0) {
+                        resDiv.innerHTML = '<div class="p-2 text-center small text-muted">No encontrado. <a href="#" onclick="addManualIngredient()">Añadir manual</a></div>';
+                        return;
+                    }
+
+                    let html = '';
+                    lastSearchResults.forEach((item, index) => {
+                        html += `
+                        <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center cursor-pointer"
+                           onclick="selectIngredient(${index})">
+                            <div>
+                                <div class="fw-bold small">${item.nombre}</div>
+                                <div class="text-muted" style="font-size: 10px;">${item.calorias} kcal/100g</div>
+                            </div>
+                            <span class="material-symbols-outlined text-primary fs-6">add_circle</span>
+                        </div>`;
+                    });
+                    resDiv.innerHTML = html;
+                } catch (e) {
+                    resDiv.style.display = 'none';
+                    console.error(e);
+                }
+            }, 300);
+        }
+
+
+        // Initialize ingredient with unit
+        function selectIngredient(index) {
+            const item = lastSearchResults[index];
+            if (!item) return;
+
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('searchIngrediente').value = '';
+
+            addIngredientToMeta({
+                id: item.id,
+                name: item.nombre,
+                quantity: 100,
+                unit: 'g',
+                kcal_100: parseFloat(item.calorias) || 0,
+                prot_100: parseFloat(item.proteinas) || 0,
+                carbs_100: parseFloat(item.carbos) || 0,
+                fats_100: parseFloat(item.grasas) || 0
+            });
+        }
+
+        function addManualIngredient() {
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('searchIngrediente').value = '';
+            addIngredientToMeta({
+                id: null,
+                name: "Ingrediente manual",
+                quantity: 100,
+                unit: 'g',
+                kcal_100: 0,
+                prot_100: 0,
+                carbs_100: 0,
+                fats_100: 0
+            });
+        }
+
+        function addIngredientToMeta(ing) {
+            recipeIngredients.push(ing);
+            renderIngredientsList();
+            if (isAutoCalc) calculateTotals();
+
+            const list = document.getElementById('addedIngredientsList');
+            setTimeout(() => list.scrollTop = list.scrollHeight, 50);
+        }
+
+        function removeIngredient(index) {
+            recipeIngredients.splice(index, 1);
+            renderIngredientsList();
+            if (isAutoCalc) calculateTotals();
+        }
+
+        function updateIngredientQuant(index, input) {
+            recipeIngredients[index].quantity = parseFloat(input.value) || 0;
+            if (isAutoCalc) calculateTotals();
+        }
+
+        function updateIngredientUnit(index, select) {
+            recipeIngredients[index].unit = select.value;
+            if (isAutoCalc) calculateTotals();
+        }
+
+        function updateIngredientNameStr(index, input) {
+            recipeIngredients[index].name = input.value;
+            if (isAutoCalc) calculateTotals(); // Recalc conversion factor
+        }
+
+        function renderIngredientsList() {
+            const container = document.getElementById('addedIngredientsList');
+            const emptyMsg = document.getElementById('emptyIngMsg');
+
+            if (recipeIngredients.length === 0) {
+                container.innerHTML = '';
+                emptyMsg.style.display = 'block';
+                return;
+            }
+            emptyMsg.style.display = 'none';
+
+            container.innerHTML = '';
+            recipeIngredients.forEach((ing, idx) => {
+                const row = document.createElement('div');
+                row.className = 'd-flex align-items-center gap-2 bg-light p-2 rounded-3 border mb-2';
+                const safeName = ing.name.replace(/"/g, '&quot;');
+
+                // Select options
+                const units = [
+                    { val: 'g', label: 'g' },
+                    { val: 'unidad', label: 'Unidad' },
+                    { val: 'taza', label: 'Taza' },
+                    { val: 'cda', label: 'Cda' }
+                ];
+                let opts = units.map(u =>
+                    `<option value="${u.val}" ${ing.unit === u.val ? 'selected' : ''}>${u.label}</option>`
+                ).join('');
+
+                row.innerHTML = `
+                    <div style="flex:2">
+                        <input type="text" class="form-control form-control-sm border-0 bg-transparent fw-bold" 
+                            value="${safeName}" 
+                            oninput="updateIngredientNameStr(${idx}, this)" placeholder="Nombre">
+                    </div>
+                    
+                    <div class="d-flex align-items-center gap-1 bg-white rounded px-2 border" style="width: 140px;">
+                        <input type="number" class="form-control form-control-sm border-0 p-0 text-end" 
+                            style="width: 50px;"
+                            value="${ing.quantity}" 
+                            oninput="updateIngredientQuant(${idx}, this)">
+                        
+                        <select class="form-select form-select-sm border-0 p-0 shadow-none fw-bold small text-muted text-end bg-transparent" 
+                                style="width: auto; cursor:pointer;"
+                                onchange="updateIngredientUnit(${idx}, this)">
+                            ${opts}
+                        </select>
+                    </div>
+                    
+                    <button type="button" class="btn btn-link text-danger p-0 ms-2" onclick="removeIngredient(${idx})">
+                        <span class="material-symbols-outlined fs-6">delete</span>
+                    </button>
+                    
+                    <input type="hidden" name="ingredientes_nombres" value="${safeName}">
+                    <input type="hidden" name="ingredientes_cantidades" value="${ing.quantity} ${ing.unit}">
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function calculateTotals() {
+            let cal = 0, pro = 0, car = 0, fat = 0;
+            recipeIngredients.forEach(ing => {
+                // Conversion logic
+                const fact = getConversionFactor(ing.name, ing.unit || 'g');
+                const grams = ing.quantity * fact;
+                const ratio = grams / 100.0;
+
+                cal += (ing.kcal_100 || 0) * ratio;
+                pro += (ing.prot_100 || 0) * ratio;
+                car += (ing.carbs_100 || 0) * ratio;
+                fat += (ing.fats_100 || 0) * ratio;
+            });
+
+            document.getElementById('inputKcal').value = Math.round(cal);
+            document.getElementById('inputProt').value = Math.round(pro);
+            document.getElementById('inputCarbs').value = Math.round(car);
+            document.getElementById('inputFats').value = Math.round(fat);
+        }
+
+        function submitRecipeForm(e) {
+            e.preventDefault();
+            const form = document.getElementById('recipeCreatorForm');
+            const formData = new FormData(form);
+
+            // Determine URL
+            const url = editingRecipeId
+                ? `/editar_receta/${editingRecipeId}/`
+                : "{% url 'base:crear_receta' %}";
+
+            const btn = document.getElementById('saveRecipeBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
+
+            // No content-type header for FormData, browser sets it with boundary
+            fetch(url, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Receta guardada con éxito', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showToast('Error: ' + data.error, 'danger');
+                        btn.disabled = false;
+                        btn.innerText = 'Guardar';
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showToast('Error de conexión', 'danger');
+                    btn.disabled = false;
+                    btn.innerText = 'Guardar';
+                });
+        }
+
+        function editRecipe(id) {
+            // Close any dropdowns
+            editingRecipeId = id;
+            document.getElementById('creatorTitle').innerText = 'Editar Receta';
+            document.getElementById('recipeOverlay').classList.add('show');
+
+            // Fetch dat
+            fetch(`/editar_receta/${id}/`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const r = data.receta;
+                        document.getElementById('inputTitulo').value = r.titulo;
+                        document.getElementById('inputTiempo').value = r.tiempo;
+                        document.getElementById('inputCategoria').value = r.categoria || 'explorar'; // ensure default
+                        document.getElementById('inputDieta').value = r.tipo_dieta;
+                        document.getElementById('inputImagen').value = r.imagen_url || '';
+                        document.getElementById('imgPreview').src = r.imagen_url || 'https://via.placeholder.com/150';
+                        document.getElementById('inputDesc').value = r.descripcion;
+
+                        document.getElementById('inputKcal').value = r.calorias;
+                        document.getElementById('inputProt').value = r.proteinas;
+                        document.getElementById('inputCarbs').value = r.carbos;
+                        document.getElementById('inputFats').value = r.grasas;
+
+                        // Populate ingredients
+                        recipeIngredients = [];
+                        if (r.ingredientes) {
+                            r.ingredientes.forEach(item => {
+                                // Try to parse grams
+                                const q = parseFloat(item.cantidad) || 0;
+                                recipeIngredients.push({
+                                    name: item.nombre,
+                                    quantity: q,
+                                    // We don't have macro data per ingredient from simple text parse, 
+                                    // so we can't perfectly auto-calc. Disable auto-calc by default for edit.
+                                    kcal_100: 0, prot_100: 0, carbs_100: 0, fats_100: 0
+                                });
+                            });
+                        }
+
+                        renderIngredientsList();
+
+                        // Disable auto-calc initially for edit mode as we don't have source macros
+                        document.getElementById('autoCalcToggle').checked = false;
+                        toggleAutoCalc();
+                    }
+                });
+        }
+
+        function deleteRecipe(id) {
+            showConfirmModal({
+                title: 'Eliminar Receta',
+                message: '¿Estás seguro? Esta acción no se puede deshacer.',
+                type: 'danger',
+                yesText: 'Sí, eliminar',
+                onConfirm: () => {
+                    fetch(`/api/borrar_receta/${id}/`, {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                    }).then(res => res.json()).then(data => {
+                        if (data.success) {
+                            showToast('Receta eliminada', 'info');
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            showToast(data.error, 'danger');
+                        }
+                    });
+                }
+            });
+        }
     </script>
     {% endblock %}
