@@ -1658,6 +1658,7 @@ def crear_receta(request):
             dieta = request.POST.get('dieta')
             tiempo = request.POST.get('tiempo')
             img_url = request.POST.get('imagen_url')
+            img_file = request.FILES.get('imagen_file')
             desc = request.POST.get('descripcion')
             
             # Extract macros (default to 0 if empty)
@@ -1691,7 +1692,8 @@ def crear_receta(request):
                 tipo_dieta=dieta,
                 tiempo=tiempo,
                 tiempo_minutos=t_val,
-                imagen_url=img_url if img_url else None,
+                imagen=img_file if img_file else None,
+                imagen_url=img_url if img_url and not img_file else None,
                 descripcion=final_desc,
                 calorias=calorias,
                 proteinas=proteinas,
@@ -2358,3 +2360,142 @@ def obtener_calorias_dias(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
+
+@login_required
+def buscar_alimentos_api(request):
+    from .models import Alimento
+    from django.db.models import Q
+    from django.conf import settings
+    from google import genai
+    import json
+    import re
+
+    query = request.GET.get('q', '').lower().strip()
+    if len(query) < 2:
+        return JsonResponse({'results': []})
+        
+    try:
+        # 1. Búsqueda en Base de Datos Local
+        user_loc = getattr(request.user.perfil, 'localidad', '').lower()
+        search_terms = [query]
+        
+        # Diccionario regional (Venezuela)
+        if 'venezuela' in user_loc:
+            vzla_map = {'cambur': 'banana', 'caraotas': 'frijoles', 'lechoza': 'papaya', 'auyama': 'calabaza'}
+            if query in vzla_map:
+                search_terms.append(vzla_map[query])
+        
+        q_obj = Q()
+        for term in search_terms:
+            q_obj |= Q(nombre__icontains=term)
+            
+        results = Alimento.objects.filter(q_obj).distinct()[:20]
+        data = [{'id': a.id, 'nombre': a.nombre, 'calorias': a.calorias_100g, 
+                 'proteinas': float(a.proteinas_100g), 'carbos': float(a.carbos_100g), 
+                 'grasas': float(a.grasas_100g)} for a in results]
+            
+        # 2. AI FALLBACK (Si no hay resultados)
+        if not data:
+            api_key = getattr(settings, 'GEMINI_API_KEY', None)
+            if api_key:
+                client = genai.Client(api_key=api_key)
+                prompt = f"Nutricionista: info nutricional 100g de '{query}'. Si no es un alimento, responde {{'es_alimento': False}}. Si es un alimento, responde solo JSON: {{'nombre': '...', 'calorias_100g': 0, 'proteinas_100g': 0.0, 'carbos_100g': 0.0, 'grasas_100g': 0.0, 'es_alimento': True}}"
+                
+                # Intentamos con los modelos candidatos
+                success = False
+                non_food_detected = False
+                
+                # Priorizamos el que funcionó (2.5) y estándar (1.5)
+                for model_name in ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-pro']:
+                    try:
+                        response = client.models.generate_content(model=model_name, contents=prompt)
+                        if response.text:
+                            text_resp = response.text
+                            match = re.search(r'\{.*\}', text_resp, re.DOTALL)
+                            if match:
+                                ai_data = json.loads(match.group().replace("'", '"'))
+                                
+                                # Verificamos si es alimento
+                                if ai_data.get('es_alimento') is False:
+                                    non_food_detected = True
+                                    success = True # Dejamos de intentar, ya sabemos que no es comida
+                                    break
+                                    
+                                if ai_data.get('nombre'):
+                                    # Usamos get_or_create para manejar duplicados
+                                    nuevo, created = Alimento.objects.get_or_create(
+                                        nombre=ai_data['nombre'][:199],
+                                        defaults={
+                                            'calorias_100g': int(ai_data.get('calorias_100g', 0)),
+                                            'proteinas_100g': float(ai_data.get('proteinas_100g', 0)),
+                                            'carbos_100g': float(ai_data.get('carbos_100g', 0)),
+                                            'grasas_100g': float(ai_data.get('grasas_100g', 0)),
+                                            'fibra_100g': 0
+                                        }
+                                    )
+                                    
+                                    data.append({
+                                        'id': nuevo.id, 
+                                        'nombre': nuevo.nombre, 
+                                        'calorias': nuevo.calorias_100g,
+                                        'proteinas': float(nuevo.proteinas_100g), 
+                                        'carbos': float(nuevo.carbos_100g), 
+                                        'grasas': float(nuevo.grasas_100g)
+                                    })
+                                    success = True
+                                    break
+                    except Exception as e:
+                        print(f"Fallo con {model_name}: {e}")
+                        continue
+                
+                if non_food_detected:
+                    return JsonResponse({'results': [], 'warning': True, 'message': f"'{query}' no parece ser un alimento válido."})
+                        
+        return JsonResponse({'results': data})
+    except Exception as e:
+        return JsonResponse({'results': [], 'error': str(e)}, status=500)
+
+@login_required
+def calcular_nutricion_api(request):
+    """API to calculate nutrition from ingredients list"""
+    import json
+    from .models import Alimento
+    
+    if request.method != 'POST':
+         return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+         
+    try:
+        data = json.loads(request.body)
+        ingredientes_data = data.get('ingredientes', []) # List of {id, cantidad}
+        
+        total_cal = 0
+        total_pro = 0
+        total_car = 0
+        total_fat = 0
+        
+        for item in ingredientes_data:
+            try:
+                # Si viene del search tiene ID
+                if item.get('id'):
+                    alimento = Alimento.objects.get(id=item.get('id'))
+                    cantidad = float(item.get('cantidad', 0)) # in grams
+                    
+                    factor = cantidad / 100.0
+                    
+                    total_cal += float(alimento.calorias_100g) * factor
+                    total_pro += float(alimento.proteinas_100g) * factor
+                    total_car += float(alimento.carbos_100g) * factor
+                    total_fat += float(alimento.grasas_100g) * factor
+            except Alimento.DoesNotExist:
+                continue
+            except: continue
+                
+        return JsonResponse({
+            'success': True,
+            'calorias': int(round(total_cal)),
+            'proteinas': int(round(total_pro)),
+            'carbos': int(round(total_car)),
+            'grasas': int(round(total_fat))
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

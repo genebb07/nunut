@@ -248,6 +248,7 @@ class Alimento(models.Model):
 class Receta(models.Model):
     titulo = models.CharField(max_length=200)
     descripcion = models.TextField(blank=True)
+    imagen = models.ImageField(upload_to='recetas/', null=True, blank=True)
     imagen_url = models.URLField(max_length=500, blank=True, null=True)
     calorias = models.IntegerField()
     tiempo = models.CharField(max_length=50)

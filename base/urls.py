@@ -54,4 +54,6 @@ urlpatterns = [
     path('api/analizar_comida_ia/', gemini_views.analizar_comida_ia, name='analizar_comida_ia'),
     path('api/obtener_calorias_dias/', views.obtener_calorias_dias, name='obtener_calorias_dias'),
     path('api/transcribir_audio/', gemini_views.transcribir_audio, name='transcribir_audio'),
+    path('api/buscar_alimentos/', views.buscar_alimentos_api, name='buscar_alimentos'),
+    path('api/calcular_nutricion/', views.calcular_nutricion_api, name='calcular_nutricion'),
 ]
