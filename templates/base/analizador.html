@@ -17,49 +17,62 @@
 
 <!-- NEW MINIMALIST UI -->
 <style>
-    /* Redesigned Minimalist Aesthetics */
+    /* Redesigned Neutral Elegant Minimalist Aesthetics */
+    :root {
+        --bg-page: #ffffff;
+        --bg-card: #ffffff;
+        --text-main: #18181b;
+        --text-muted: #71717a;
+        --border-light: #e4e4e7;
+        --primary-elegant: #27272a;
+
+        --accent-subtle: #f4f4f5;
+    }
+
     .analyzer-container {
-        background: #f8fafc !important;
-        /* Extremely subtle off-white for contrast */
+        background: #fafafa !important;
+        /* Neutral 50 */
         min-height: 100vh;
+        color: var(--text-main);
     }
 
     .analyzer-card {
-        background: white;
-        border-radius: 40px;
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
-        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        background: var(--bg-card);
+        border-radius: 24px;
+        border: 1px solid var(--border-light);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        transition: all 0.3s ease;
         font-family: 'Quicksand', sans-serif;
     }
 
     body.dark-mode .analyzer-container {
-        background: var(--bg-page) !important;
+        background: #09090b !important;
+
     }
 
     .analyzer-title {
-        font-weight: 900 !important;
-        letter-spacing: -2px;
-        color: #1a1a1a;
+        font-weight: 800 !important;
+        letter-spacing: -1.5px;
+        color: var(--text-main);
     }
 
     .mic-wrap {
         position: relative;
-        width: 140px;
-        height: 140px;
+        width: 120px;
+        height: 120px;
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
     .mic-button-minimal {
-        width: 90px;
-        height: 90px;
+        width: 80px;
+        height: 80px;
         border-radius: 50%;
         background: white;
-        border: none;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        color: #1a1a1a;
+        border: 1px solid var(--border-light);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+        color: var(--text-main);
         cursor: pointer;
         z-index: 10;
         transition: all 0.3s ease;
@@ -69,130 +82,173 @@
     }
 
     .mic-button-minimal:hover {
-        transform: scale(1.05);
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        transform: scale(1.02);
+        border-color: #d4d4d8;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
     .mic-button-minimal.listening {
-        background: white;
-        color: #1a1a1a;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        background: #fafafa;
+        border-color: #22c55e;
+        /* Green for recording state */
+        color: #22c55e;
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
     }
-
 
     .recording-badge {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: rgba(34, 197, 94, 0.1);
-        color: #166534;
-        padding: 6px 16px;
+        background: rgba(0, 0, 0, 0.03);
+        color: #22c55e;
+        padding: 6px 14px;
         border-radius: 50px;
-        font-weight: 700;
+        font-weight: 600;
         font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        border: 1px solid rgba(34, 197, 94, 0.2);
         margin-bottom: 1rem;
     }
 
     body.dark-mode .recording-badge {
-        background: rgba(34, 197, 94, 0.2);
+        background: rgba(255, 255, 255, 0.05);
         color: #4ade80;
     }
 
     @keyframes pulse-green {
         0% {
-            transform: scale(0.9);
+            transform: scale(0.95);
             opacity: 1;
         }
 
         50% {
-            transform: scale(1.2);
-            opacity: 0.6;
+            transform: scale(1.05);
+            opacity: 0.7;
         }
 
         100% {
-            transform: scale(0.9);
+            transform: scale(0.95);
             opacity: 1;
         }
     }
 
-    @keyframes pulse-out {
-        0% {
-            transform: scale(0.8);
-            opacity: 0.3;
-        }
-
-        100% {
-            transform: scale(1.4);
-            opacity: 0;
-        }
-    }
-
     .transcription-area {
-        background: #f8fafc;
-        border-radius: 24px;
-        border: 1px solid rgba(0, 0, 0, 0.02);
+        background: #fafafa;
+        border-radius: 16px;
+        border: 1px solid transparent;
         min-height: 100px;
         width: 100%;
         margin-top: 2rem;
+        transition: background 0.2s;
+    }
+
+    .transcription-area:hover {
+        background: #f4f4f5;
     }
 
     .stats-card-minimal {
         background: #ffffff;
         border-radius: 20px;
         padding: 1.25rem;
-        border: 1px solid rgba(0, 0, 0, 0.04);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
-        transition: all 0.3s ease;
+        border: 1px solid var(--border-light);
+        box-shadow: none;
+        transition: all 0.2s ease;
     }
 
     .stats-card-minimal:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        border-color: #d4d4d8;
+        transform: translateY(-2px);
     }
 
     .macro-dot {
-        width: 10px;
-        height: 10px;
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
         display: inline-block;
         margin-right: 8px;
     }
 
     /* Dark Mode Improvements */
+    body.dark-mode {
+        --bg-page: #09090b;
+        --bg-card: #18181b;
+        --text-main: #f4f4f5;
+        --text-muted: #a1a1aa;
+        --border-light: #27272a;
+        --primary-elegant: #fafafa;
+        --accent-subtle: #27272a;
+    }
+
     body.dark-mode .analyzer-card {
-        background: #111827;
-        border-color: rgba(255, 255, 255, 0.05);
+        background: var(--bg-card);
+        border-color: var(--border-light);
     }
 
     body.dark-mode .mic-button-minimal {
-        background: #1f2937;
-        color: white;
+        background: #27272a;
+        border-color: #3f3f46;
+        color: #e4e4e7;
     }
 
     body.dark-mode .transcription-area {
-        background: #1f2937;
+        background: #27272a;
     }
 
     body.dark-mode .stats-card-minimal {
-        background: #1f2937;
+        background: #18181b;
+        border-color: #27272a;
     }
 
-    /* Modal Glass */
+    body.dark-mode .stats-value {
+        color: #f4f4f5;
+    }
+
+    body.dark-mode .analyzer-title,
+    body.dark-mode .text-dark,
+    body.dark-mode h1,
+    body.dark-mode h2,
+    body.dark-mode h3,
+    body.dark-mode h4,
+    body.dark-mode h5,
+    body.dark-mode h6,
+    body.dark-mode .fw-bold.text-dark {
+        color: #f4f4f5 !important;
+    }
+
+    body.dark-mode .text-muted {
+        color: #a1a1aa !important;
+    }
+
+    body.dark-mode .bg-white {
+        background-color: #18181b !important;
+        color: #f4f4f5;
+    }
+
+    body.dark-mode .form-control {
+        background-color: #18181b;
+        border-color: #27272a;
+        color: #f4f4f5;
+    }
+
+    body.dark-mode .form-control:focus {
+        background-color: #18181b;
+        border-color: #22c55e;
+        color: #f4f4f5;
+    }
+
+    /* Modal Glass - Cleaner */
     .modal-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.4);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
+        background: rgba(0, 0, 0, 0.5);
+        /* Darker backdrop */
+        backdrop-filter: blur(4px);
         z-index: 9999;
         display: none;
         align-items: center;
         justify-content: center;
         opacity: 0;
-        transition: opacity 0.3s ease;
+        transition: opacity 0.2s ease;
     }
 
     .modal-overlay.show {
@@ -201,64 +257,77 @@
     }
 
     .modal-glass {
-        background: rgba(255, 255, 255, 0.95);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        border-radius: 32px;
-        padding: 2.5rem;
+        background: #ffffff;
+        border: 1px solid var(--border-light);
+        border-radius: 24px;
+        padding: 2rem;
         width: 90%;
-        max-width: 500px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        transform: scale(0.95);
-        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        max-width: 480px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        transform: scale(0.98);
+        transition: transform 0.2s ease;
     }
 
     .modal-overlay.show .modal-glass {
         transform: scale(1);
     }
 
-    /* Date Chips */
+    /* Date Chips - Minimal */
     .date-chip-glass {
-        min-width: 100px;
-        background: #f8fafc;
-        border: 2px solid transparent;
-        border-radius: 20px;
-        padding: 1rem;
+        min-width: 90px;
+        background: transparent;
+        border: 1px solid var(--border-light);
+        border-radius: 16px;
+        padding: 0.75rem;
         cursor: pointer;
         transition: all 0.2s ease;
         text-align: center;
     }
 
     .date-chip-glass:hover {
-        background: #f1f5f9;
-        transform: translateY(-2px);
+        background: #f4f4f5;
+        border-color: #d4d4d8;
     }
 
     .date-chip-glass.selected {
-        background: #dcfce7;
-        border-color: var(--primary-lime);
-        color: #166534;
+        background: #18181b;
+        border-color: #18181b;
+        color: white;
+    }
+
+    .date-chip-glass.selected small,
+    .date-chip-glass.selected span {
+        color: white !important;
     }
 
     body.dark-mode .modal-glass {
-        background: #1f2937;
-        border-color: rgba(255, 255, 255, 0.1);
+        background: #18181b;
+        border-color: #3f3f46;
     }
 
     body.dark-mode .date-chip-glass {
-        background: #374151;
-        color: #e5e7eb;
+        border-color: #3f3f46;
+        color: #e4e4e7;
+    }
+
+    body.dark-mode .date-chip-glass:hover {
+        background: #27272a;
     }
 
     body.dark-mode .date-chip-glass.selected {
-        background: rgba(133, 200, 26, 0.2);
-        color: var(--primary-lime);
-        border-color: var(--primary-lime);
+        background: #fafafa;
+        border-color: #fafafa;
+        color: #18181b;
     }
 
-    /* Mode Toggle Switch - Fluid Movement */
+    body.dark-mode .date-chip-glass.selected * {
+        color: #18181b !important;
+    }
+
+    /* Mode Toggle Switch - Minimal pill */
     .mode-toggle-wrapper {
-        background: #f1f5f9;
-        padding: 5px;
+        background: #f4f4f5;
+        padding: 4px;
         border-radius: 100px;
         display: inline-flex;
         position: relative;
@@ -266,42 +335,41 @@
         margin-bottom: 2.5rem;
         z-index: 1;
         overflow: hidden;
+        border: 1px solid transparent;
     }
 
     .mode-btn {
         border: none;
         background: transparent;
-        padding: 12px 30px;
+        padding: 10px 24px;
         border-radius: 100px;
-        font-weight: 700;
-        font-size: 0.95rem;
-        color: #64748b;
-        transition: color 0.4s ease;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #71717a;
+        transition: color 0.3s ease;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
         position: relative;
         z-index: 2;
-        width: 140px;
+        width: 130px;
         justify-content: center;
     }
 
     .mode-btn.active {
-        color: #1a1a1a;
-        background: transparent !important;
-        box-shadow: none !important;
+        color: #18181b !important;
     }
 
     .toggle-pill {
         position: absolute;
-        top: 5px;
-        left: 5px;
-        height: calc(100% - 10px);
-        width: calc(50% - 5px);
+        top: 4px;
+        left: 4px;
+        height: calc(100% - 8px);
+        width: calc(50% - 4px);
         background: white;
         border-radius: 100px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         z-index: 0;
     }
 
@@ -310,21 +378,31 @@
     }
 
     body.dark-mode .mode-toggle-wrapper {
-        background: #1f2937;
+        background: #27272a;
     }
 
-    /* Button Styles */
+    body.dark-mode .toggle-pill {
+        background: #3f3f46;
+        box-shadow: none;
+    }
+
+    body.dark-mode .mode-btn.active {
+        color: white !important;
+    }
+
+    /* Button Styles - Elegant Dark */
     .btn-nunut {
-        background: var(--primary);
+        background: #18181b;
+
         color: white;
         border: none;
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transition: all 0.2s ease;
     }
 
     .btn-nunut:hover {
-        background: var(--primary-dark);
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(133, 200, 26, 0.3);
+        background: #27272a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         color: white;
     }
 
@@ -332,78 +410,153 @@
         transform: scale(0.98);
     }
 
-    /* Mode Toggle Updates */
-    .mode-toggle-wrapper {
-        background: white;
-        border: 1px solid rgba(0, 0, 0, 0.05);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    body.dark-mode .btn-nunut {
+        background: #fafafa;
+        color: #18181b;
     }
 
-    .toggle-pill {
-        background: var(--primary);
-        box-shadow: 0 4px 15px rgba(133, 200, 26, 0.4);
-    }
-
-    .mode-btn.active {
-        color: white !important;
-    }
-
-    body.dark-mode .mode-btn.active {
-        color: white !important;
+    body.dark-mode .btn-nunut:hover {
+        background: #f4f4f5;
     }
 
     /* Analysis Section Clean Up */
-    /* Utilities */
-    .hover-scale {
-        transition: transform 0.2s ease;
-    }
-
-    .hover-scale:hover {
-        transform: scale(1.05);
-    }
-
-    .stats-card-minimal {
-        background: #f8fafc;
-        border: 1px solid rgba(0, 0, 0, 0.03);
-        border-radius: 24px;
-        padding: 1.5rem 1rem;
-        transition: all 0.3s ease;
-    }
-
-    .stats-card-minimal:hover {
-        background: white;
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-        border-color: var(--primary);
-    }
-
     .stats-label {
-        font-size: 0.75rem;
-        font-weight: 700;
-        letter-spacing: 1px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
         text-transform: uppercase;
-        color: #94a3b8;
+        color: #a1a1aa;
         margin-bottom: 0.5rem;
         display: block;
     }
 
     .stats-value {
         font-size: 1.5rem;
-        font-weight: 800;
-        color: #334155;
+        font-weight: 700;
+        color: #18181b;
     }
 
-    body.dark-mode .stats-card-minimal {
-        background: #1f2937;
-        border-color: rgba(255, 255, 255, 0.05);
+    /* VIBE UI ADDITIONS */
+    .circular-chart {
+        display: block;
+        margin: 0 auto;
+        max-width: 100%;
+        max-height: 250px;
     }
 
-    body.dark-mode .stats-value {
-        color: #e2e8f0;
+    .circle-bg {
+        fill: none;
+        stroke: #f3f4f6;
+        stroke-width: 2.5;
     }
 
-    body.dark-mode .toggle-pill {
-        background: var(--primary);
+    .circle {
+        fill: none;
+        stroke-width: 2.5;
+        stroke-linecap: round;
+        /* Stroke color set via JS */
+    }
+
+    .hover-scale {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hover-scale:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .custom-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 20px;
+    }
+
+    .ls-1 {
+        letter-spacing: 1px;
+    }
+
+    .ls-2 {
+        letter-spacing: 2px;
+    }
+
+    /* Dark Mode Vibe Overrides */
+    body.dark-mode .circle-bg {
+        stroke: #27272a;
+    }
+
+    body.dark-mode .text-dark {
+        color: #f4f4f5 !important;
+    }
+
+    body.dark-mode .bg-white {
+        background: #18181b !important;
+    }
+
+    body.dark-mode .bg-light {
+        background: #27272a !important;
+    }
+
+    body.dark-mode .border {
+        border-color: #3f3f46 !important;
+    }
+
+    body.dark-mode #transcriptionText {
+        color: #e4e4e7 !important;
+    }
+
+    /* TOAST NOTIFICATIONS */
+    #toast-container {
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        pointer-events: none;
+        width: 90%;
+        max-width: 400px;
+    }
+
+    .custom-toast {
+        background: white;
+        color: var(--text-main);
+        padding: 1rem 1.25rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: auto;
+        border: 1px solid var(--border-light);
+    }
+
+    body.dark-mode .custom-toast {
+        background: #18181b;
+        border-color: #3f3f46;
+        color: #f4f4f5;
+    }
+
+    @keyframes slideUpFade {
+        from {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
     }
 </style>
 <!-- NEW MINIMALIST UI -->
@@ -424,12 +577,12 @@
             </div>
         </div>
 
-        <div class="row g-4 scroll-mt-large">
+        <div class="row g-4 pt-4">
             <!-- LEFT: INPUT & INTERACTION -->
             <div class="col-12 col-lg-6">
                 <div class="analyzer-card p-5 h-100">
                     <div class="d-flex flex-column align-items-center text-center">
-                        <h1 class="analyzer-title mb-1 display-6">Analiza tu plato</h1>
+                        <h1 class="analyzer-title mb-1 display-6" style="color: var(--text-main);">Analiza tu plato </h1>
                         <p class="text-muted mb-4">Voz o texto, nuestra IA lo entiende todo.</p>
 
                         <!-- Toggle Switch -->
@@ -459,12 +612,17 @@
                                 </div>
                             </div>
 
-                            <h4 id="voiceStatus" class="fw-bold mb-2">Presiona para hablar</h4>
-                            <p id="voiceHint" class="text-muted small px-4 mb-4" style="line-height: 1.4;">"He comido un
-                                salmón a la plancha con espárragos"</p>
+                            <h4 id="voiceStatus" class="fw-bold mb-2 text-dark">Presiona para hablar</h4>
+                            <div class="alert alert-light border-0 bg-transparent text-muted small px-3 mb-4 mx-auto"
+                                style="max-width: 400px; line-height: 1.5;">
+                                <i class="material-symbols-outlined align-bottom fs-6 me-1 text-warning">lightbulb</i>
+                                <strong>Tip:</strong> Mientras más detalles des (cantidades, marcas, o tipo de
+                                cocción), más preciso será el análisis.
+                                <br><em class="opacity-75">"200g de salmón a la plancha" es mejor que "Salmón"</em>
+                            </div>
 
                             <div class="transcription-area p-4 text-start">
-                                <p id="transcriptionText" class="mb-0 fw-medium lead" style="color: #334155;">
+                                <p id="transcriptionText" class="mb-0 fw-medium lead" style="color: var(--text-main);">
                                     <span class="opacity-25">Tu transcripción aparecerá aquí...</span>
                                 </p>
                             </div>
@@ -473,11 +631,15 @@
                         <!-- Text Section -->
                         <div id="text-container" class="w-100 d-none">
                             <div class="p-2">
-                                <textarea id="textInput" class="form-control rounded-5 border-0 bg-light p-4 fs-5"
-                                    rows="6"
+                                <textarea id="textInput"
+                                    class="form-control rounded-4 border-light bg-white p-4 fs-5 shadow-sm" rows="5"
                                     placeholder="Ej: Plato de pasta con tomate y queso parmesano..."></textarea>
-                                <p class="text-muted small mt-3">Escribe los detalles de tu comida para un análisis
-                                    preciso.</p>
+
+                                <div class="d-flex align-items-start gap-2 mt-3 text-muted small">
+                                    <i class="material-symbols-outlined fs-6 mt-1 text-warning">lightbulb</i>
+                                    <span><strong>Tip:</strong> Indica cantidades (tazas, gramos, cucharadas) para
+                                        un resultado exacto. I.A. estima lo que no digas.</span>
+                                </div>
                             </div>
                         </div>
 
@@ -500,122 +662,290 @@
                     <div class="mb-4 text-muted">
                         <span class="material-symbols-outlined" style="font-size: 80px; opacity: 0.1;">fastfood</span>
                     </div>
-                    <h3 class="fw-bold">Sin datos aún</h3>
-                    <p class="text-muted">Procesa una comida para ver el desglose nutricional profesional aquí.</p>
+                    <h3 class="fw-bold text-dark">Sin datos aún</h3>
+                    <p class="text-muted">Procesa una comida para ver el desglose nutricional, micronutrientes y
+                        calificación de salud aquí.</p>
                 </div>
 
                 <!-- Result Content -->
-                <div id="analysisResultContent" class="d-none h-100 flex-column gap-4">
-                    <!-- Main Summary -->
-                    <div class="analyzer-card p-4 p-md-5 border shadow-sm" style="background: #ffffff; color: #1e293b;">
-                        <div class="d-flex justify-content-between align-items-start mb-4">
-                            <div>
-                                <h2 id="totalCalories" class="display-3 fw-900 mb-0 text-dark"
+                <div id="analysisResultContent" class="d-none h-100 flex-column gap-3">
+
+                    <!-- 1. Header & Score -->
+                    <div class="analyzer-card p-4 border shadow-sm">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1 pe-3">
+                                <h2 id="totalCalories" class="display-4 fw-bold mb-0 text-dark"
                                     style="letter-spacing: -2px;">0</h2>
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="text-muted fw-bold fs-7 text-uppercase">kcal totales</span>
-                                    <span
-                                        class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 py-1 px-3 rounded-pill fw-bold small">ANALIZADO</span>
+                                <span class="text-uppercase fw-bold text-muted small ls-1">Kcal Totales</span>
+                            </div>
+                            <!-- Health Score Badge -->
+                            <div class="text-center p-3 rounded-4 bg-light">
+                                <span class="d-block fw-bold small text-muted text-uppercase mb-1">Score</span>
+                                <div id="healthScoreBadge"
+                                    class="d-flex align-items-center justify-content-center bg-dark text-white rounded-circle"
+                                    style="width: 50px; height: 50px; font-weight: 800;">
+                                    <span id="healthScoreVal">--</span>
                                 </div>
                             </div>
-                            <button
-                                class="btn btn-white border shadow-sm text-dark px-4 py-2 rounded-pill fw-bold hover-scale"
-                                onclick="showCalendarModal()">
-                                <span
-                                    class="material-symbols-outlined fs-5 align-middle me-1 text-success">calendar_today</span>
-                                Guardar
-                            </button>
                         </div>
-                        <p id="dishDescription" class="text-muted lead mb-0 fw-medium">Describe tu plato para empezar.
-                        </p>
+
+                        <div class="mt-4">
+                            <h4 id="dishTitle" class="fw-bold text-dark mb-2">Plato Detectado</h4>
+                            <p id="dishDescription" class="text-muted mb-3"
+                                style="font-size: 0.95rem; line-height: 1.6;">...</p>
+
+                            <div id="verdictBadge"
+                                class="d-inline-block px-3 py-1 rounded-pill bg-light text-dark fw-bold small border">
+                                --
+                            </div>
+                        </div>
+
+                        <div class="mt-3 pt-3 border-top">
+                            <div
+                                class="d-flex align-items-center gap-2 text-dark bg-warning bg-opacity-10 p-3 rounded-3">
+                                <span class="material-symbols-outlined text-warning">tips_and_updates</span>
+                                <small class="fw-bold" id="improvementTip">...</small>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-dark w-100 mt-3 rounded-pill fw-bold py-2" onclick="showCalendarModal()">
+                            <span class="material-symbols-outlined align-middle fs-5 me-1">calendar_today</span>
+                            Guardar en Diario
+                        </button>
                     </div>
 
-                    <!-- Macro Breakdown Minimalist -->
-                    <div class="row g-3">
-                        <div class="col-4">
-                            <div class="stats-card-minimal text-center">
-                                <span class="stats-label">Proteína</span>
-                                <h4 id="totalProtein" class="stats-value mb-0">0g</h4>
+                    <!-- 2. Macros Grid -->
+                    <div class="row g-2">
+                        <div class="col-3">
+                            <div class="stats-card-minimal text-center py-3 px-1">
+                                <span class="stats-label" style="font-size: 0.65rem;">PROTEÍNA</span>
+                                <h5 id="totalProtein" class="fw-bold text-dark mb-0">0g</h5>
                             </div>
                         </div>
-                        <div class="col-4">
-                            <div class="stats-card-minimal text-center">
-                                <span class="stats-label">Carbos</span>
-                                <h4 id="totalCarbs" class="stats-value mb-0">0g</h4>
+                        <div class="col-3">
+                            <div class="stats-card-minimal text-center py-3 px-1">
+                                <span class="stats-label" style="font-size: 0.65rem;">CARBOS</span>
+                                <h5 id="totalCarbs" class="fw-bold text-dark mb-0">0g</h5>
                             </div>
                         </div>
-                        <div class="col-4">
-                            <div class="stats-card-minimal text-center">
-                                <span class="stats-label">Grasas</span>
-                                <h4 id="miniFatVal" class="stats-value mb-0">0g</h4>
+                        <div class="col-3">
+                            <div class="stats-card-minimal text-center py-3 px-1">
+                                <span class="stats-label" style="font-size: 0.65rem;">GRASAS</span>
+                                <h5 id="miniFatVal" class="fw-bold text-dark mb-0">0g</h5>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="stats-card-minimal text-center py-3 px-1">
+                                <span class="stats-label" style="font-size: 0.65rem;">FIBRA</span>
+                                <h5 id="totalFiber" class="fw-bold text-dark mb-0">0g</h5>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Ingredients -->
+                    <!-- 3. DETAILED MICROS & INGREDIENTS TABS -->
                     <div class="analyzer-card p-4 flex-grow-1">
-                        <h6 class="fw-black mb-3 px-2">DETALLE DE INGREDIENTES</h6>
-                        <div id="ingredientsList" class="d-flex flex-column gap-2 overflow-auto"
-                            style="max-height: 250px;">
-                            <!-- Injected -->
+                        <ul class="nav nav-pills nav-fill mb-3 p-1 bg-light rounded-pill" id="detailsTab" role="tablist"
+                            style="max-width: 100%;">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active rounded-pill fw-bold py-2 small text-dark" id="ing-tab"
+                                    data-bs-toggle="pill" data-bs-target="#ing-content" type="button"
+                                    role="tab">Ingredientes</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link rounded-pill fw-bold py-2 small text-dark" id="micro-tab"
+                                    data-bs-toggle="pill" data-bs-target="#micro-content" type="button"
+                                    role="tab">Micronutrientes</button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="detailsTabContent">
+                            <div class="tab-pane fade show active" id="ing-content" role="tabpanel">
+                                <div id="ingredientsList" class="d-flex flex-column gap-2 overflow-auto custom-scroll"
+                                    style="max-height: 200px;">
+                                    <!-- Injected -->
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="micro-content" role="tabpanel">
+                                <div id="microsList" class="row g-2">
+                                    <!-- Injected -->
+                                </div>
+                            </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<script>
+    // Analysis Display Logic
+    // window.displayAnalysis is defined here, but main initialization happens below.
 
+    window.displayAnalysis = function (analysis) {
+        const emptyState = document.getElementById('emptyAnalysisState');
+        const resultContent = document.getElementById('analysisResultContent');
+        if (emptyState) emptyState.classList.add('d-none');
+        if (resultContent) {
+            resultContent.classList.remove('d-none');
+            resultContent.classList.add('d-flex');
+        }
 
-<!-- Calendar Modal Glass -->
-<div class="modal-overlay" id="calendarModal">
-    <div class="modal-glass">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="fw-bold m-0 text-dark">¿Cuándo lo comiste?</h4>
-            <button class="btn btn-sm btn-light rounded-circle shadow-sm" onclick="hideCalendarModal()">
-                <span class="material-symbols-outlined">close</span>
+        const updateText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+        // Header
+        // Header
+        updateText('totalCalories', analysis.calorias || 0);
+        updateText('dishTitle', analysis.titulo || 'Plato Analizado');
+        updateText('dishDescription', analysis.descripcion || 'Sin descripción disponible.');
+        updateText('healthScoreVal', analysis.score_saludable || '-');
+        updateText('verdictBadge', analysis.veredicto_corto ? `<span class="material-symbols-outlined fs-6">verified</span> ${analysis.veredicto_corto}` : 'Análisis Completo');
+        updateText('improvementTip', analysis.consejo_mejora || 'Mantén una dieta balanceada.');
+
+        // Vibe animation for Score Ring
+        const scorePath = document.getElementById('scoreCirclePath');
+        if (scorePath && analysis.score_saludable) {
+            // Reset stroke
+            scorePath.style.strokeDasharray = "0, 100";
+            setTimeout(() => {
+                const score = parseInt(analysis.score_saludable);
+                scorePath.style.transition = "stroke-dasharray 1.5s ease-out";
+                scorePath.style.strokeDasharray = `${score}, 100`;
+
+                // Color based on score
+                if (score >= 80) scorePath.style.stroke = "#10b981"; // Emerald
+                else if (score >= 50) scorePath.style.stroke = "#f59e0b"; // Amber
+                else scorePath.style.stroke = "#ef4444"; // Red
+            }, 100);
+        }
+
+        // Macros icons injection is automatic via CSS borders now, just values
+        updateText('totalProtein', (analysis.proteinas || 0) + 'g');
+        updateText('totalCarbs', (analysis.carbohidratos || 0) + 'g');
+        updateText('miniFatVal', (analysis.grasas || 0) + 'g');
+        updateText('totalFiber', (analysis.fibra || 0) + 'g');
+
+        // Ingredients
+        const ingredientsList = document.getElementById('ingredientsList');
+        if (ingredientsList) {
+            if (analysis.ingredientes && analysis.ingredientes.length > 0) {
+                ingredientsList.innerHTML = analysis.ingredientes.map(ing => `
+                    <div class="d-flex align-items-center gap-3 p-3 rounded-4 border border-light mb-1 bg-white">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 fw-bold text-dark fs-6">${ing.nombre || ing}</h6>
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">${ing.cantidad || ''}</small>
+                                ${ing.calorias_aprox ? `<small class="text-muted fw-bold">${ing.calorias_aprox} kcal</small>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                ingredientsList.innerHTML = '<p class="text-muted small px-3">No se detectaron ingredientes específicos.</p>';
+            }
+        }
+
+        // Micros
+        const microsList = document.getElementById('microsList');
+        if (microsList && analysis.micronutrientes) {
+            const m = analysis.micronutrientes;
+            // Lista de micros a mostrar si existen
+            const items = [
+                { label: 'Vit. A', val: m.vitamina_a_iu, unit: 'IU' },
+                { label: 'Vit. C', val: m.vitamina_c_mg, unit: 'mg' },
+                { label: 'Calcio', val: m.calcio_mg, unit: 'mg' },
+                { label: 'Hierro', val: m.hierro_mg, unit: 'mg' },
+                { label: 'Potasio', val: m.potasio_mg, unit: 'mg' },
+                { label: 'Sodio', val: analysis.sodio_mg, unit: 'mg' },
+                { label: 'Azúcar', val: analysis.azucar, unit: 'g' },
+            ];
+
+            microsList.innerHTML = items.map(item => {
+                if (!item.val) return '';
+                return `
+                        <div class="col-6 col-md-4">
+                            <div class="p-2 border rounded-3 text-center bg-light">
+                                <small class="d-block text-muted text-uppercase" style="font-size: 0.65rem;">${item.label}</small>
+                                <span class="fw-bold text-dark">${item.val}${item.unit}</span>
+                            </div>
+                        </div>
+                     `;
+            }).join('');
+
+            if (microsList.innerHTML === '') microsList.innerHTML = '<p class="text-muted small text-center w-100">Sin datos significativos de micronutrientes.</p>';
+        }
+    };
+</script>
+
+<!-- Consumption Modal Glass -->
+<div class="modal-overlay" id="consumptionModal">
+    <div class="modal-glass text-center">
+        <div class="mb-4">
+            <span class="material-symbols-outlined text-success" style="font-size: 64px;">check_circle</span>
+            <h3 class="fw-bold mt-2 text-dark">¿Registrar consumo?</h3>
+            <p class="text-muted">Se añadirán <strong id="modalCalVal">0</strong> kcal a tu progreso de hoy.</p>
+        </div>
+
+        <div class="d-flex flex-column gap-3">
+            <button
+                class="btn btn-nunut w-100 rounded-pill py-3 fw-bold shadow-lg d-flex justify-content-center align-items-center gap-2"
+                id="btnConfirmToday" onclick="registerMealNow()">
+                <span class="material-symbols-outlined">today</span>
+                Sí, lo comí hoy
+            </button>
+
+            <button class="btn btn-light w-100 rounded-pill py-3 fw-bold text-muted border"
+                onclick="showDatePickerState()">
+                Fue otro día...
+            </button>
+
+            <button class="btn btn-link text-muted text-decoration-none mt-2" onclick="hideConsumptionModal()">
+                Cancelar
             </button>
         </div>
 
-        <div class="d-flex gap-2 overflow-auto pb-3 mb-3" id="miniCalendarDays"
-            style="scrollbar-width: none; -ms-overflow-style: none;">
-            <!-- Days will be injected by JS -->
+        <!-- Date Picker State (Hidden by default) -->
+        <div id="datePickerState" class="d-none mt-4 pt-4 border-top">
+            <h5 class="fw-bold text-dark mb-3">Elige la fecha</h5>
+            <div class="d-flex gap-2 overflow-auto pb-3 mb-3" id="miniCalendarDays"
+                style="scrollbar-width: none; -ms-overflow-style: none;">
+                <!-- Injected via JS -->
+            </div>
+            <button class="btn btn-dark w-100 rounded-pill py-2 fw-bold" onclick="registerMealCustomDate()">
+                Guardar en fecha seleccionada
+            </button>
         </div>
-
-        <button
-            class="btn btn-nunut w-100 rounded-pill py-3 fw-bold shadow-lg d-flex justify-content-center align-items-center gap-2"
-            id="confirmAddBtn" onclick="confirmAddToCalendar()">
-            <span class="material-symbols-outlined">check_circle</span>
-            Confirmar y Añadir
-        </button>
     </div>
 </div>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
 
 <script>
     if (typeof window.analizadorIniciado === 'undefined') {
         window.analizadorIniciado = true;
 
         // --- Global Config & State ---
-        var isRecording = isRecording || false;
-        var mediaRecorder = mediaRecorder || null;
-        var audioChunks = audioChunks || [];
-        var currentAnalysis = currentAnalysis || null;
-        var selectedDate = selectedDate || null;
-        var audioContext = audioContext || null;
-        var analyser = analyser || null;
-        var animationId = animationId || null;
-        var recognition = recognition || null;
+        window.isRecording = window.isRecording || false;
+        window.mediaRecorder = window.mediaRecorder || null;
+        window.audioChunks = window.audioChunks || [];
+        window.currentAnalysis = window.currentAnalysis || null;
+        window.selectedDate = window.selectedDate || new Date().toISOString().split('T')[0];
+        window.audioContext = window.audioContext || null;
+        window.analyser = window.analyser || null;
+        window.animationId = window.animationId || null;
+        window.recognition = window.recognition || null;
 
-        function initRecognition() {
-            if (recognition) return;
+        window.initRecognition = function () {
+            if (window.recognition) return;
             if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
                 const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-                recognition = new SpeechRec();
-                recognition.continuous = true;
-                recognition.interimResults = true;
-                recognition.lang = 'es-ES';
-                recognition.onresult = (e) => {
+                window.recognition = new SpeechRec();
+                window.recognition.continuous = true;
+                window.recognition.interimResults = true;
+                window.recognition.lang = 'es-ES';
+                window.recognition.onresult = (e) => {
                     let fullText = '';
                     for (let i = 0; i < e.results.length; i++) fullText += e.results[i][0].transcript + ' ';
                     const el = document.getElementById('transcriptionText');
@@ -627,11 +957,10 @@
                     if (analyzeBtn && fullText.trim().length > 5) analyzeBtn.classList.remove('d-none');
                 };
             }
-        }
-        initRecognition();
+        };
+        window.initRecognition();
 
         // --- Core Interaction Functions ---
-
         window.switchMode = function (mode) {
             const wrapper = document.querySelector('.mode-toggle-wrapper');
             if (wrapper) wrapper.setAttribute('data-mode', mode);
@@ -655,22 +984,10 @@
         };
 
         window.toggleVoiceRecording = async function () {
-            if (isRecording) {
+            if (window.isRecording) {
                 stopVoiceRecording();
             } else {
-                if (typeof showConfirmModal === 'function') {
-                    showConfirmModal({
-                        title: 'Activar Micrófono',
-                        message: 'Usaremos la IA para transcribir lo que digas. ¿Deseas comenzar la grabación?',
-                        icon: 'mic',
-                        yesText: 'Empezar ahora',
-                        onConfirm: () => {
-                            startVoiceRecording();
-                        }
-                    });
-                } else {
-                    startVoiceRecording();
-                }
+                startVoiceRecording();
             }
         };
 
@@ -678,80 +995,75 @@
             const micButton = document.getElementById('micButton');
             const micWrapper = document.getElementById('micWrapper');
             const voiceStatus = document.getElementById('voiceStatus');
-            const voiceHint = document.getElementById('voiceHint');
             const listeningIndicator = document.getElementById('listeningIndicator');
 
             try {
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    throw new Error("HTTPS o navegador moderno requerido para grabar.");
+                    throw new Error("HTTPS requerido para grabar.");
                 }
 
                 const stream = await navigator.mediaDevices.getUserMedia({
                     audio: { echoCancellation: true, noiseSuppression: true }
                 });
 
-                isRecording = true;
+                window.isRecording = true;
                 if (micButton) micButton.classList.add('listening');
                 if (micWrapper) micWrapper.classList.add('recording-active');
-                if (voiceStatus) {
-                    voiceStatus.textContent = 'Estamos escuchando...';
-                }
+                if (voiceStatus) voiceStatus.textContent = 'Estamos escuchando...';
+
                 const recInd = document.getElementById('recordingIndicator');
                 if (recInd) recInd.classList.remove('d-none');
 
-                if (voiceHint) voiceHint.classList.add('opacity-50');
                 if (navigator.vibrate) navigator.vibrate(50);
 
-                // --- VOICE VISUALIZER ---
+                // --- VISUALIZER ---
                 try {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    analyser = audioContext.createAnalyser();
-                    const source = audioContext.createMediaStreamSource(stream);
-                    source.connect(analyser);
-                    analyser.fftSize = 256;
-                    const bufferLength = analyser.frequencyBinCount;
+                    window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    window.analyser = window.audioContext.createAnalyser();
+                    const source = window.audioContext.createMediaStreamSource(stream);
+                    source.connect(window.analyser);
+                    window.analyser.fftSize = 256;
+                    const bufferLength = window.analyser.frequencyBinCount;
                     const dataArray = new Uint8Array(bufferLength);
 
                     let smoothedAverage = 0;
                     const updateVisuals = () => {
-                        if (!isRecording) return;
-                        analyser.getByteFrequencyData(dataArray);
+                        if (!window.isRecording) return;
+                        window.analyser.getByteFrequencyData(dataArray);
                         let sum = 0;
                         for (let i = 0; i < bufferLength; i++) sum += dataArray[i];
                         const average = sum / bufferLength;
-
-                        // Smoothed scaling logic
                         smoothedAverage += (average - smoothedAverage) * 0.15;
                         const scale = 1 + (smoothedAverage / 120);
 
                         if (micButton) micButton.style.transform = `scale(${scale})`;
-                        animationId = requestAnimationFrame(updateVisuals);
+                        window.animationId = requestAnimationFrame(updateVisuals);
                     };
                     updateVisuals();
                 } catch (vizErr) {
                     console.warn("Visualizer failed:", vizErr);
                 }
 
-                if (recognition) {
-                    try { recognition.start(); } catch (e) { }
+                if (window.recognition) {
+                    try { window.recognition.start(); } catch (e) { }
                 }
 
                 const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
-                mediaRecorder = new MediaRecorder(stream, { mimeType });
-                audioChunks = [];
+                window.mediaRecorder = new MediaRecorder(stream, { mimeType });
+                window.audioChunks = [];
 
-                mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
-                mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: mimeType });
+                window.mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) window.audioChunks.push(e.data); };
+                window.mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(window.audioChunks, { type: mimeType });
                     await sendAudioToServer(audioBlob);
                     stream.getTracks().forEach(track => track.stop());
                 };
 
-                mediaRecorder.start();
+                window.mediaRecorder.start();
 
             } catch (err) {
                 console.error("Grabación fallida:", err);
-                isRecording = false;
+                window.isRecording = false;
                 if (micButton) micButton.classList.remove('listening');
                 if (micWrapper) micWrapper.classList.remove('recording-active');
                 if (voiceStatus) voiceStatus.textContent = 'Error';
@@ -760,12 +1072,12 @@
         }
 
         function stopVoiceRecording() {
-            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                mediaRecorder.stop();
-                if (recognition) try { recognition.stop(); } catch (e) { }
-                isRecording = false;
-                if (animationId) cancelAnimationFrame(animationId);
-                if (audioContext) audioContext.close();
+            if (window.mediaRecorder && window.mediaRecorder.state !== 'inactive') {
+                window.mediaRecorder.stop();
+                if (window.recognition) try { window.recognition.stop(); } catch (e) { }
+                window.isRecording = false;
+                if (window.animationId) cancelAnimationFrame(window.animationId);
+                if (window.audioContext) window.audioContext.close();
 
                 const micButton = document.getElementById('micButton');
                 const micWrapper = document.getElementById('micWrapper');
@@ -774,6 +1086,7 @@
                     micButton.style.transform = '';
                 }
                 if (micWrapper) micWrapper.classList.remove('recording-active');
+
                 const recInd = document.getElementById('recordingIndicator');
                 if (recInd) recInd.classList.add('d-none');
 
@@ -788,6 +1101,15 @@
             const formData = new FormData();
             formData.append('audio_file', blob, 'recording.webm');
 
+            console.log('Fetching URL:', '/api/transcribir_audio/');
+
+            // Feedback inmediato
+            const el = document.getElementById('transcriptionText');
+            if (el) {
+                el.textContent = "Transcribiendo audio...";
+                el.style.opacity = "0.7";
+            }
+
             try {
                 const response = await fetch('/api/transcribir_audio/', {
                     method: 'POST',
@@ -795,7 +1117,7 @@
                     body: formData
                 });
 
-                const data = await response.json().catch(() => ({ success: false, error: "Respuesta no válida del servidor" }));
+                const data = await response.json().catch(() => ({ success: false, error: "Respuesta inválida" }));
 
                 if (response.ok && data.success) {
                     const el = document.getElementById('transcriptionText');
@@ -809,30 +1131,18 @@
                     const analyzeBtn = document.getElementById('analyzeMainBtn');
                     if (analyzeBtn) analyzeBtn.classList.remove('d-none');
 
-                    if (data.analisis) currentAnalysis = data.analisis;
+                    if (data.analisis) window.currentAnalysis = data.analisis;
                 } else {
-                    // Manejo específico de cuotas / límites
                     if (data.error_type === 'QUOTA_EXCEEDED') {
-                        showError('⏳ ' + data.error);
-                        const voiceStatus = document.getElementById('voiceStatus');
-                        if (voiceStatus) voiceStatus.textContent = 'Límite alcanzado';
-                        return;
-                    }
-
-                    if (!data.text) {
-                        throw new Error(data.error || "Error desconocido");
+                        if (typeof showError === 'function') showError('⏳ ' + data.error);
                     } else {
                         const el = document.getElementById('transcriptionText');
-                        if (el) el.textContent = data.text;
-                        console.warn("Error secundario silenciado:", data.error);
+                        if (el && data.text) el.textContent = data.text;
                     }
                 }
             } catch (error) {
                 console.error("Transcription error:", error);
-                const el = document.getElementById('transcriptionText');
-                if (!el || !el.textContent || el.textContent.includes('aparecerá aquí')) {
-                    showError('❌ Error al transcribir: ' + error.message);
-                }
+                if (typeof showError === 'function') showError('❌ Error al transcribir');
             }
         }
 
@@ -848,18 +1158,14 @@
                 description = el ? el.textContent : "";
                 description = description.replace('Tu transcripción aparecerá aquí...', '').trim();
             }
-
             await performAnalysis(description);
         };
 
         async function performAnalysis(description) {
             if (!description) {
-                showError('Por favor describe tu comida primero.');
+                if (typeof showError === 'function') showError('Por favor describe tu comida primero.');
                 return;
             }
-
-            const errorAlert = document.getElementById('errorAlert');
-            if (errorAlert) errorAlert.classList.add('d-none');
             if (typeof showToast === 'function') showToast('Analizando tu plato...', 'info');
 
             const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
@@ -875,127 +1181,62 @@
                     body: JSON.stringify({ descripcion: description })
                 });
 
-                const data = await response.json().catch(() => ({ success: false, error: "Error de formato en el servidor" }));
+                const data = await response.json().catch(() => ({ success: false, error: "Error de formato" }));
 
                 if (data.success) {
-                    currentAnalysis = data.analisis;
-                    displayAnalysis(data.analisis);
+                    window.currentAnalysis = data.analisis;
+                    if (typeof displayAnalysis === 'function') displayAnalysis(data.analisis);
                     if (typeof showToast === 'function') showToast('¡Análisis completado!', 'success');
                 } else {
-                    if (data.error_type === 'QUOTA_EXCEEDED') {
-                        showError('⏳ ' + data.error);
-                    } else {
-                        showError(data.error || 'No pudimos procesar la información.');
-                    }
+                    if (typeof showError === 'function') showError(data.error || 'Error al procesar');
                 }
             } catch (error) {
-                console.error('Analysis error:', error);
-                showError('Error de red o servidor.');
+                if (typeof showError === 'function') showError('Error de red o servidor.');
             }
         }
 
-        function showError(msg) {
-            const alert = document.getElementById('errorAlert');
-            const text = document.getElementById('errorMsgText');
-            if (alert && text) {
-                text.textContent = msg;
-                alert.classList.remove('d-none');
-                alert.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-            if (typeof showToast === 'function') showToast(msg, 'error');
-        }
+        // --- NEW CONSUMPTION LOGIC ---
+        window.confirmConsumption = function () {
+            if (!window.currentAnalysis) return;
+            const valEl = document.getElementById('modalCalVal');
+            if (valEl) valEl.textContent = window.currentAnalysis.calorias || 0;
 
-        function displayAnalysis(analysis) {
-            const emptyState = document.getElementById('emptyAnalysisState');
-            const resultContent = document.getElementById('analysisResultContent');
-            if (emptyState) emptyState.classList.add('d-none');
-            if (resultContent) {
-                resultContent.classList.remove('d-none');
-                resultContent.classList.add('d-flex');
-            }
-
-            const updateText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-            updateText('totalCalories', analysis.calorias || 0);
-            updateText('totalProtein', (analysis.proteinas || 0) + 'g');
-            updateText('totalCarbs', (analysis.carbohidratos || 0) + 'g');
-            updateText('miniFatVal', (analysis.grasas || 0) + 'g');
-            updateText('dishDescription', analysis.descripcion || '');
-
-            const ingredientsList = document.getElementById('ingredientsList');
-            if (ingredientsList) {
-                if (analysis.ingredientes && analysis.ingredientes.length > 0) {
-                    ingredientsList.innerHTML = analysis.ingredientes.map(ing => `
-                    <div class="d-flex align-items-center gap-3 p-3 rounded-4 bg-light border border-light mb-2">
-                        <div class="bg-white p-2 rounded-circle shadow-sm">
-                            <span class="material-symbols-outlined text-muted fs-5">nutrition</span>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="mb-0 fw-bold text-dark">${ing.nombre || ing}</h6>
-                            <small class="text-muted fw-bold">${ing.cantidad || ''}</small>
-                        </div>
-                        <span class="material-symbols-outlined text-success">check_circle</span>
-                    </div>
-                `).join('');
-                } else {
-                    ingredientsList.innerHTML = '<p class="text-muted small px-3">No se detectaron ingredientes específicos.</p>';
-                }
-            }
-        }
-
-        window.showCalendarModal = function () {
-            if (!currentAnalysis) {
-                if (typeof showToast === 'function') showToast('Primero analiza una comida', 'warning');
-                return;
-            }
-            const modal = document.getElementById('calendarModal');
+            const modal = document.getElementById('consumptionModal');
             if (modal) modal.classList.add('show');
+
+            const dp = document.getElementById('datePickerState');
+            if (dp) dp.classList.add('d-none');
+
+            window.selectedDate = new Date().toISOString().split('T')[0];
+        };
+
+        window.hideConsumptionModal = function () {
+            const modal = document.getElementById('consumptionModal');
+            if (modal) modal.classList.remove('show');
+        };
+
+        window.showDatePickerState = function () {
+            const dp = document.getElementById('datePickerState');
+            if (dp) dp.classList.remove('d-none');
             renderMiniCalendar();
         };
 
-        window.hideCalendarModal = function () {
-            const modal = document.getElementById('calendarModal');
-            if (modal) modal.classList.remove('show');
-            selectedDate = null;
+        window.registerMealNow = function () {
+            window.selectedDate = new Date().toISOString().split('T')[0];
+            executeRegister();
         };
 
-        function renderMiniCalendar() {
-            const container = document.getElementById('miniCalendarDays');
-            if (!container) return;
-            container.innerHTML = '';
-            const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-            const today = new Date();
-            for (let i = 0; i < 7; i++) {
-                const date = new Date();
-                date.setDate(today.getDate() + i);
-                const dateStr = date.toISOString().split('T')[0];
-                const isToday = i === 0;
-                const chip = document.createElement('div');
-                chip.className = 'date-chip-glass flex-shrink-0';
-                chip.dataset.date = dateStr;
-                chip.onclick = function () {
-                    document.querySelectorAll('.date-chip-glass').forEach(c => c.classList.remove('selected'));
-                    this.classList.add('selected');
-                    selectedDate = dateStr;
-                };
-                chip.innerHTML = `
-                <small class="d-block text-muted mb-1" style="font-size: 0.75rem;">${isToday ? 'Hoy' : days[date.getDay()]}</small>
-                <span class="day-number fw-bold fs-4">${date.getDate()}</span>
-            `;
-                container.appendChild(chip);
-            }
-        }
-
-        window.confirmAddToCalendar = async function () {
-            if (!selectedDate) {
+        window.registerMealCustomDate = function () {
+            if (!window.selectedDate) {
                 if (typeof showToast === 'function') showToast('Selecciona una fecha', 'warning');
                 return;
             }
-            const btn = document.getElementById('confirmAddBtn');
-            const originalText = btn ? btn.innerHTML : "";
-            if (btn) {
-                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
-                btn.disabled = true;
-            }
+            executeRegister();
+        };
+
+        async function executeRegister() {
+            if (!window.currentAnalysis) return;
+            if (typeof showToast === 'function') showToast('Guardando consumo...', 'info');
 
             const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
             const csrfToken = csrfInput ? csrfInput.value : '';
@@ -1008,74 +1249,126 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        fecha: selectedDate,
-                        nombre: currentAnalysis.titulo || 'Comida Analizada',
-                        calorias: currentAnalysis.calorias || 0,
-                        proteinas: currentAnalysis.proteinas || 0,
-                        carbos: currentAnalysis.carbohidratos || 0,
-                        grasas: currentAnalysis.grasas || 0,
+                        fecha: window.selectedDate,
+                        nombre: window.currentAnalysis.titulo || 'Comida Analizada',
+                        calorias: window.currentAnalysis.calorias || 0,
+                        proteinas: window.currentAnalysis.proteinas || 0,
+                        carbos: window.currentAnalysis.carbohidratos || 0,
+                        grasas: window.currentAnalysis.grasas || 0,
                         hora: new Date().toTimeString().split(' ')[0]
                     })
                 });
                 const data = await response.json();
                 if (data.success) {
-                    if (typeof showToast === 'function') showToast('¡Comida añadida!', 'success');
-                    hideCalendarModal();
-                    location.reload();
+                    if (typeof showToast === 'function') showToast('¡Registrado!', 'success');
+                    hideConsumptionModal();
+                    setTimeout(() => location.reload(), 1000);
                 } else {
-                    showError('Error: ' + data.error);
+                    if (typeof showError === 'function') showError('Error: ' + data.error);
                 }
             } catch (error) {
-                showError('Error de servidor.');
-            } finally {
-                if (btn) {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                }
-            }
-        };
-
-        // --- Tab & Window Initialization ---
-
-        document.querySelectorAll('button[data-bs-toggle="pill"]').forEach(pill => {
-            pill.addEventListener('shown.bs.tab', (e) => {
-                const tabId = e.target.getAttribute('data-bs-target').replace('#', '');
-                const url = new URL(window.location);
-                url.searchParams.set('tab', tabId);
-                window.history.replaceState({}, '', url);
-            });
-        });
-
-        const params = new URLSearchParams(window.location.search);
-        const tab = params.get('tab');
-        if (tab) {
-            const triggerEl = document.querySelector(`button[data-bs-target="#${tab}"]`);
-            if (triggerEl) {
-                if (typeof bootstrap !== 'undefined' && bootstrap.Tab) {
-                    (new bootstrap.Tab(triggerEl)).show();
-                } else triggerEl.click();
+                if (typeof showError === 'function') showError('Error de servidor.');
             }
         }
-    } // Fin comprobación analizadorIniciado (Declaraciones)
 
-    // --- LOGICA DE INICIALIZACIÓN (Se ejecuta en cada carga/swap de HTMX) ---
-    // Reseteamos variables de estado visual si es necesario
-    isRecording = false;
+        // --- Render Helpers ---
+        window.renderMiniCalendar = function () {
+            const container = document.getElementById('miniCalendarDays');
+            if (!container) return;
+            container.innerHTML = '';
+            const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            const today = new Date();
 
-    // Forzamos el estado visual inicial correcto (Voz por defecto)
-    // Pero si quisieras persistir el estado, podrías leer de localStorage.
-    // Aquí reinicializamos listeners que dependen del DOM actual
+            for (let i = -6; i <= 0; i++) {
+                const date = new Date();
+                date.setDate(today.getDate() + i);
+                const dateStr = date.toISOString().split('T')[0];
+                const isToday = i === 0;
 
-    // Inicializar listeners de tabs si existieran (aunque no veo tabs de bootstrap visuales en el HTML principal, solo el selector de fecha y modo)
-    // Si usas data-bs-toggle="pill" en otros sitios (como en el modal si los hubiera)
+                const chip = document.createElement('div');
+                chip.className = `date-chip-glass flex-shrink-0 ${isToday ? 'selected' : ''}`;
+                if (isToday) window.selectedDate = dateStr;
 
-    // Lo más importante: Si volvemos y está "grabando" visualmente, lo reseteamos:
+                chip.dataset.date = dateStr;
+                chip.onclick = function () {
+                    document.querySelectorAll('.date-chip-glass').forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                    window.selectedDate = dateStr;
+                };
+                chip.innerHTML = `
+                    <small class="d-block text-muted mb-1" style="font-size: 0.75rem;">${isToday ? 'Hoy' : days[date.getDay()]}</small>
+                    <span class="day-number fw-bold fs-4">${date.getDate()}</span>
+                `;
+                container.appendChild(chip);
+            }
+            setTimeout(() => container.scrollLeft = container.scrollWidth, 100);
+        };
+
+        // --- Basic UI ---
+        // --- Basic UI ---
+        window.showError = function (msg) {
+            const alert = document.getElementById('errorAlert');
+            const text = document.getElementById('errorMsgText');
+            if (alert && text) {
+                text.textContent = msg;
+                alert.classList.remove('d-none');
+                // alert.scrollIntoView({ behavior: 'smooth', block: 'center' }); // Optional
+            }
+            if (typeof showToast === 'function') showToast(msg, 'error');
+        };
+
+        window.showToast = function (msg, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `custom-toast`;
+
+            let icon = 'info';
+            let color = 'text-primary';
+
+            if (type === 'success') { icon = 'check_circle'; color = 'text-success'; }
+            if (type === 'error') { icon = 'error'; color = 'text-danger'; }
+            if (type === 'warning') { icon = 'warning'; color = 'text-warning'; }
+
+            toast.innerHTML = `
+                <span class="material-symbols-outlined ${color}">${icon}</span>
+                <span class="fw-bold small flex-grow-1">${msg}</span>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto remove
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        };
+
+    } // End Init Check
+
+    // --- RE-INIT LOGIC FOR HTMX SWAPS ---
+    window.isRecording = false;
+
+    // Restore UI state
     const micBtn = document.getElementById('micButton');
-    if (micBtn) micBtn.classList.remove('listening');
+    if (micBtn) {
+        micBtn.classList.remove('listening');
+        micBtn.style.transform = '';
+    }
     const recInd = document.getElementById('recordingIndicator');
     if (recInd) recInd.classList.add('d-none');
 
-    // Reconexion de reconocimiento si se perdió
-    initRecognition();
+    // Re-bind recognition
+    if (window.initRecognition) window.initRecognition();
+
+    // Re-bind Bootstrap Tabs
+    document.querySelectorAll('button[data-bs-toggle="pill"]').forEach(pill => {
+        pill.addEventListener('shown.bs.tab', (e) => {
+            // Optional analytics hook
+        });
+    });
+
 </script>
 {% endblock %}

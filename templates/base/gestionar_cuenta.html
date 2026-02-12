@@ -4,106 +4,426 @@
 {% block title %}Gestionar Cuenta | nunut{% endblock %}
 
 {% block content %}
+<style>
+    /* VARIABLES DE DISEÑO */
+    :root {
+        --gestion-gradient: linear-gradient(135deg, #85c81a, #6ba115);
+        --gestion-card-bg: #ffffff;
+        --gestion-card-border: rgba(0, 0, 0, 0.05);
+        --gestion-input-bg: #fdfdfd;
+        --gestion-input-border: #f0f0f0;
+        --gestion-text-title: #1a1b15;
+        --gestion-text-muted: #6c757d;
+        --gestion-danger-bg: rgba(220, 53, 69, 0.02);
+        --gestion-danger-border: rgba(220, 53, 69, 0.2);
+    }
+
+    .dark-mode {
+        --gestion-gradient: linear-gradient(135deg, #2c2f26, #1a1b15);
+        --gestion-card-bg: #1a1b15;
+        --gestion-card-border: rgba(255, 255, 255, 0.08);
+        --gestion-input-bg: #25271d;
+        --gestion-input-border: #313426;
+        --gestion-text-title: #ffffff;
+        --gestion-text-muted: #a0a0a0;
+        --gestion-danger-bg: rgba(220, 53, 69, 0.05);
+        --gestion-danger-border: rgba(220, 53, 69, 0.3);
+    }
+
+    .gestion-header {
+        background: var(--gestion-gradient);
+        border-radius: 2rem;
+        padding: 3.5rem 2.5rem;
+        color: white;
+        margin-bottom: -3rem;
+        position: relative;
+        z-index: 1;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .dark-mode .gestion-header {
+        background: linear-gradient(135deg, #1a1b15, #000000);
+        border-color: var(--brand-primary);
+        box-shadow: 0 10px 30px rgba(133, 200, 26, 0.05);
+    }
+
+    .gestion-header::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 350px;
+        height: 350px;
+        background: rgba(133, 200, 26, 0.2);
+        filter: blur(90px);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .card-settings {
+        background: var(--gestion-card-bg);
+        border-radius: 2.25rem;
+        border: 1px solid var(--gestion-card-border);
+        padding: 2.5rem;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.03);
+        position: relative;
+        z-index: 2;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+
+    .card-settings:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.08);
+        border-color: var(--brand-primary);
+    }
+
+    .dark-mode .card-settings {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .settings-icon-box {
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        background: var(--brand-soft);
+        color: var(--brand-primary);
+        transition: all 0.3s ease;
+    }
+
+    .dark-mode .settings-icon-box {
+        background: rgba(133, 200, 26, 0.1);
+    }
+
+    .btn-premium {
+        background: var(--brand-primary);
+        color: white;
+        border: none;
+        padding: 0.9rem 2.2rem;
+        border-radius: 50px;
+        font-weight: 800;
+        transition: all 0.3s;
+        box-shadow: 0 8px 20px rgba(133, 200, 26, 0.25);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.85rem;
+    }
+
+    .btn-premium:hover {
+        background: var(--brand-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(133, 200, 26, 0.4);
+        color: white;
+    }
+
+    .danger-zone {
+        border: 2px dashed var(--gestion-danger-border);
+        border-radius: 2.25rem;
+        padding: 2.5rem;
+        background: var(--gestion-danger-bg);
+        transition: all 0.3s ease;
+    }
+
+    .danger-zone:hover {
+        border-color: #dc3545;
+        background: rgba(220, 53, 69, 0.05);
+    }
+
+    .custom-input {
+        border-radius: 1.15rem;
+        padding: 0.85rem 1.4rem;
+        border: 2px solid var(--gestion-input-border);
+        background: var(--gestion-input-bg);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-weight: 600;
+        color: var(--gestion-text-title);
+    }
+
+    .custom-input:focus {
+        border-color: var(--brand-primary);
+        box-shadow: 0 0 0 5px rgba(133, 200, 26, 0.12);
+        outline: none;
+        background: var(--gestion-card-bg);
+    }
+
+    .back-btn {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white !important;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .dark-mode .back-btn {
+        background: rgba(133, 200, 26, 0.05);
+        border-color: rgba(133, 200, 26, 0.2);
+    }
+
+    .back-btn:hover {
+        background: white;
+        color: var(--brand-primary) !important;
+        transform: translateX(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .section-label {
+        font-size: 0.75rem;
+        font-weight: 900;
+        letter-spacing: 1.2px;
+        color: var(--brand-primary);
+        margin-bottom: 0.75rem;
+        display: block;
+        opacity: 0.85;
+    }
+
+    .help-box {
+        background: rgba(133, 200, 26, 0.05);
+        border-radius: 1.25rem;
+        padding: 1.25rem;
+        border-left: 4px solid var(--brand-primary);
+    }
+
+    .dark-mode .help-box {
+        background: rgba(133, 200, 26, 0.03);
+    }
+
+    h4 {
+        color: var(--gestion-text-title);
+    }
+
+    .text-muted {
+        color: var(--gestion-text-muted) !important;
+    }
+</style>
+
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="d-flex align-items-center gap-3 mb-5">
-                <a href="{% url 'base:perfil' %}"
-                    class="btn btn-outline-secondary rounded-circle p-2 d-flex align-items-center justify-content-center"
-                    style="width: 40px; height: 40px;">
-                    <span class="material-symbols-outlined">arrow_back</span>
-                </a>
-                <h2 class="fw-black mb-0">Gestionar Cuenta</h2>
+        <div class="col-lg-10">
+
+            <!-- Header Section -->
+            <div
+                class="gestion-header d-flex flex-column flex-md-row align-items-center justify-content-between gap-4 shadow-lg mb-5">
+                <div class="d-flex align-items-center gap-4">
+                    <a href="{% url 'base:perfil' %}" class="back-btn text-decoration-none" title="Volver al Perfil">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                    </a>
+                    <div>
+                        <h2 class="fw-black mb-1">Configuración</h2>
+                        <p class="mb-0 opacity-80 fw-bold" style="font-size: 0.95rem;">Gestiona tu identidad y seguridad
+                            personal</p>
+                    </div>
+                </div>
+                <div class="text-md-end d-none d-md-block">
+                    <div class="d-flex align-items-center gap-2 bg-black bg-opacity-20 px-3 py-2 rounded-pill">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">shield_person</span>
+                        <span class="fw-bold small">{{ user.username }}</span>
+                    </div>
+                </div>
             </div>
 
+            <!-- Alerts -->
             {% if messages %}
-            <div class="mb-4">
+            <div class="mb-4 pt-3">
                 {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-4 shadow-sm border-0 mb-2"
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-4 shadow-sm border-0 mb-3 py-3 px-4 animate__animated animate__fadeInDown"
                     role="alert">
-                    {{ message }}
+                    <div class="d-flex align-items-center gap-3">
+                        <div
+                            class="bg-{% if message.tags == 'error' %}danger{% else %}success{% endif %} bg-opacity-10 p-2 rounded-circle">
+                            <span class="material-symbols-outlined fs-5">{% if message.tags == 'error' %}report{% else
+                                %}check_circle{% endif %}</span>
+                        </div>
+                        <span class="fw-bold">{{ message }}</span>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
                 {% endfor %}
             </div>
             {% endif %}
 
-            <!-- SECCIÓN: NOMBRE DE USUARIO -->
-            <div class="premium-card p-4 mb-4 shadow-sm bg-white dark-mode-bg-dark rounded-4 border">
-                <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
-                    <span class="material-symbols-outlined text-brand">person</span> Cambio de Usuario
-                </h5>
-                <form action="{% url 'base:cambiar_username' %}" method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="small fw-bold text-muted mb-2 ps-1">NUEVO NOMBRE DE USUARIO</label>
-                        {{ username_form.new_username }}
-                        <div class="form-text x-small mt-2">
-                            <i class="fas fa-info-circle me-1"></i> Solo puedes cambiar tu nombre cada 30 días.
+            <!-- Settings Grid -->
+            <div class="row g-4 mb-5 pt-3">
+
+                <!-- Usuario -->
+                <div class="col-md-6">
+                    <div class="card-settings h-100">
+                        <div class="settings-icon-box">
+                            <span class="material-symbols-outlined">person_outline</span>
+                        </div>
+                        <h4 class="fw-black mb-1">Username</h4>
+                        <p class="text-muted small mb-4 fw-bold">Configura cómo te identificas en nunut.</p>
+
+                        <form action="{% url 'base:cambiar_username' %}" method="post">
+                            {% csrf_token %}
+                            <div class="mb-4">
+                                <label class="section-label">NUEVO NOMBRE DE USUARIO</label>
+                                {{ username_form.new_username }}
+                                <div class="mt-3 ps-1">
+                                    <div class="d-flex align-items-center gap-2 text-muted x-small">
+                                        <span class="material-symbols-outlined fs-6">info</span>
+                                        <span>Actual: <span class="fw-bold text-brand">{{ user.username }}</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-premium w-100">
+                                Guardar Cambios
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="col-md-6">
+                    <div class="card-settings h-100">
+                        <div class="settings-icon-box">
+                            <span class="material-symbols-outlined">alternate_email</span>
+                        </div>
+                        <h4 class="fw-black mb-1">Email Principal</h4>
+                        <p class="text-muted small mb-4 fw-bold">Gestión de acceso y notificaciones.</p>
+
+                        <form action="{% url 'base:cambiar_email' %}" method="post">
+                            {% csrf_token %}
+                            <div class="mb-4">
+                                <label class="section-label">NUEVA DIRECCIÓN DE EMAIL</label>
+                                {{ email_form.new_email }}
+                                <div class="mt-3 ps-1">
+                                    <div class="d-flex align-items-center gap-2 text-muted x-small">
+                                        <span class="material-symbols-outlined fs-6">verified_user</span>
+                                        <span>Actual: <span class="fw-bold text-brand">{{ user.email|truncatechars:35
+                                                }}</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-premium w-100" style="background: var(--brand-dark);">
+                                Actualizar Email
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="col-12">
+                    <div class="card-settings">
+                        <div class="settings-icon-box" style="background: rgba(25, 135, 84, 0.1); color: #198754;">
+                            <span class="material-symbols-outlined">key</span>
+                        </div>
+                        <div class="row align-items-start">
+                            <div class="col-lg-5 mb-4 mb-lg-0">
+                                <h4 class="fw-black mb-1">Privacidad y Seguridad</h4>
+                                <p class="text-muted small mb-4 fw-bold">Actualiza tu contraseña periódicamente para
+                                    mantener tu cuenta segura.</p>
+                                <div class="help-box">
+                                    <h6 class="fw-black text-brand small mb-2 d-flex align-items-center gap-2">
+                                        <span class="material-symbols-outlined fs-6">lightbulb</span>
+                                        Dato de seguridad
+                                    </h6>
+                                    <p class="x-small text-muted mb-0 lh-base">Tu contraseña debe ser difícil de
+                                        adivinar pero fácil de recordar. Evita usar datos públicos como tu fecha de
+                                        nacimiento.</p>
+                                </div>
+                            </div>
+                            <div class="col-lg-7">
+                                <form action="{% url 'base:cambiar_contrasena' %}" method="post">
+                                    {% csrf_token %}
+                                    <div class="row g-3">
+                                        {% for field in password_form %}
+                                        <div class="col-md-6">
+                                            <label class="section-label">{{ field.label|upper }}</label>
+                                            <input type="password" name="{{ field.name }}"
+                                                class="form-control custom-input" placeholder="••••••••" required>
+                                            {% if field.errors %}
+                                            <div class="text-danger x-small mt-2 fw-bold">{{ field.errors.0 }}</div>
+                                            {% endif %}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    <button type="submit" class="btn btn-premium w-100 mt-4 py-3">
+                                        Confirmar Nueva Contraseña
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-premium px-4 rounded-pill fw-bold">Actualizar Usuario</button>
-                </form>
-            </div>
+                </div>
 
-            <!-- SECCIÓN: CORREO ELECTRÓNICO -->
-            <div class="premium-card p-4 mb-4 shadow-sm bg-white dark-mode-bg-dark rounded-4 border">
-                <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
-                    <span class="material-symbols-outlined text-brand">mail</span> Correo Electrónico
-                </h5>
-                <form action="{% url 'base:cambiar_email' %}" method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="small fw-bold text-muted mb-2 ps-1">NUEVO CORREO ELECTRÓNICO</label>
-                        {{ email_form.new_email }}
-                    </div>
-                    <button type="submit" class="btn btn-premium px-4 rounded-pill fw-bold">Actualizar Email</button>
-                </form>
-            </div>
-
-            <!-- SECCIÓN: CONTRASEÑA -->
-            <div class="premium-card p-4 mb-4 shadow-sm bg-white dark-mode-bg-dark rounded-4 border">
-                <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
-                    <span class="material-symbols-outlined text-brand">lock</span> Seguridad (Contraseña)
-                </h5>
-                <form action="{% url 'base:cambiar_contrasena' %}" method="post">
-                    {% csrf_token %}
-                    <div class="row g-3">
-                        {% for field in password_form %}
-                        <div class="col-12">
-                            <label class="small fw-bold text-muted mb-1 ps-1">{{ field.label|upper }}</label>
-                            {{ field }}
-                            {% if field.help_text %}
-                            <div class="form-text x-small">{{ field.help_text|safe }}</div>
-                            {% endif %}
+                <!-- Danger Zone -->
+                <div class="col-12 mt-4">
+                    <div class="danger-zone">
+                        <div class="d-flex align-items-center gap-3 mb-4">
+                            <div class="bg-danger bg-opacity-10 text-danger p-2 rounded-3">
+                                <span class="material-symbols-outlined fs-4">heart_broken</span>
+                            </div>
+                            <div>
+                                <h5 class="fw-black mb-0 text-danger">Borrado de Datos</h5>
+                                <p class="text-muted small mb-0 fw-bold">Esta acción es definitiva e irreversible.</p>
+                            </div>
                         </div>
-                        {% endfor %}
+                        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+                            <div style="max-width: 500px;">
+                                <h6 class="fw-bold mb-1">Eliminar mi Cuenta Permanente</h6>
+                                <p class="x-small text-muted mb-0 fw-medium">Al borrar tu cuenta, perderás todo tu
+                                    progreso, racha de conexión, planes personalizados y archivos de biometría. No hay
+                                    forma de recuperar esta información.</p>
+                            </div>
+                            <button class="btn btn-outline-danger rounded-pill px-4 py-2 fw-bold btn-sm"
+                                onclick="confirmDelete()">
+                                Eliminar Cuenta
+                            </button>
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-premium px-4 rounded-pill fw-bold mt-4">Cambiar
-                        Contraseña</button>
-                </form>
+                </div>
             </div>
 
-            <div class="text-center mt-5">
-                <p class="small text-muted mb-0">nunut v2.0 &bull; Seguridad Protegida por CSRF</p>
+            <!-- Footer -->
+            <div class="text-center py-4 mb-5">
+                <div class="d-flex align-items-center justify-content-center gap-3 opacity-40 mb-2">
+                    <img src="{% static 'assets/img/logo.png' %}" alt="nunut" height="20" class="dark-mode-invert">
+                </div>
+                <p class="small text-muted mb-0 fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">
+                    SISTEMA DE GESTIÓN NUNUT IA v2.4.0 &bull; SECURED BY ENCRYPTION
+                </p>
             </div>
         </div>
     </div>
 </div>
 
-<style>
-    .btn-premium {
-        background: linear-gradient(135deg, var(--brand-primary), var(--brand-dark));
-        color: white;
-        border: none;
-        box-shadow: 0 4px 15px rgba(133, 200, 26, 0.3);
-        transition: all 0.3s ease;
+<script>
+    function confirmDelete() {
+        Swal.fire({
+            title: '¿Confirmas el borrado?',
+            text: 'Tus datos biométricos, históricos y planes se perderán para siempre.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, borrar definitivamente',
+            cancelButtonText: 'Mantener mi cuenta',
+            background: document.body.classList.contains('dark-mode') ? '#1a1b15' : '#fff',
+            color: document.body.classList.contains('dark-mode') ? '#fff' : '#000',
+            customClass: {
+                popup: 'rounded-4 border-0 shadow-lg'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Seguridad Adicional',
+                    text: 'Esta función requiere validación de identidad. Próximamente en la siguiente actualización.',
+                    icon: 'info',
+                    confirmButtonColor: '#85c81a'
+                });
+            }
+        })
     }
-
-    .btn-premium:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(133, 200, 26, 0.4);
-        color: white;
-    }
-</style>
+</script>
 {% endblock %}

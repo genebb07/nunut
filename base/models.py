@@ -376,3 +376,101 @@ class LogActividad(models.Model):
     
     def __str__(self):
         return f"{self.usuario.username if self.usuario else 'Sistema'} - {self.accion} ({self.fecha})"
+
+
+class Logro(models.Model):
+    TIPO_LOGRO = [
+        ('RACHA', 'Racha de Sesión'),
+        ('REGISTRO', 'Nutrición'),
+        ('AGUA', 'Hidratación'),
+        ('OTRO', 'Bienestar'),
+    ]
+    perfil = models.ForeignKey('Perfil', on_delete=models.CASCADE, related_name='logros')
+    tipo = models.CharField(max_length=20, choices=TIPO_LOGRO)
+    titulo = models.CharField(max_length=50) 
+    descripcion = models.CharField(max_length=150)
+    
+    # Visuales para badges
+    icono = models.CharField(max_length=50, default='stars')
+    color_class = models.CharField(max_length=20, default='text-warning') # e.g. text-warning
+    bg_class = models.CharField(max_length=20, default='bg-warning') # e.g. bg-warning
+    
+    fecha_obtenido = models.DateField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('perfil', 'titulo')
+
+    def __str__(self): return f"{self.perfil} - {self.titulo}"
+
+    @classmethod
+    def verificar_y_otorgar(cls, perfil):
+        """
+        Lógica centralizada para desbloquear logros dinámicamente.
+        """
+        # 1. RACHA: 3 Días Seguidos
+        racha = LoginStreak.calcular_racha(perfil)
+        if racha >= 3:
+            cls.objects.get_or_create(
+                perfil=perfil, titulo='On Fire',
+                defaults={
+                    'tipo': 'RACHA',
+                    'descripcion': '¡3 días seguidos entrando!',
+                    'icono': 'local_fire_department',
+                    'color_class': 'text-danger',
+                    'bg_class': 'bg-danger'
+                }
+            )
+
+        # 2. RACHA: 7 Días (Semana Perfecta)
+        if racha >= 7:
+            cls.objects.get_or_create(
+                perfil=perfil, titulo='Semana Perfecta',
+                defaults={
+                    'tipo': 'RACHA',
+                    'descripcion': '7 días de constancia pura.',
+                    'icono': 'stars',
+                    'color_class': 'text-warning',
+                    'bg_class': 'bg-warning'
+                }
+            )
+
+        # 3. AGUA: Meta del día cumplida
+        hoy = date.today()
+        agua_hoy = perfil.registros_agua.filter(fecha=hoy).first()
+        if agua_hoy and agua_hoy.porcentaje >= 100:
+            cls.objects.get_or_create(
+                perfil=perfil, titulo='Hidratado',
+                defaults={
+                    'tipo': 'AGUA',
+                    'descripcion': 'Cumpliste tu meta de agua hoy.',
+                    'icono': 'water_full',
+                    'color_class': 'text-primary',
+                    'bg_class': 'bg-primary'
+                }
+            )
+        
+        # 4. DIETA: Vegano (Solo si aplica)
+        if perfil.tipo_dieta == 'VEGA':
+             cls.objects.get_or_create(
+                perfil=perfil, titulo='Vegan Power',
+                defaults={
+                    'tipo': 'REGISTRO',
+                    'descripcion': 'Comprometido con el estilo de vida vegano.',
+                    'icono': 'eco',
+                    'color_class': 'text-success',
+                    'bg_class': 'bg-success'
+                }
+            )
+        
+        # 5. REGISTRO: Primera comida analizada
+        if ComidaDiaria.objects.filter(perfil=perfil).exists():
+             cls.objects.get_or_create(
+                perfil=perfil, titulo='Primer Bocado',
+                defaults={
+                    'tipo': 'REGISTRO',
+                    'descripcion': 'Registraste tu primera comida.',
+                    'icono': 'restaurant',
+                    'color_class': 'text-info',
+                    'bg_class': 'bg-info'
+                }
+            )

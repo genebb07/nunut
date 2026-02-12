@@ -830,8 +830,7 @@
             </div>
             <div class="position-relative mb-3" style="z-index: 2;">
                 <p class="small text-white opacity-90 mb-0 ps-2 italic lh-base"
-                    style="font-size: 0.85rem; font-weight: 500; border-left: 2px solid var(--primary);">{{
-                    recomendacion_ia }}</p>
+                    style="font-size: 0.85rem; font-weight: 500; border-left: 2px solid var(--primary);">{{ recomendacion_ia }}</p>
             </div>
             <div class="d-flex gap-2 mb-0" style="z-index: 2; position: relative;"><span
                     class="badge rounded-pill bg-primary bg-opacity-20 text-white x-small fw-bold border border-white border-opacity-10"
@@ -875,7 +874,7 @@
         </div>
 
         <div class="card-custom p-4 mb-4 border-start border-4 position-relative shadow-sm"
-            style="border-color: var(--primary) !important; border-radius: 20px; background: #fff;">
+            style="border-color: var(--primary) !important; border-radius: 20px;">
             {% if es_invitado %}<div class="lock-overlay" style="border-radius: 20px;"><span
                     class="material-symbols-outlined fs-1 text-primary">lock</span></div>
             <div class="blur-preview">{% endif %}
@@ -887,24 +886,24 @@
                     <div class="row g-3">
                         <div class="col-6">
                             <div
-                                class="p-3 bg-light rounded-4 border border-opacity-10 text-center position-relative overflow-hidden">
+                                class="p-3 bg-light dark-mode-bg-dark rounded-4 border border-opacity-10 text-center position-relative overflow-hidden">
                                 <span
                                     class="material-symbols-outlined position-absolute top-0 start-0 m-2 text-muted opacity-25">bedtime</span><label
                                     class="x-small fw-bold text-muted text-uppercase d-block mb-2">Dormir</label><input
                                     type="time" id="sleep-start"
-                                    class="form-control form-control-lg fw-900 text-center bg-transparent border-0 p-0 fs-3"
-                                    style="color: var(--bg-dark-elite);" value="23:00" onchange="calculateSleep()" />
+                                    class="form-control form-control-lg fw-900 text-center bg-transparent border-0 p-0 fs-3 text-main"
+                                    value="23:00" onchange="calculateSleep()" />
                             </div>
                         </div>
                         <div class="col-6">
                             <div
-                                class="p-3 bg-light rounded-4 border border-opacity-10 text-center position-relative overflow-hidden">
+                                class="p-3 bg-light dark-mode-bg-dark rounded-4 border border-opacity-10 text-center position-relative overflow-hidden">
                                 <span
                                     class="material-symbols-outlined position-absolute top-0 start-0 m-2 text-muted opacity-25">wb_sunny</span><label
                                     class="x-small fw-bold text-muted text-uppercase d-block mb-2">Despertar</label><input
                                     type="time" id="sleep-end"
-                                    class="form-control form-control-lg fw-900 text-center bg-transparent border-0 p-0 fs-3"
-                                    style="color: var(--bg-dark-elite);" value="07:00" onchange="calculateSleep()" />
+                                    class="form-control form-control-lg fw-900 text-center bg-transparent border-0 p-0 fs-3 text-main"
+                                    value="07:00" onchange="calculateSleep()" />
                             </div>
                         </div>
                     </div>
@@ -919,9 +918,10 @@
                 <div class="mb-4 text-center">
                     <label class="small fw-bold mb-3 text-muted text-uppercase d-block"
                         style="letter-spacing: 1px;">Nivel de Energía</label>
-                    <div class="d-flex justify-content-between gap-1 p-1 rounded-4 bg-light border"> {% for i in "12345"|make_list %}<input type="radio" class="btn-check" name="energy-level"
+                    <div class="d-flex justify-content-between gap-1 p-1 rounded-4 bg-light dark-mode-bg-dark border">
+                        {% for i in "12345"|make_list %}<input type="radio" class="btn-check" name="energy-level"
                             id="energy-{{ i }}" value="{{ i }}" {% if sueno_hoy.calidad|slugify == i %}checked{% elif not sueno_hoy and i == "3" %}checked{% endif %} /><label
-                            class="btn btn-sm btn-outline-light border-0 flex-grow-1 py-2 rounded-3 text-dark fw-bold energy-btn"
+                            class="btn btn-sm btn-outline-light border-0 flex-grow-1 py-2 rounded-3 text-main fw-bold energy-btn"
                             for="energy-{{ i }}" onclick="selectEnergy(this)"><span class="d-block fs-3 mb-1">{% if i == "1" %}😴{% elif i == "2" %}😪{% elif i == "3" %}😐{% elif i == "4" %}😊{% elif i == "5" %}🚀{% endif %}</span>
                             <span class="d-block x-small lh-1 opacity-75">{% if i == "1" %}Baja{% elif i == "2" %}Leve{% elif i == "3" %}Normal{% elif i == "4" %}Bien{% elif i == "5" %}Excelente{% endif %}</span></label>
                         {% endfor %}
@@ -938,15 +938,13 @@
             </div>{% endif %}
         </div>
 
-        <div class="card-custom p-4 border-dashed position-relative"
-            style="background: linear-gradient(145deg, var(--bg-light-elite), white); border-color: rgba(133, 200, 26, 0.2);">
+        <div class="card-custom p-4 border-dashed position-relative" style="border-color: rgba(133, 200, 26, 0.2);">
             {% if es_invitado %}<div class="lock-overlay"><span
                     class="material-symbols-outlined fs-2 text-primary">lock</span><a href="{% url 'base:registro' %}"
                     class="btn btn-sm btn-dark rounded-pill mt-2">Crear Cuenta</a></div>
             <div class="blur-preview">{% endif %}
                 <h4 class="fw-900 h5 mb-4 text-brand">Análisis Semanal</h4>
-                <div class="d-flex justify-content-between mb-3 border-bottom pb-3"
-                    style="border-color: rgba(0,0,0,0.05) !important;">
+                <div class="d-flex justify-content-between mb-3 border-bottom pb-3">
                     <div><span class="text-muted small fw-bold text-uppercase d-block mb-1">Consumo Diario</span>
                         <h5 class="fw-900 mb-0">{{ analisis_semanal.calorias }} <small
                                 class="text-muted fs-6 fw-normal">kcal</small></h5>
@@ -955,8 +953,7 @@
                             class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1">Avg 7 días</span>
                     </div>
                 </div>
-                <div class="d-flex justify-content-between mb-4 border-bottom pb-3"
-                    style="border-color: rgba(0,0,0,0.05) !important;">
+                <div class="d-flex justify-content-between mb-4 border-bottom pb-3">
                     <div><span class="text-muted small fw-bold text-uppercase d-block mb-1">Descanso</span>
                         <h5 class="fw-900 mb-0">{{ analisis_semanal.sueno }} <small
                                 class="text-muted fs-6 fw-normal">horas</small></h5>
@@ -988,7 +985,7 @@
     const pageData = document.getElementById('page-data').dataset;
     window.appState = {
         isGuest: pageData.isGuest === 'true',
-        isAdmin: {{ request.user.is_staff|yesno:"true,false" }},
+        isAdmin: {{ request.user.is_staff | yesno:"true,false" }},
     csrfToken: pageData.csrfToken,
         hasReport: pageData.hasReport === 'true',
             goals: { cals: parseInt(pageData.goalCals), prot: parseInt(pageData.goalProt), carb: parseInt(pageData.goalCarb), fat: parseInt(pageData.goalFat) }

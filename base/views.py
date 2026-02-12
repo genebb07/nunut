@@ -1373,6 +1373,16 @@ def perfil(request):
     objetivo_display = perfil.get_objetivo_display() if perfil and perfil.objetivo else None
     nivel_actividad_display = perfil.get_nivel_actividad_display() if perfil and perfil.nivel_actividad else None
 
+    # Lógica de Logros y Racha
+    from .models import Logro, LoginStreak
+    
+    # 1. Verificar Logros Dinámicos
+    Logro.verificar_y_otorgar(perfil)
+    
+    # 2. Obtener datos para la vista
+    racha_actual = LoginStreak.calcular_racha(perfil)
+    logros_recientes = perfil.logros.all().order_by('-fecha_obtenido')[:4]
+
     return render(request, 'base/perfil.html', {
         'base_template': get_base_template(request),
         'form': form,
@@ -1382,6 +1392,10 @@ def perfil(request):
         'imc': imc,
         'objetivo_display': objetivo_display,
         'nivel_actividad_display': nivel_actividad_display,
+        # Nuevos datos
+        'racha_dias': racha_actual,
+        'logros': logros_recientes,
+        'total_logros': perfil.logros.count()
     })
 
 @login_required
@@ -2167,39 +2181,43 @@ def calificar_receta(request, receta_id):
 
 @login_required
 def gestionar_cuenta(request):
+    from .forms import ChangeUsernameForm, ChangeEmailForm
+    from django.contrib.auth.forms import PasswordChangeForm
+    
     return render(request, 'base/gestionar_cuenta.html', {
         'base_template': get_base_template(request),
-        'user': request.user
+        'user': request.user,
+        'username_form': ChangeUsernameForm(user=request.user),
+        'email_form': ChangeEmailForm(user=request.user),
+        'password_form': PasswordChangeForm(user=request.user),
     })
 
 @login_required
 def cambiar_username(request):
-    from django.contrib.auth.models import User
+    from .forms import ChangeUsernameForm
     if request.method == 'POST':
-        new_username = request.POST.get('username')
-        if new_username:
-            if User.objects.filter(username=new_username).exists():
-                messages.error(request, 'El nombre de usuario ya está en uso.')
-            else:
-                request.user.username = new_username
-                request.user.save()
-                messages.success(request, 'Nombre de usuario actualizado.')
-        return redirect('base:gestionar_cuenta')
+        form = ChangeUsernameForm(request.POST, user=request.user)
+        if form.is_valid():
+            request.user.username = form.cleaned_data['new_username']
+            request.user.save()
+            messages.success(request, '¡Nombre de usuario actualizado con éxito!')
+        else:
+            for error in form.errors.values():
+                messages.error(request, error)
     return redirect('base:gestionar_cuenta')
 
 @login_required
 def cambiar_email(request):
-    from django.contrib.auth.models import User
+    from .forms import ChangeEmailForm
     if request.method == 'POST':
-        new_email = request.POST.get('email')
-        if new_email:
-            if User.objects.filter(email=new_email).exclude(pk=request.user.pk).exists():
-                messages.error(request, 'El correo electrónico ya está en uso.')
-            else:
-                request.user.email = new_email
-                request.user.save()
-                messages.success(request, 'Correo electrónico actualizado.')
-        return redirect('base:gestionar_cuenta')
+        form = ChangeEmailForm(request.POST, user=request.user)
+        if form.is_valid():
+            request.user.email = form.cleaned_data['new_email']
+            request.user.save()
+            messages.success(request, '¡Correo electrónico actualizado con éxito!')
+        else:
+            for error in form.errors.values():
+                messages.error(request, error)
     return redirect('base:gestionar_cuenta')
 
 @login_required
@@ -2212,6 +2230,9 @@ def cambiar_contrasena(request):
             user = form.save()
             update_session_auth_hash(request, user)
             messages.success(request, 'Tu contraseña ha sido actualizada exitosamente.')
+        else:
+            for error in form.errors.values():
+                messages.error(request, error)
     return redirect('base:gestionar_cuenta')
 
 @login_required

@@ -454,29 +454,34 @@ def analizar_comida_ia(request):
             client = genai.Client(api_key=api_key, http_options={'api_version': 'v1'})
             
             prompt = f"""
-            Actúa como un Nutricionista Jefe experto con acceso a bases de datos globales. Analiza la siguiente comida:
+            Actúa como un Nutricionista Clínico Senior y Chef Ejecutivo. Realiza un análisis exhaustivo y preciso de la siguiente ingesta:
             "{descripcion_comida}"
             
-            INSTRUCCIONES:
-            1. Identifica TODO lo mencionado (alimentos sueltos, platos compuestos, bebidas, extras).
-            2. Si es un plato (ej: "Lasaña"), desglosa sus ingredientes lógicos estimados.
-            3. Calcula Calorías, Proteínas, Carbohidratos, Grasas y Fibra.
-            4. Sé lo más preciso posible basándote en porciones estándar.
-            
-            Responde EXCLUSIVAMENTE con un objeto JSON válido:
+            OBJETIVOS DEL ANÁLISIS:
+            1. DESGLOSE CIENTÍFICO: Identifica cada componente, incluyendo aceites de cocción probables, salsas ocultas y guarniciones implícitas si es un plato compuesto.
+            2. CANTIDADES INTELIGENTES: Si el usuario no especifica cantidades, estima porciones estándar de restaurante o caseras realistas (no dietéticas, sino reales).
+            3. MACROS Y MICROS: Calcula con precisión los macronutrientes y estima micronutrientes clave.
+            4. EVALUACIÓN DE CALIDAD: Determina la calidad nutricional del plato.
+
+            Responde EXCLUSIVAMENTE con un JSON válido con esta estructura exacta:
             {{
-                "titulo": "Nombre corto y visual",
-                "descripcion": "Explicación breve de por qué es saludable o no",
+                "titulo": "Nombre profesional del plato",
+                "descripcion": "Análisis sensorial y nutricional detallado (2-3 frases). Menciona texturas y perfil de sabor esperado.",
                 "calorias": 0,
                 "proteinas": 0,
                 "carbohidratos": 0,
                 "grasas": 0,
                 "fibra": 0,
+                "azucar": 0,
+                "sodio_mg": 0,
+                "score_saludable": 0-100,
+                "veredicto_corto": "Excelente / Bueno / Moderado / Poco Saludable",
+                "consejo_mejora": "Un tip accionable para hacer este plato mejor (ej: 'Reduce la sal' o 'Añade espinacas')",
                 "ingredientes": [
-                    {{"nombre": "Elemento", "cantidad": "porción estimada"}}
+                    {{"nombre": "Ingrediente detallado", "cantidad": "gramos/unidad estimada", "calorias_aprox": 0}}
                 ],
                 "micronutrientes": {{
-                    "vitamina_a": 0, "vitamina_c": 0, "hierro": 0, "magnesio": 0, "potasio": 0, "zinc": 0
+                    "vitamina_a_iu": 0, "vitamina_c_mg": 0, "hierro_mg": 0, "calcio_mg": 0, "potasio_mg": 0
                 }}
             }}
             """
@@ -516,69 +521,72 @@ def analizar_comida_ia(request):
 
 @login_required
 def transcribir_audio(request):
-    if request.method == 'POST' and request.FILES.get('audio_file'):
-        audio_file = request.FILES['audio_file']
-        audio_data = audio_file.read()
+    """
+    Maneja la transcripción de audio.
+    """
+    if request.method != 'POST' or not request.FILES.get('audio_file'):
+        return JsonResponse({'success': False, 'error': 'No audio file provided'}, status=400)
+
+    audio_file = request.FILES['audio_file']
+    audio_data = audio_file.read()
+
+    try:
+        api_key = getattr(settings, 'GEMINI_API_KEY', None)
+        if not api_key:
+            return JsonResponse({'success': False, 'error': 'API Key no configurada'}, status=500)
+
+        from google import genai
+        from google.genai import types
+
+        client = genai.Client(api_key=api_key, http_options={'api_version': 'v1'})
         
+        # Prompt más específico para extracción JSON
+        prompt_text = """
+        Escucha este audio atentamente.
+        1. Transcribe TODO lo que se dice textualmente.
+        2. Extrae o estima las calorías y macros si se mencionan alimentos.
+        
+        Responde SOLO con este JSON:
+        {"text": "Transcripción completa aquí...", "calorias": 0, "proteinas": 0, "carbohidratos": 0, "grasas": 0}
+        """
+
+        # Construcción correcta del contenido multimodal
+        # Nota: En la versión 'google-genai', se prefiere pasar create_content con partes
+        response = client.models.generate_content(
+            model='models/gemini-1.5-flash',
+            contents=[
+                types.Part.from_text(text=prompt_text),
+                types.Part.from_bytes(data=audio_data, mime_type="audio/webm")
+            ]
+        )
+
         try:
-            api_key = getattr(settings, 'GEMINI_API_KEY', None)
-            if not api_key:
-                return JsonResponse({'success': False, 'error': 'API Key no configurada'}, status=500)
-                
-            client = genai.Client(api_key=api_key, http_options={'api_version': 'v1'})
-            
-            # PROMPT OPTIMIZADO: Pedimos JSON puro para evitar errores de lectura
-            prompt = """
-            Analiza el audio adjunto:
-            1. Transcribe el texto íntegramente.
-            2. Extrae calorías, proteínas, carbohidratos y grasas basados en lo mencionado.
-            Responde exclusivamente en este formato JSON:
-            {"text": "texto transcrito", "calorias": 0, "proteinas": 0, "carbohidratos": 0, "grasas": 0}
-            """
-
-            # IMPORTANTE: Nombre del modelo sin el prefijo "models/"
-            response = client.models.generate_content(
-                model="gemini-1.5-flash", 
-                contents=[
-                    prompt,
-                    types.Part.from_bytes(data=audio_data, mime_type="audio/webm")
-                ]
-            )
-
-            # LIMPIEZA DE RESPUESTA: A veces la IA devuelve ```json { ... } ```
-            raw_text = response.text
+            # Intentar parsear JSON de la respuesta
+            import json
             import re
-            match = re.search(r'\{.*\}', raw_text, re.DOTALL)
+            
+            clean_text = response.text.strip()
+            # Buscar patrón JSON
+            match = re.search(r'\{.*\}', clean_text, re.DOTALL)
             
             if match:
-                import json
-                try:
-                    data_json = json.loads(match.group())
-                    return JsonResponse({
-                        'success': True,
-                        'text': data_json.get('text', ''),
-                        'analisis': data_json
-                    })
-                except:
-                    pass
-            
-            return JsonResponse({'success': True, 'text': raw_text.strip()})
+                json_data = json.loads(match.group())
+                return JsonResponse({'success': True, 'text': json_data.get('text', ''), 'analisis': json_data})
+            else:
+                # Fallback texto plano
+                return JsonResponse({'success': True, 'text': clean_text})
+                
+        except Exception as parse_error:
+            print(f"Error parsing JSON from audio: {parse_error}")
+            return JsonResponse({'success': True, 'text': response.text})
 
-        except Exception as e:
-            error_str = str(e)
-            if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
-                return JsonResponse({
-                    'success': False, 
-                    'error_type': 'QUOTA_EXCEEDED',
-                    'error': 'Has superado el límite de peticiones (RPM/TPM). Espera un momento antes de volver a grabar.'
-                }, status=429)
-            elif "404" in error_str:
-                return JsonResponse({'success': False, 'error': 'Modelo no encontrado. Estamos revisando la configuración.'}, status=404)
-            
-            print(f"DEBUG ERROR TRANSCRIPCION: {error_str}")
-            return JsonResponse({
-                'success': False, 
-                'error': f"Error en la IA: {error_str}"
-            }, status=500)
+    except Exception as e:
+        error_msg = str(e)
+        print(f"Error Transcripción: {error_msg}")
+        
+        if "404" in error_msg:
+             return JsonResponse({'success': False, 'error': 'Modelo de IA no disponible en este momento.'}, status=404)
+        if "429" in error_msg:
+             return JsonResponse({'success': False, 'error_type': 'QUOTA_EXCEEDED', 'error': 'Cuota excedida, intenta más tarde.'}, status=429)
 
-    return JsonResponse({'success': False, 'error': 'Petición inválida'}, status=400)
+        return JsonResponse({'success': False, 'error': f'Error interno: {error_msg}'}, status=500)
