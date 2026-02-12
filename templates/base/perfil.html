@@ -1,5 +1,6 @@
 {% extends base_template %}
 {% load static %}
+{% load mathfilters %}
 
 {% block title %}Perfil | nunut {% endblock %}
 
@@ -586,7 +587,8 @@
 
                 <div class="sidebar-extra">
                     <span class="badge bg-brand-soft text-green px-3 py-2 small shadow-sm mb-3">
-                        {% if user.perfil.somatotipo %} {{ user.perfil.get_somatotipo_display }} {% else %} Optimización Activa {% endif %}
+                        {% if user.perfil.somatotipo %} {{ user.perfil.get_somatotipo_display }} {% else %} Optimización
+                        Activa {% endif %}
                     </span>
 
                     <div class="d-grid gap-2 mt-2">
@@ -662,6 +664,62 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Settings Section (Moved to Sidebar) -->
+                <div class="mt-4 pt-4 border-top text-start">
+                    <h5 class="fw-black mb-3">Ajustes</h5>
+                    <div class="list-group list-group-flush p-0">
+                        <!-- Dark Mode Toggle -->
+                        <div
+                            class="list-group-item bg-transparent border-0 px-0 d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-success bg-opacity-10 p-2 rounded-circle text-brand">
+                                    <span class="material-symbols-outlined">dark_mode</span>
+                                </div>
+                                <span class="fw-bold small">Modo oscuro</span>
+                            </div>
+                            <div class="form-check form-switch mb-0">
+                                <input id="perfil-dark-mode-toggle" class="form-check-input" type="checkbox" {% if
+                                    user.perfil.modo_oscuro %}checked {% endif %} onclick="toggleTheme()"
+                                    aria-label="Alternar modo oscuro">
+                            </div>
+                        </div>
+
+                        <!-- Manage Account -->
+                        <a href="{% url 'base:gestionar_cuenta' %}"
+                            class="list-group-item bg-transparent list-group-item-action border-0 px-0 d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-success bg-opacity-10 p-2 rounded-circle text-brand">
+                                    <span class="material-symbols-outlined">manage_accounts</span>
+                                </div>
+                                <span class="fw-bold small">Gestionar Cuenta</span>
+                            </div>
+                            <span class="material-symbols-outlined text-muted">chevron_right</span>
+                        </a>
+
+                        <!-- Privacy Policy -->
+                        <a href="javascript:void(0)"
+                            onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('privacyModal')).show()"
+                            class="list-group-item bg-transparent list-group-item-action border-0 px-0 d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-success bg-opacity-10 p-2 rounded-circle text-brand">
+                                    <span class="material-symbols-outlined">shield</span>
+                                </div>
+                                <span class="fw-bold small">Privacidad</span>
+                            </div>
+                            <span class="material-symbols-outlined text-muted">chevron_right</span>
+                        </a>
+
+                        <!-- Logout -->
+                        <a href="javascript:void(0)" onclick="handleLogout()"
+                            class="list-group-item bg-transparent list-group-item-action border-0 px-0 d-flex align-items-center gap-3 text-danger">
+                            <div class="bg-danger bg-opacity-10 p-2 rounded-circle">
+                                <span class="material-symbols-outlined">logout</span>
+                            </div>
+                            <span class="fw-bold small">Cerrar Sesión</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -669,188 +727,220 @@
         <div class="col-lg-6">
 
             <!-- Analytics Dashboard -->
-            <div class="mb-4">
+            <div class="mb-5 pb-5">
                 <h5 class="fw-black mb-3 d-flex align-items-center gap-2">
                     <span class="material-symbols-outlined text-brand">analytics</span> Biometría General
                 </h5>
                 <div class="row g-3">
+                    <!-- Peso -->
                     <div class="col-6 col-md-3">
-                        <div class="metric-card">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="small fw-bold text-muted">ALTURA</span>
-                                <span class="material-symbols-outlined text-brand">height</span>
-                            </div>
-                            <h3 class="fw-black mb-0">{{ altura_cm|floatformat:0|default:"—" }}<small
-                                    class="fs-6 fw-normal ms-1">cm</small></h3>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="metric-card">
+                        <div class="metric-card p-3 h-100 shadow-sm">
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="small fw-bold">PESO</span>
-                                <span class="material-symbols-outlined text-brand">monitor_weight</span>
+                                <span class="material-symbols-outlined text-brand fs-6">monitor_weight</span>
                             </div>
-                            <h3 class="fw-black mb-0">{{ peso_actual|floatformat:1|default:"—" }}<small
-                                    class="fs-6 fw-normal ms-1">kg</small></h3>
+                            <h4 class="fw-black mb-0">{{ peso_actual|floatformat:1|default:"—" }}<small
+                                    class="fs-6 fw-normal ms-1">kg</small></h4>
                         </div>
                     </div>
+
+                    <!-- Altura -->
                     <div class="col-6 col-md-3">
-                        <div class="metric-card">
+                        <div class="metric-card p-3 h-100 shadow-sm">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="small fw-bold text-muted">ALTURA</span>
+                                <span class="material-symbols-outlined text-brand fs-6">height</span>
+                            </div>
+                            <h4 class="fw-black mb-0">{{ altura_cm|floatformat:0|default:"—" }}<small
+                                    class="fs-6 fw-normal ms-1">cm</small></h4>
+                        </div>
+                    </div>
+
+                    <!-- Grasa -->
+                    <div class="col-6 col-md-3">
+                        <div class="metric-card p-3 h-100 shadow-sm">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="small fw-bold text-muted">GRASA</span>
+                                <span class="material-symbols-outlined text-brand fs-6">percent</span>
+                            </div>
+                            <div class="mb-1">
+                                <span class="x-small fw-black text-brand d-block text-lowercase">
+                                    {% if user.perfil.porcentaje_grasa %}{% if user.perfil.genero == 'M' %}{% if
+                                    user.perfil.porcentaje_grasa < 6 %}extremo bajo{% elif user.perfil.porcentaje_grasa
+                                        < 14 %}atlético{% elif user.perfil.porcentaje_grasa < 18 %}fitness{% elif
+                                        user.perfil.porcentaje_grasa < 25 %}normal{% else %}alto{% endif %}{% else %}{%
+                                        if user.perfil.porcentaje_grasa < 14 %}extremo bajo{% elif
+                                        user.perfil.porcentaje_grasa < 21 %}atlético{% elif user.perfil.porcentaje_grasa
+                                        < 25 %}fitness{% elif user.perfil.porcentaje_grasa < 32 %}normal{% else %}alto{%
+                                        endif %}{% endif %}{% else %}sin datos{% endif %} </span>
+                            </div>
+                            <h4 class="fw-black mb-0">{{ user.perfil.porcentaje_grasa|default:"—" }}%</h4>
+                        </div>
+                    </div>
+
+                    <!-- IMC + Músculo -->
+                    <div class="col-6 col-md-3">
+                        <div class="metric-card p-3 h-100 shadow-sm">
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="small fw-bold text-muted">IMC</span>
                                 <span class="material-symbols-outlined text-brand">calculate</span>
                             </div>
-                            <h3 class="fw-black mb-1">{{ imc|default:"—" }}</h3>
-                            <div class="d-flex justify-content-between align-items-end">
-                                <span class="x-small fw-black text-brand"> {% if imc %} {% if imc < 18.5 %} BAJO PESO {% elif imc < 25 %} NORMAL {% elif imc < 30 %} SOBREPESO {% else %} OBESIDAD {% endif %} {% else %} SIN DATOS {% endif %} </span>
-                                <span class="x-small text-muted" id="muscle-mass-display" title="Masa Muscular Estimada"></span>
+                            <div class="mb-1">
+                                <span class="x-small fw-black text-brand d-block text-lowercase">
+                                    {% if imc %}{% if imc < 18.5 %}bajo peso{% elif imc < 25 %}normal{% elif imc < 30
+                                        %}sobrepeso{% else %}obesidad{% endif %}{% else %}sin datos{% endif %} </span>
+                            </div>
+                            <h4 class="fw-black mb-1">{{ imc|default:"—" }}<small class="fs-6 fw-normal ms-1">{% if imc
+                                    %}kg/m²{% endif %}</small></h4>
+
+                            <div class="border-top pt-2 mt-2">
+                                <span class="x-small text-muted fw-bold d-block lh-1" id="muscle-mass-display"
+                                    style="font-size: 0.65rem;">
+                                    {% if peso_actual and user.perfil.porcentaje_grasa %}{% with
+                                    grasa_decimal=user.perfil.porcentaje_grasa|div:100 %}{% with
+                                    masa_grasa=peso_actual|mul:grasa_decimal %}💪 {{
+                                    peso_actual|sub:masa_grasa|floatformat:1 }}kg músculo{% endwith %}{% endwith %}{%
+                                    endif %}
+                                </span>
                             </div>
                         </div>
                     </div>
-                    <div class="col-6 col-md-3">
-                        <div class="metric-card">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="small fw-bold text-muted">GRASA</span>
-                                <span class="material-symbols-outlined text-brand">percent</span>
-                            </div>
-                            <h3 class="fw-black mb-2">{{ user.perfil.porcentaje_grasa|default:"—" }}%</h3>
-                            <div class="progress" style="height: 4px;">
-                                <div class="progress-bar bg-brand"
-                                    style="width: {{ user.perfil.porcentaje_grasa|default:0 }}%; background-color: var(--brand-primary) !important;">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
-            </div>
 
-            <!-- Diet Plan -->
-            <div class="premium-card p-4 mb-4">
-                <h5 class="fw-black mb-4 d-flex align-items-center gap-2">
-                    <span class="material-symbols-outlined text-brand">restaurant_menu</span> Estrategia Actual
-                </h5>
-                <div class="mb-4 bg-light rounded-4 p-3 dark-mode-bg-dark">
-                    <label class="small fw-bold text-muted mb-3 d-block ps-1">ENFOQUE NUTRICIONAL</label>
-                    <div class="nav nav-pills nav-fill nav-custom">
-                        <li class="nav-item">
-                            <button
-                                class="nav-link {% if user.perfil.objetivo == 'GANAR' %}active{% endif %}">Músculo</button>
-                        </li>
-                        <li class="nav-item">
-                            <button
-                                class="nav-link {% if user.perfil.objetivo == 'PERDER' %}active{% endif %}">Perder</button>
-                        </li>
-                        <li class="nav-item">
-                            <button
-                                class="nav-link {% if user.perfil.objetivo == 'MANTENER' %}active{% endif %}">Mantener</button>
-                        </li>
-                    </div>
-                </div>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="bg-brand-soft p-3 rounded-4 h-100">
-                            <label class="small fw-bold opacity-75 d-block mb-1">RÉGIMEN</label>
-                            <span class="fw-black">{{ user.perfil.get_tipo_dieta_display|default:"—" }}</span>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="bg-brand-soft p-3 rounded-4 h-100">
-                            <label class="small fw-bold opacity-75 d-block mb-1">ACTIVIDAD</label>
-                            <span class="fw-black">{{ user.perfil.get_nivel_actividad_display|default:"—" }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Health Section -->
-            <div class="premium-card p-4 mb-4">
-                <h5 class="fw-black mb-4 d-flex align-items-center gap-2">
-                    <span class="material-symbols-outlined text-warning">health_and_safety</span> Salud y Bienestar
-                </h5>
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <label class="small fw-bold text-muted mb-2 d-block">ALERGIAS / RESTRICCIONES</label>
-                        <div class="d-flex flex-wrap gap-2">
-                            {% for a in user.perfil.alergias.all %}
-                            <span
-                                class="badge bg-white text-dark border-warning border px-3 py-2 rounded-pill small shadow-sm">{{
-                                a.nombre }}</span>
-                            {% empty %}
-                            <span class="text-muted small fst-italic">Sin restricciones registradas</span>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="small fw-bold text-muted mb-2 d-block">NOTAS MÉDICAS</label>
-                        <div class="bg-white p-3 rounded-4 border border-warning border-opacity-25 dark-mode-bg-dark"
-                            style="background-color: var(--bg-content);">
-                            {% for c in user.perfil.condiciones_medicas.all %}
-                            <p class="small fw-bold mb-1 text-dark dark-mode-text-white">• {{ c.nombre }}</p>
-                            {% empty %}
-                            <p class="small text-muted mb-0">No se reportan condiciones especiales.</p>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Suggestion Box -->
-            <div class="premium-card p-4 mb-4"
-                style="background: linear-gradient(135deg, rgba(133, 200, 26, 0.05), rgba(0, 206, 201, 0.05)); border: 1px dashed var(--brand-primary);">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <h5 class="fw-black mb-0 d-flex align-items-center gap-2">
-                        <span class="material-symbols-outlined text-brand">feedback</span> Buzón de Sugerencias
+                <!-- Diet Plan -->
+                <div class="premium-card p-4 mt-4 mb-4">
+                    <h5 class="fw-black mb-4 d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined text-brand">restaurant_menu</span> Estrategia Actual
                     </h5>
-                    <span class="badge bg-brand text-white rounded-pill px-3 py-1 fw-bold animate-pulse-slow"
-                        style="font-size: 0.65rem;">FASE BETA</span>
-                </div>
-
-                <div class="bg-brand-soft p-3 rounded-4 mb-4 border border-brand border-opacity-10 text-center">
-                    <p class="small text-brand fw-bold mb-0">✨ Estamos en fase de crecimiento. Tu opinión es el motor
-                        que impulsa nuestra evolución.</p>
-                </div>
-
-                <div id="suggestion-form">
-                    <div class="mb-3 text-center">
-                        <label class="small fw-black text-muted text-uppercase mb-2 d-block">¿Cómo calificarías tu
-                            experiencia?</label>
-                        <div class="d-flex justify-content-center gap-2" id="star-rating">
-                            {% for i in "12345"|make_list %}
-                            <span class="material-symbols-outlined cursor-pointer star-item text-muted"
-                                onclick="setRating({{ i }})" onmouseover="hoverRating({{ i }})"
-                                onmouseout="resetRating()" data-value="{{ i }}"
-                                style="font-size: 32px; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);">star</span>
-                            {% endfor %}
+                    <div class="mb-4 bg-light rounded-4 p-3 dark-mode-bg-dark">
+                        <label class="small fw-bold text-muted mb-3 d-block ps-1">ENFOQUE NUTRICIONAL</label>
+                        <div class="nav nav-pills nav-fill nav-custom">
+                            <li class="nav-item">
+                                <button
+                                    class="nav-link {% if user.perfil.objetivo == 'GANAR' %}active{% endif %}">Músculo</button>
+                            </li>
+                            <li class="nav-item">
+                                <button
+                                    class="nav-link {% if user.perfil.objetivo == 'PERDER' %}active{% endif %}">Perder</button>
+                            </li>
+                            <li class="nav-item">
+                                <button
+                                    class="nav-link {% if user.perfil.objetivo == 'MANTENER' %}active{% endif %}">Mantener</button>
+                            </li>
                         </div>
-                        <input type="hidden" id="sug-rating" value="5">
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="bg-brand-soft p-3 rounded-4 h-100">
+                                <label class="small fw-bold opacity-75 d-block mb-1">RÉGIMEN</label>
+                                <span class="fw-black">{{ user.perfil.get_tipo_dieta_display|default:"—" }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="bg-brand-soft p-3 rounded-4 h-100">
+                                <label class="small fw-bold opacity-75 d-block mb-1">ACTIVIDAD</label>
+                                <span class="fw-black">{{ user.perfil.get_nivel_actividad_display|default:"—" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Health Section -->
+                <div class="premium-card p-4 mb-4">
+                    <h5 class="fw-black mb-4 d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined text-warning">health_and_safety</span> Salud y
+                        Bienestar
+                    </h5>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="small fw-bold text-muted mb-2 d-block">ALERGIAS / RESTRICCIONES</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for a in user.perfil.alergias.all %}
+                                <span
+                                    class="badge bg-white text-dark border-warning border px-3 py-2 rounded-pill small shadow-sm">{{
+                                    a.nombre }}</span>
+                                {% empty %}
+                                <span class="text-muted small fst-italic">Sin restricciones registradas</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small fw-bold text-muted mb-2 d-block">NOTAS MÉDICAS</label>
+                            <div class="bg-white p-3 rounded-4 border border-warning border-opacity-25 dark-mode-bg-dark"
+                                style="background-color: var(--bg-content);">
+                                {% for c in user.perfil.condiciones_medicas.all %}
+                                <p class="small fw-bold mb-1 text-dark dark-mode-text-white">• {{ c.nombre }}</p>
+                                {% empty %}
+                                <p class="small text-muted mb-0">No se reportan condiciones especiales.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Suggestion Box -->
+                <div class="premium-card p-4 mb-4"
+                    style="background: linear-gradient(135deg, rgba(133, 200, 26, 0.05), rgba(0, 206, 201, 0.05)); border: 1px dashed var(--brand-primary);">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-black mb-0 d-flex align-items-center gap-2">
+                            <span class="material-symbols-outlined text-brand">feedback</span> Buzón de Sugerencias
+                        </h5>
+                        <span class="badge bg-brand text-white rounded-pill px-3 py-1 fw-bold animate-pulse-slow"
+                            style="font-size: 0.65rem;">FASE BETA</span>
                     </div>
 
-                    <input type="text" id="sug-asunto" class="form-control custom-input mb-2"
-                        placeholder="Asunto (opcional)">
-                    <textarea id="sug-mensaje" class="form-control custom-input mb-3" rows="3"
-                        placeholder="Escribe tu mensaje o sugerencia aquí..."></textarea>
-                    <button class="btn btn-premium w-100 fw-bold py-2 shadow-sm" onclick="enviarSugerencia()">
-                        <span class="material-symbols-outlined me-1"
-                            style="font-size: 18px; vertical-align: middle;">send</span>
-                        Enviar Comentarios
-                    </button>
-                </div>
-                <div id="suggestion-thanks" class="text-center py-4 d-none">
-                    <div class="bg-brand bg-opacity-10 p-4 rounded-circle d-inline-flex mb-3">
-                        <span class="material-symbols-outlined display-5 text-brand">favorite</span>
+                    <div class="bg-brand-soft p-3 rounded-4 mb-4 border border-brand border-opacity-10 text-center">
+                        <p class="small text-brand fw-bold mb-0">✨ Estamos en fase de crecimiento. Tu opinión es el
+                            motor
+                            que impulsa nuestra evolución.</p>
                     </div>
-                    <p class="fw-black mb-1 h5">¡Gracias por tu aporte!</p>
-                    <p class="small text-muted mb-0 fw-bold">Nuestro equipo revisará tu mensaje minuciosamente.</p>
-                    <button class="btn btn-link text-brand btn-sm mt-3 fw-bold text-decoration-none"
-                        onclick="location.reload()">Enviar otro mensaje</button>
+
+                    <div id="suggestion-form">
+                        <div class="mb-3 text-center">
+                            <label class="small fw-black text-muted text-uppercase mb-2 d-block">¿Cómo calificarías
+                                tu
+                                experiencia?</label>
+                            <div class="d-flex justify-content-center gap-2" id="star-rating">
+                                {% for i in "12345"|make_list %}
+                                <span class="material-symbols-outlined cursor-pointer star-item text-muted"
+                                    onclick="setRating({{ i }})" onmouseover="hoverRating({{ i }})"
+                                    onmouseout="resetRating()" data-value="{{ i }}"
+                                    style="font-size: 32px; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);">star</span>
+                                {% endfor %}
+                            </div>
+                            <input type="hidden" id="sug-rating" value="5">
+                        </div>
+
+                        <input type="text" id="sug-asunto" class="form-control custom-input mb-2"
+                            placeholder="Asunto (opcional)">
+                        <textarea id="sug-mensaje" class="form-control custom-input mb-3" rows="3"
+                            placeholder="Escribe tu mensaje o sugerencia aquí..."></textarea>
+                        <button class="btn btn-premium w-100 fw-bold py-2 shadow-sm" onclick="enviarSugerencia()">
+                            <span class="material-symbols-outlined me-1"
+                                style="font-size: 18px; vertical-align: middle;">send</span>
+                            Enviar Comentarios
+                        </button>
+                    </div>
+                    <div id="suggestion-thanks" class="text-center py-4 d-none">
+                        <div class="bg-brand bg-opacity-10 p-4 rounded-circle d-inline-flex mb-3">
+                            <span class="material-symbols-outlined display-5 text-brand">favorite</span>
+                        </div>
+                        <p class="fw-black mb-1 h5">¡Gracias por tu aporte!</p>
+                        <p class="small text-muted mb-0 fw-bold">Nuestro equipo revisará tu mensaje minuciosamente.
+                        </p>
+                        <button class="btn btn-link text-brand btn-sm mt-3 fw-bold text-decoration-none"
+                            onclick="location.reload()">Enviar otro mensaje</button>
+                    </div>
                 </div>
+
             </div>
 
+            <!-- Closing Central Column -->
         </div>
 
-        <!-- Settings & Subscription -->
+        <!-- Right Sidebar -->
         <div class="col-lg-3">
+            <!-- Settings Section -->
             <div class="premium-card mb-4">
                 <div class="p-4 border-bottom">
                     <h5 class="fw-black mb-0 d-flex align-items-center gap-2">
@@ -858,6 +948,21 @@
                     </h5>
                 </div>
                 <div class="list-group list-group-flush p-2">
+                    <div
+                        class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-success bg-opacity-10 p-2 rounded-circle text-brand">
+                                <span class="material-symbols-outlined">dark_mode</span>
+                            </div>
+                            <span class="fw-bold small">Modo oscuro</span>
+                        </div>
+                        <div class="form-check form-switch mb-0">
+                            <input id="perfil-dark-mode-toggle" class="form-check-input" type="checkbox" {% if
+                                user.perfil.modo_oscuro %}checked {% endif %} onclick="toggleTheme()"
+                                aria-label="Alternar modo oscuro">
+                        </div>
+                    </div>
+
                     <a href="{% url 'base:gestionar_cuenta' %}"
                         class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-3">
@@ -868,18 +973,6 @@
                         </div>
                         <span class="material-symbols-outlined text-muted">chevron_right</span>
                     </a>
-
-                    <div class="list-group-item border-0 d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="bg-success bg-opacity-10 p-2 rounded-circle text-brand">
-                                <span class="material-symbols-outlined">dark_mode</span>
-                            </div>
-                            <span class="fw-bold small">Modo oscuro</span>
-                        </div>
-                        <div class="form-check form-switch mb-0">
-                            <input id="perfil-dark-mode-toggle" class="form-check-input" type="checkbox" {% if user.perfil.modo_oscuro %}checked {% endif %} onclick="toggleTheme()" aria-label="Alternar modo oscuro">
-                        </div>
-                    </div>
 
                     <a href="javascript:void(0)"
                         onclick="bootstrap.Modal.getOrCreateInstance(document.getElementById('privacyModal')).show()"
@@ -904,22 +997,48 @@
             </div>
 
             <!-- Subscription -->
-            <div class="sub-card">
-                <div class="d-flex justify-content-between align-items-start mb-4">
-                    <div>
-                        <small class="text-uppercase fw-black opacity-50 d-block mb-1"
-                            style="letter-spacing: 1px; color: #ffd700">STATUS</small>
-                        <h5 class="fw-black mb-0" style="color: #ffd700">NutriPro Elite</h5>
-                    </div>
-                    <span class="material-symbols-outlined text-brand"
-                        style="font-size: 2.5rem; color: #ffd700">workspace_premium</span>
+            <div class="sub-card position-relative overflow-hidden mb-4"
+                style="background: linear-gradient(135deg, #000000, #1a1a1a); border: 1px solid rgba(255, 215, 0, 0.2);">
+
+                <!-- Background Glow Effect -->
+                <div class="position-absolute top-0 end-0 bg-warning rounded-circle"
+                    style="width: 150px; height: 150px; filter: blur(80px); opacity: 0.15; transform: translate(30%, -30%);">
                 </div>
-                <div
-                    class="bg-white bg-opacity-10 rounded-4 p-3 d-flex justify-content-between align-items-center border border-white border-opacity-10">
-                    <span class="small fw-bold text-white">{{ user.perfil.suscripcion_dias_restantes|default:"12" }}
-                        días</span>
-                    <a href="#" class="btn btn-sm btn-light rounded-pill px-3 fw-bold"
-                        style="font-size: 11px;">RENOVAR</a>
+
+                <div class="d-flex justify-content-between align-items-start mb-4 position-relative">
+                    <div>
+                        <small class="text-uppercase fw-black opacity-75 d-block mb-1"
+                            style="letter-spacing: 1.5px; color: #ffd700; font-size: 0.7rem;">MEMBRESÍA</small>
+                        <h4 class="fw-black mb-1 text-white">nunut <span style="color: #ffd700;">Premium</span>
+                        </h4>
+                        <p class="text-white-50 small mb-0" style="font-size: 0.85rem; max-width: 200px;">
+                            Desbloquea recetas exclusivas, análisis avanzados y más.
+                        </p>
+                    </div>
+                    <div
+                        class="bg-warning bg-opacity-10 p-3 rounded-circle d-flex align-items-center justify-content-center border border-warning border-opacity-25">
+                        <span class="material-symbols-outlined" style="font-size: 2rem; color: #ffd700;">diamond</span>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button onclick="Swal.fire({
+                        title: '¡Próximamente!',
+                        text: 'Estamos trabajando en funciones increíbles para ti.',
+                        icon: 'info',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#85c81a',
+                        background: '#fff',
+                        customClass: {
+                            popup: 'rounded-4 border-0 shadow-lg',
+                            title: 'fw-black',
+                            content: 'text-muted'
+                        }
+                    })" class="btn btn-light w-100 rounded-pill fw-black d-flex align-items-center justify-content-center gap-2 py-2"
+                        style="background: #ffd700; border: none; color: #000;">
+                        <span>Empieza Ahora</span>
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">arrow_forward</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -941,7 +1060,8 @@
                 </h4>
                 <span class="badge bg-brand-soft text-brand rounded-pill px-3 py-2">MODO AVANZADO</span>
             </div>
-            <p class="text-muted small mb-4">Actualiza tus parámetros biométricos y preferencias para optimizar tus
+            <p class="text-muted small mb-4">Actualiza tus parámetros biométricos y preferencias para optimizar
+                tus
                 planes.</p>
 
             <form method="post" action="{% url 'base:perfil' %}" enctype="multipart/form-data">
@@ -1033,7 +1153,8 @@
                         <div class="premium-card p-4"
                             style="background: rgba(133, 200, 26, 0.03); border: 2px solid var(--brand-soft); box-shadow: none;">
                             <h6 class="fw-black mb-3 d-flex align-items-center gap-2">
-                                <span class="material-symbols-outlined text-brand">calculate</span> % GRASA CORPORAL
+                                <span class="material-symbols-outlined text-brand">calculate</span> % GRASA
+                                CORPORAL
                             </h6>
 
                             <div class="row g-3 mb-4">
@@ -1060,7 +1181,8 @@
                             <!-- Manual Entry -->
                             <div id="section_bf_manual" class="animate-fade">
                                 <div class="col-md-5 mx-auto">
-                                    <label class="small fw-bold text-muted mb-2 d-block text-center ps-1">VALOR %
+                                    <label class="small fw-bold text-muted mb-2 d-block text-center ps-1">VALOR
+                                        %
                                         GRASA</label>
                                     {{ form.porcentaje_grasa }}
                                     <p class="x-small text-muted text-center mt-2 mb-0">
@@ -1164,7 +1286,8 @@
 
                 <div class="mb-5">
                     <label class="small fw-bold text-muted mb-3 d-block d-flex align-items-center gap-2">
-                        <span class="material-symbols-outlined text-brand fs-5">favorite</span> MIS GUSTOS / FAVORITOS
+                        <span class="material-symbols-outlined text-brand fs-5">favorite</span> MIS GUSTOS /
+                        FAVORITOS
                     </label>
                     <div class="styled-checkbox-grid">
                         {{ form.gustos }}
@@ -1186,7 +1309,8 @@
                     NOTAS MÉDICAS ADICIONALES
                 </div>
                 <div class="mb-5">
-                    <p class="x-small text-muted mb-3 ps-1">Describe condiciones específicas, lesiones o recomendaciones
+                    <p class="x-small text-muted mb-3 ps-1">Describe condiciones específicas, lesiones o
+                        recomendaciones
                         de tu médico tratante.</p>
                     {{ form.notas_medicas }}
                 </div>

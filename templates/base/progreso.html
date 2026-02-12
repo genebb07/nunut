@@ -569,20 +569,8 @@
                 </div>
             </div>
 
-            <div class="position-relative mb-5" style="height: 200px;">
-                <svg class="w-100 h-100 overflow-visible" preserveAspectRatio="none" viewBox="0 0 800 200">
-                    <defs>
-                        <linearGradient id="limeGradient" x1="0" x2="0" y1="0" y2="1">
-                            <stop offset="0%" stop-color="#85c81a" stop-opacity="0.3"></stop>
-                            <stop offset="100%" stop-color="#85c81a" stop-opacity="0"></stop>
-                        </linearGradient>
-                    </defs>
-                    <path d="M0 150 Q 100 130, 200 160 T 400 100 T 600 70 T 800 40 V 200 H 0 Z"
-                        fill="url(#limeGradient)"></path>
-                    <path d="M0 150 Q 100 130, 200 160 T 400 100 T 600 70 T 800 40" fill="none" stroke="#85c81a"
-                        stroke-linecap="round" stroke-width="4"></path>
-                    <circle cx="800" cy="40" fill="#85c81a" r="6" stroke="white" stroke-width="3"></circle>
-                </svg>
+            <div class="position-relative mb-4" style="height: 200px;">
+                <canvas id="pesoChart" width="800" height="200"></canvas>
                 <div class="position-absolute top-0 end-0 text-end">
                     <span class="display-5 fw-black text-dark dark-mode-text-white">{{ peso_actual|floatformat:1 }}</span>
                     <span class="text-slate-400 fw-black">KG</span>
@@ -593,6 +581,73 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Formulario de Registro de Peso -->
+            <div class="card bg-slate-50 border rounded-4-pro p-4 mb-4">
+                <h3 class="text-uppercase fw-black letter-spacing-widest small mb-3">Registrar Nuevo Peso</h3>
+                <form id="formPeso" class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label for="inputPeso" class="form-label fw-bold small">Peso (kg)</label>
+                        <input type="number" class="form-control rounded-pill" id="inputPeso" placeholder="Ej: 75.5"
+                            step="0.1" min="20" max="300" required>
+                    </div>
+                    <div class="col-md-6">
+                        <button type="submit" class="btn btn-lime rounded-pill fw-black w-100">
+                            <span class="material-symbols-outlined fs-6 me-2">add_circle</span>
+                            REGISTRAR PESO
+                        </button>
+                    </div>
+                </form>
+                <div id="pesoMessage" class="mt-3" style="display: none;"></div>
+            </div>
+
+            <!-- Historial de Pesos Completo -->
+            {% if historial_pesos %}
+            <div class="mb-4">
+                <h3 class="text-uppercase fw-black letter-spacing-widest small mb-3">
+                    <span class="material-symbols-outlined fs-6 me-2 align-middle">history</span>
+                    Historial Completo de Pesos
+                </h3>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="fw-black small text-uppercase">Fecha</th>
+                                <th class="fw-black small text-uppercase">Peso</th>
+                                <th class="fw-black small text-uppercase text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for registro in historial_pesos %}
+                            <tr id="peso-row-{{ registro.id }}">
+                                <td class="fw-bold">
+                                    <span
+                                        class="material-symbols-outlined fs-6 me-2 text-info align-middle">calendar_today</span>
+                                    {{ registro.fecha|date:"d/m/Y" }}
+                                </td>
+                                <td class="fw-black h5 mb-0 text-lime">{{ registro.peso }} kg</td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill"
+                                        onclick="borrarPeso({{ registro.id }})" title="Eliminar registro">
+                                        <span class="material-symbols-outlined fs-6">delete</span>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <p class="small text-muted mb-0">
+                    <span class="material-symbols-outlined fs-6 me-1 align-middle">info</span>
+                    Total de registros: <strong>{{ historial_pesos|length }}</strong>
+                </p>
+            </div>
+            {% else %}
+            <div class="alert alert-info mb-4">
+                <span class="material-symbols-outlined fs-5 me-2 align-middle">info</span>
+                <strong>No hay registros de peso aún.</strong> Agrega tu primer peso usando el formulario arriba.
+            </div>
+            {% endif %}
 
             <div class="row g-3">
                 <div class="col-6 col-md-3">
@@ -632,7 +687,138 @@
             </div>
         </div>
 
+        <script>
+            // Gráfica de peso con Chart.js
+            document.addEventListener('DOMContentLoaded', function () {
+                const ctx = document.getElementById('pesoChart');
+                if (ctx) {
+                    const pesosData = {{ pesos_data|safe|default:'{"fechas": [], "valores": []}' }};
 
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: (pesosData.fechas && pesosData.fechas.length > 0) ? pesosData.fechas : ['Hoy'],
+                            datasets: [{
+                                label: 'Peso (kg)',
+                                data: (pesosData.valores && pesosData.valores.length > 0) ? pesosData.valores : [{{ peso_actual|default:0 }}],
+                                borderColor: '#85c81a',
+                                backgroundColor: 'rgba(133, 200, 26, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                pointRadius: 4,
+                                pointBackgroundColor: '#85c81a',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointHoverRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    padding: 12,
+                                    titleFont: { size: 14, weight: 'bold' },
+                                    bodyFont: { size: 13 },
+                                    callbacks: {
+                                        label: function (context) {
+                                            return 'Peso: ' + context.parsed.y.toFixed(1) + ' kg';
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: false,
+                                    grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                                    ticks: { callback: function (value) { return value + ' kg'; } }
+                                },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+
+                // Manejo del formulario de peso
+                const formPeso = document.getElementById('formPeso');
+                if (formPeso) {
+                    formPeso.addEventListener('submit', async function (e) {
+                        e.preventDefault();
+
+                        const peso = document.getElementById('inputPeso').value;
+                        const messageDiv = document.getElementById('pesoMessage');
+
+                        try {
+                            const response = await fetch('{% url "base:guardar_peso_api" %}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': '{{ csrf_token }}'
+                                },
+                                body: JSON.stringify({ peso: parseFloat(peso) })
+                            });
+
+                            const data = await response.json();
+
+                            if (data.status === 'success') {
+                                messageDiv.className = 'alert alert-success mt-3';
+                                messageDiv.textContent = '✅ ' + data.message;
+                                messageDiv.style.display = 'block';
+
+                                formPeso.reset();
+
+                                setTimeout(() => { location.reload(); }, 1200);
+                            } else {
+                                messageDiv.className = 'alert alert-danger mt-3';
+                                messageDiv.textContent = '❌ ' + (data.message || 'Error');
+                                messageDiv.style.display = 'block';
+                            }
+                        } catch (error) {
+                            messageDiv.className = 'alert alert-danger mt-3';
+                            messageDiv.textContent = '❌ Error al registrar el peso';
+                            messageDiv.style.display = 'block';
+                        }
+                    });
+                }
+            });
+
+            // Función para borrar un peso
+            async function borrarPeso(pesoId) {
+                if (!confirm('¿Estás seguro de que quieres eliminar este registro de peso?')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/borrar_peso/${pesoId}/`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.status === 'success') {
+                        // Eliminar la fila de la tabla con animación
+                        const row = document.getElementById(`peso-row-${pesoId}`);
+                        if (row) {
+                            row.style.transition = 'opacity 0.3s';
+                            row.style.opacity = '0';
+                            setTimeout(() => {
+                                location.reload();
+                            }, 300);
+                        }
+                    } else {
+                        alert('❌ ' + data.message);
+                    }
+                } catch (error) {
+                    alert('❌ Error al eliminar el peso');
+                }
+            }
+        </script>
 
         <!-- HIDRATACIÓN Y METABOLISMO -->
         <div class="row g-4">

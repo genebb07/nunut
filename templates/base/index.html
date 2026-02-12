@@ -782,8 +782,7 @@
                                 class="material-symbols-outlined fs-6 {% if receta.id in favoritas_ids %}active{% endif %}">favorite</span>
                         </button>
                         <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-50">
-                            <span class="text-white fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">{{
-                                receta.get_tipo_dieta_display|upper }}</span>
+                            <span class="text-white fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">{{ receta.get_tipo_dieta_display|upper }}</span>
                         </div>
                     </div>
                     <div class="p-3">
@@ -869,9 +868,7 @@
                             class="text-muted h6">/
                             <span id="meta-liters-display">{{ registro_agua.meta_litros|default:"2.0" }}</span>
                             Lts</small></h4>
-                    <p class="text-xs-bold text-muted mb-0">Vasos: <span id="current-vasos-display">{{
-                            registro_agua.cantidad_vasos|default:"0" }}</span> / <span id="meta-vasos-display">{{
-                            registro_agua.meta_vasos|default:"8" }}</span></p>
+                    <p class="text-xs-bold text-muted mb-0">Vasos: <span id="current-vasos-display">{{ registro_agua.cantidad_vasos|default:"0" }}</span> / <span id="meta-vasos-display">{{ registro_agua.meta_vasos|default:"8" }}</span></p>
                 </div>
                 {% if es_invitado %}
             </div>{% endif %}

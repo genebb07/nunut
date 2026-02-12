@@ -7,6 +7,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
     rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+{% endblock %}
+
+
+{% block container_class %}container analyzer-container{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+
+<!-- NEW MINIMALIST UI -->
 <style>
     /* Redesigned Minimalist Aesthetics */
     .analyzer-container {
@@ -304,22 +313,99 @@
         background: #1f2937;
     }
 
-    body.dark-mode .toggle-pill {
-        background: #374151;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    /* Button Styles */
+    .btn-nunut {
+        background: var(--primary);
+        color: white;
+        border: none;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .btn-nunut:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(133, 200, 26, 0.3);
+        color: white;
+    }
+
+    .btn-nunut:active {
+        transform: scale(0.98);
+    }
+
+    /* Mode Toggle Updates */
+    .mode-toggle-wrapper {
+        background: white;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    }
+
+    .toggle-pill {
+        background: var(--primary);
+        box-shadow: 0 4px 15px rgba(133, 200, 26, 0.4);
+    }
+
+    .mode-btn.active {
+        color: white !important;
     }
 
     body.dark-mode .mode-btn.active {
-        color: white;
+        color: white !important;
+    }
+
+    /* Analysis Section Clean Up */
+    /* Utilities */
+    .hover-scale {
+        transition: transform 0.2s ease;
+    }
+
+    .hover-scale:hover {
+        transform: scale(1.05);
+    }
+
+    .stats-card-minimal {
+        background: #f8fafc;
+        border: 1px solid rgba(0, 0, 0, 0.03);
+        border-radius: 24px;
+        padding: 1.5rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .stats-card-minimal:hover {
+        background: white;
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        border-color: var(--primary);
+    }
+
+    .stats-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #94a3b8;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .stats-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #334155;
+    }
+
+    body.dark-mode .stats-card-minimal {
+        background: #1f2937;
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    body.dark-mode .stats-value {
+        color: #e2e8f0;
+    }
+
+    body.dark-mode .toggle-pill {
+        background: var(--primary);
     }
 </style>
-{% endblock %}
-
-{% block container_class %}container analyzer-container{% endblock %}
-
-{% block content %}
-{% csrf_token %}
-
 <!-- NEW MINIMALIST UI -->
 <div class="row justify-content-center">
     <div class="col-12 col-xxl-10">
@@ -396,8 +482,9 @@
                         </div>
 
                         <div class="d-flex gap-3 w-100 mt-5">
-                            <button id="analyzeMainBtn" class="btn btn-dark w-100 rounded-pill py-3 fw-bold shadow-sm"
+                            <button id="analyzeMainBtn" class="btn btn-nunut w-100 rounded-pill py-3 fw-bold shadow-lg"
                                 onclick="analyzeFood()">
+                                <span class="material-symbols-outlined align-middle me-2">auto_awesome</span>
                                 Analizar Ahora
                             </button>
                         </div>
@@ -420,49 +507,47 @@
                 <!-- Result Content -->
                 <div id="analysisResultContent" class="d-none h-100 flex-column gap-4">
                     <!-- Main Summary -->
-                    <div class="analyzer-card p-4 p-md-5 overflow-hidden border-0 shadow-lg"
-                        style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
+                    <div class="analyzer-card p-4 p-md-5 border shadow-sm" style="background: #ffffff; color: #1e293b;">
                         <div class="d-flex justify-content-between align-items-start mb-4">
                             <div>
-                                <h2 id="totalCalories" class="display-3 fw-900 mb-0" style="letter-spacing: -2px;">0
-                                </h2>
+                                <h2 id="totalCalories" class="display-3 fw-900 mb-0 text-dark"
+                                    style="letter-spacing: -2px;">0</h2>
                                 <div class="d-flex align-items-center gap-2">
-                                    <span class="text-white text-opacity-50 fw-bold fs-7 uppercase">kcal totales</span>
+                                    <span class="text-muted fw-bold fs-7 text-uppercase">kcal totales</span>
                                     <span
-                                        class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 py-1 px-3 rounded-pill fw-black x-small">ANALIZADO</span>
+                                        class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 py-1 px-3 rounded-pill fw-bold small">ANALIZADO</span>
                                 </div>
                             </div>
-                            <button class="btn btn-success px-4 py-2 rounded-pill fw-bold shadow-sm"
+                            <button
+                                class="btn btn-white border shadow-sm text-dark px-4 py-2 rounded-pill fw-bold hover-scale"
                                 onclick="showCalendarModal()">
-                                <span class="material-symbols-outlined fs-5 align-middle me-1">calendar_today</span>
+                                <span
+                                    class="material-symbols-outlined fs-5 align-middle me-1 text-success">calendar_today</span>
                                 Guardar
                             </button>
                         </div>
-                        <p id="dishDescription" class="text-white text-opacity-75 lead mb-0 fw-medium">Describe tu plato
-                            para empezar.</p>
+                        <p id="dishDescription" class="text-muted lead mb-0 fw-medium">Describe tu plato para empezar.
+                        </p>
                     </div>
 
                     <!-- Macro Breakdown Minimalist -->
-                    <div class="row g-2">
+                    <div class="row g-3">
                         <div class="col-4">
-                            <div class="stats-card-minimal text-center border-0 shadow-sm"
-                                style="background: rgba(34, 197, 94, 0.05);">
-                                <span class="text-success fs-8 fw-900 mb-1 d-block">PROT</span>
-                                <h4 id="totalProtein" class="fw-black mb-0" style="color: #166534;">0g</h4>
+                            <div class="stats-card-minimal text-center">
+                                <span class="stats-label">Proteína</span>
+                                <h4 id="totalProtein" class="stats-value mb-0">0g</h4>
                             </div>
                         </div>
                         <div class="col-4">
-                            <div class="stats-card-minimal text-center border-0 shadow-sm"
-                                style="background: rgba(59, 130, 246, 0.05);">
-                                <span class="text-primary fs-8 fw-900 mb-1 d-block">CARB</span>
-                                <h4 id="totalCarbs" class="fw-black mb-0" style="color: #1e40af;">0g</h4>
+                            <div class="stats-card-minimal text-center">
+                                <span class="stats-label">Carbos</span>
+                                <h4 id="totalCarbs" class="stats-value mb-0">0g</h4>
                             </div>
                         </div>
                         <div class="col-4">
-                            <div class="stats-card-minimal text-center border-0 shadow-sm"
-                                style="background: rgba(245, 158, 11, 0.05);">
-                                <span class="text-warning fs-8 fw-900 mb-1 d-block">GRASA</span>
-                                <h4 id="miniFatVal" class="fw-black mb-0" style="color: #92400e;">0g</h4>
+                            <div class="stats-card-minimal text-center">
+                                <span class="stats-label">Grasas</span>
+                                <h4 id="miniFatVal" class="stats-value mb-0">0g</h4>
                             </div>
                         </div>
                     </div>
@@ -499,7 +584,7 @@
         </div>
 
         <button
-            class="btn btn-dark w-100 rounded-pill py-3 fw-bold shadow-lg d-flex justify-content-center align-items-center gap-2"
+            class="btn btn-nunut w-100 rounded-pill py-3 fw-bold shadow-lg d-flex justify-content-center align-items-center gap-2"
             id="confirmAddBtn" onclick="confirmAddToCalendar()">
             <span class="material-symbols-outlined">check_circle</span>
             Confirmar y Añadir
@@ -971,6 +1056,26 @@
                 } else triggerEl.click();
             }
         }
-    } // Fin comprobación analizadorIniciado
+    } // Fin comprobación analizadorIniciado (Declaraciones)
+
+    // --- LOGICA DE INICIALIZACIÓN (Se ejecuta en cada carga/swap de HTMX) ---
+    // Reseteamos variables de estado visual si es necesario
+    isRecording = false;
+
+    // Forzamos el estado visual inicial correcto (Voz por defecto)
+    // Pero si quisieras persistir el estado, podrías leer de localStorage.
+    // Aquí reinicializamos listeners que dependen del DOM actual
+
+    // Inicializar listeners de tabs si existieran (aunque no veo tabs de bootstrap visuales en el HTML principal, solo el selector de fecha y modo)
+    // Si usas data-bs-toggle="pill" en otros sitios (como en el modal si los hubiera)
+
+    // Lo más importante: Si volvemos y está "grabando" visualmente, lo reseteamos:
+    const micBtn = document.getElementById('micButton');
+    if (micBtn) micBtn.classList.remove('listening');
+    const recInd = document.getElementById('recordingIndicator');
+    if (recInd) recInd.classList.add('d-none');
+
+    // Reconexion de reconocimiento si se perdió
+    initRecognition();
 </script>
 {% endblock %}

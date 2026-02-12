@@ -1,6 +1,7 @@
 # Requerimientos del proyecto
 Django==5.2.7
 django-allauth
+django-mathfilters
 deep-translator
 google-genai
 # Instalar con: pip install -r requirements.txt

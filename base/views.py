@@ -980,8 +980,19 @@ def progreso(request):
     desviacion_imc = abs(imc - 22) if imc > 0 else 5
     edad_nutri = round(edad_real + (desviacion_imc * 0.5) - (consistencia * 3))
 
-    from .models import LoginStreak
+    from .models import LoginStreak, RegistroPeso
+    import json
     racha = LoginStreak.calcular_racha(perfil)
+
+    # Obtener historial de pesos (más reciente primero)
+    historial_pesos = list(RegistroPeso.objects.filter(perfil=perfil).order_by('-fecha')[:30])
+
+    # Preparar datos para la gráfica (mostramos en el mismo orden: último -> primero)
+    pesos_data = {
+        'fechas': [p.fecha.strftime('%d/%m') for p in historial_pesos],
+        'valores': [float(p.peso) for p in historial_pesos]
+    }
+    pesos_data_json = json.dumps(pesos_data)
 
     context = {
         'base_template': get_base_template(request),
@@ -990,6 +1001,8 @@ def progreso(request):
         'imc_estado': imc_estado,
         'avatar': perfil.get_avatar_state(),
         'racha': racha,
+        'historial_pesos': historial_pesos,
+        'pesos_data': pesos_data_json,
         'composicion': {
             'grasa_kg': grasa_kg,
             'grasa_pct': grasa_pct,
@@ -1962,6 +1975,51 @@ def guardar_sueno_api(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     
     return JsonResponse({'status': 'error'}, status=400)
+
+@login_required
+def guardar_peso_api(request):
+    if request.method == 'POST':
+        import json
+        from .models import RegistroPeso
+        from datetime import date
+        
+        try:
+            data = json.loads(request.body)
+            peso = float(data.get('peso', 0))
+            
+            if peso <= 0 or peso > 500:
+                return JsonResponse({'status': 'error', 'message': 'Peso inválido'}, status=400)
+            
+            # Crear nuevo registro de peso
+            RegistroPeso.objects.create(
+                perfil=request.user.perfil,
+                peso=peso
+            )
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Peso registrado correctamente',
+                'peso': float(peso)
+            })
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    
+    return JsonResponse({'status': 'error'}, status=400)
+
+
+@login_required
+def borrar_peso(request, peso_id):
+    from .models import RegistroPeso
+    if request.method in ('DELETE', 'POST'):
+        try:
+            registro = RegistroPeso.objects.get(id=peso_id, perfil=request.user.perfil)
+            registro.delete()
+            return JsonResponse({'status': 'success', 'message': 'Registro eliminado correctamente'})
+        except RegistroPeso.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Registro no encontrado'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
 
 # API para generar y descargar informe PDF
 @login_required
