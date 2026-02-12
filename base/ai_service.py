@@ -1,5 +1,5 @@
 import os
-import google.generativeai as genai
+from google import genai
 from django.conf import settings
 
 # Gemini API Key from settings
@@ -7,15 +7,14 @@ from django.conf import settings
 
 def obtener_respuesta_gemini(prompt, system_instruction=None):
     """
-    Función utilitaria para obtener respuestas de Google Gemini.
+    Función utilitaria para obtener respuestas de Google Gemini usando genai.Client.
     """
     GEMINI_API_KEY = getattr(settings, 'GEMINI_API_KEY', None)
     if not GEMINI_API_KEY:
         print("Error: No se encontró GEMINI_API_KEY en settings.py")
         return "¡Sigue esforzándote! Tu coach estará listo en un momento."
     try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        
+        client = genai.Client(api_key=GEMINI_API_KEY)
         
         # Opciones de configuración del modelo
         generation_config = {
@@ -25,13 +24,24 @@ def obtener_respuesta_gemini(prompt, system_instruction=None):
             "max_output_tokens": 1024,
         }
 
-        model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
-            generation_config=generation_config,
-            system_instruction=system_instruction
+        # Usar el modelo disponible
+        model_name = "gemini-1.5-flash"
+        
+        # Construir el contenido con system instruction si existe
+        contents = prompt
+        
+        response = client.models.generate_content(
+            model=model_name,
+            contents=contents,
+            config={
+                "temperature": 0.7,
+                "top_p": 0.95,
+                "top_k": 64,
+                "max_output_tokens": 1024,
+                "system_instruction": system_instruction
+            }
         )
-
-        response = model.generate_content(prompt)
+        
         return response.text
     except Exception as e:
         print(f"Error en Gemini API: {e}")

@@ -139,7 +139,7 @@
             <span class="material-symbols-outlined text-info display-5">analytics</span>
         </div>
         <div>
-            <h1 class="fw-black m-0 h2">Estadísticas de <span class="text-info">Rendimiento</span></h1>
+            <h1 class="fw-black m-0 h2">Estadísticas de <span class="text-lime">Rendimiento</span></h1>
             <p class="text-muted fw-bold mb-0">Análisis global de la plataforma nunut</p>
         </div>
     </div>
@@ -218,11 +218,11 @@
                                 {% if obj.objetivo == 'PERDER' %}Bajar Peso{% elif obj.objetivo == 'GANAR' %}Masa
                                 Muscular{% else %}Salud/Mantener{% endif %}
                             </span>
-                            <span class="badge bg-info bg-opacity-20 text-info rounded-pill px-2 py-1"
+                            <span class="badge bg-lime bg-opacity-20 text-lime rounded-pill px-2 py-1"
                                 style="font-size: 0.6rem;">{{ obj.count }}</span>
                         </div>
                         <div class="progress" style="height: 6px;">
-                            <div class="progress-bar bg-info" style="width: {{ obj.count }}0%;"></div>
+                            <div class="progress-bar bg-lime" style="width: {{ obj.count }}0%;"></div>
                         </div>
                     </div>
                     {% endfor %}
@@ -572,11 +572,13 @@
             <div class="position-relative mb-4" style="height: 200px;">
                 <canvas id="pesoChart" width="800" height="200"></canvas>
                 <div class="position-absolute top-0 end-0 text-end">
-                    <span class="display-5 fw-black text-dark dark-mode-text-white">{{ peso_actual|floatformat:1 }}</span>
+                    <span class="display-5 fw-black text-dark dark-mode-text-white">{{ peso_actual|floatformat:1
+                        }}</span>
                     <span class="text-slate-400 fw-black">KG</span>
                     <div class="d-flex align-items-center justify-content-end text-lime fw-black"
                         style="font-size: 0.75rem;">
-                        <span class="material-symbols-outlined fs-6">{% if avatar.tendencia == 'bajando' %}trending_down{% else %}trending_up{% endif %}</span>
+                        <span class="material-symbols-outlined fs-6">{% if avatar.tendencia == 'bajando'
+                            %}trending_down{% else %}trending_up{% endif %}</span>
                         TENDENCIA: {{ avatar.tendencia|upper }}
                     </div>
                 </div>
@@ -692,97 +694,100 @@
             document.addEventListener('DOMContentLoaded', function () {
                 const ctx = document.getElementById('pesoChart');
                 if (ctx) {
-                    const pesosData = {{ pesos_data|safe|default:'{"fechas": [], "valores": []}' }};
+                    const pesosData = {{ pesos_data| safe |default: '{"fechas": [], "valores": []}'
+                }
+            };
 
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: (pesosData.fechas && pesosData.fechas.length > 0) ? pesosData.fechas : ['Hoy'],
-                            datasets: [{
-                                label: 'Peso (kg)',
-                                data: (pesosData.valores && pesosData.valores.length > 0) ? pesosData.valores : [{{ peso_actual|default:0 }}],
-                                borderColor: '#85c81a',
-                                backgroundColor: 'rgba(133, 200, 26, 0.1)',
-                                borderWidth: 3,
-                                fill: true,
-                                tension: 0.4,
-                                pointRadius: 4,
-                                pointBackgroundColor: '#85c81a',
-                                pointBorderColor: '#fff',
-                                pointBorderWidth: 2,
-                                pointHoverRadius: 6
-                            }]
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: (pesosData.fechas && pesosData.fechas.length > 0) ? pesosData.fechas : ['Hoy'],
+                    datasets: [{
+                        label: 'Peso (kg)',
+                        data: (pesosData.valores && pesosData.valores.length > 0) ? pesosData.valores : [{{ peso_actual|default: 0
+                    }}],
+                borderColor: '#85c81a',
+                backgroundColor: 'rgba(133, 200, 26, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#85c81a',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointHoverRadius: 6
+            }]
                         },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: {
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                    padding: 12,
-                                    titleFont: { size: 14, weight: 'bold' },
-                                    bodyFont: { size: 13 },
-                                    callbacks: {
-                                        label: function (context) {
-                                            return 'Peso: ' + context.parsed.y.toFixed(1) + ' kg';
-                                        }
-                                    }
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: false,
-                                    grid: { color: 'rgba(0, 0, 0, 0.05)' },
-                                    ticks: { callback: function (value) { return value + ' kg'; } }
-                                },
-                                x: { grid: { display: false } }
+                options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyFont: { size: 13 },
+                        callbacks: {
+                            label: function (context) {
+                                return 'Peso: ' + context.parsed.y.toFixed(1) + ' kg';
                             }
                         }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                        ticks: { callback: function (value) { return value + ' kg'; } }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
                     });
                 }
 
-                // Manejo del formulario de peso
-                const formPeso = document.getElementById('formPeso');
-                if (formPeso) {
-                    formPeso.addEventListener('submit', async function (e) {
-                        e.preventDefault();
+            // Manejo del formulario de peso
+            const formPeso = document.getElementById('formPeso');
+            if (formPeso) {
+                formPeso.addEventListener('submit', async function (e) {
+                    e.preventDefault();
 
-                        const peso = document.getElementById('inputPeso').value;
-                        const messageDiv = document.getElementById('pesoMessage');
+                    const peso = document.getElementById('inputPeso').value;
+                    const messageDiv = document.getElementById('pesoMessage');
 
-                        try {
-                            const response = await fetch('{% url "base:guardar_peso_api" %}', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRFToken': '{{ csrf_token }}'
-                                },
-                                body: JSON.stringify({ peso: parseFloat(peso) })
-                            });
+                    try {
+                        const response = await fetch('{% url "base:guardar_peso_api" %}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            body: JSON.stringify({ peso: parseFloat(peso) })
+                        });
 
-                            const data = await response.json();
+                        const data = await response.json();
 
-                            if (data.status === 'success') {
-                                messageDiv.className = 'alert alert-success mt-3';
-                                messageDiv.textContent = '✅ ' + data.message;
-                                messageDiv.style.display = 'block';
+                        if (data.status === 'success') {
+                            messageDiv.className = 'alert alert-success mt-3';
+                            messageDiv.textContent = '✅ ' + data.message;
+                            messageDiv.style.display = 'block';
 
-                                formPeso.reset();
+                            formPeso.reset();
 
-                                setTimeout(() => { location.reload(); }, 1200);
-                            } else {
-                                messageDiv.className = 'alert alert-danger mt-3';
-                                messageDiv.textContent = '❌ ' + (data.message || 'Error');
-                                messageDiv.style.display = 'block';
-                            }
-                        } catch (error) {
+                            setTimeout(() => { location.reload(); }, 1200);
+                        } else {
                             messageDiv.className = 'alert alert-danger mt-3';
-                            messageDiv.textContent = '❌ Error al registrar el peso';
+                            messageDiv.textContent = '❌ ' + (data.message || 'Error');
                             messageDiv.style.display = 'block';
                         }
-                    });
-                }
+                    } catch (error) {
+                        messageDiv.className = 'alert alert-danger mt-3';
+                        messageDiv.textContent = '❌ Error al registrar el peso';
+                        messageDiv.style.display = 'block';
+                    }
+                });
+            }
             });
 
             // Función para borrar un peso
@@ -959,7 +964,8 @@
                     </div>
                     <div>
                         <p class="small fw-black mb-0">Racha Implacable</p>
-                        <p class="text-uppercase text-slate-400 fw-bold mb-0" style="font-size: 0.6rem;">Has accedido {{ racha }} días seguidos</p>
+                        <p class="text-uppercase text-slate-400 fw-bold mb-0" style="font-size: 0.6rem;">Has accedido {{
+                            racha }} días seguidos</p>
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-3">

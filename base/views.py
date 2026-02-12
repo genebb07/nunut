@@ -398,7 +398,7 @@ def index(request):
         context = _get_admin_dashboard_data(request)
         context['base_template'] = get_base_template(request)
         context['es_admin_view'] = True
-        return render(request, 'admin/dashboard.html', context)
+        return render(request, 'base/index.html', context)
     es_invitado = False
     if request.user.is_authenticated and hasattr(request.user, 'perfil'):
         es_invitado = request.user.perfil.rol == 'GUEST'
@@ -1532,7 +1532,8 @@ def calcular_macros_api(request):
 def admin_dashboard(request):
     context = _get_admin_dashboard_data(request)
     context['base_template'] = get_base_template(request)
-    return render(request, 'admin/dashboard.html', context)
+    context['es_admin_view'] = True
+    return render(request, 'base/index.html', context)
 
 @login_required
 def enviar_sugerencia(request):

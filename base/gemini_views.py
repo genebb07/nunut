@@ -551,7 +551,7 @@ def transcribir_audio(request):
         """
 
         # Construcción correcta del contenido multimodal
-        # Nota: En la versión 'google-genai', se prefiere pasar create_content con partes
+        # Nota: En la versión 'genai', se prefiere pasar create_content con partes
         response = client.models.generate_content(
             model='models/gemini-1.5-flash',
             contents=[
