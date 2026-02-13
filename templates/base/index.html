@@ -392,20 +392,21 @@
 {% if es_admin_view %}
 <div class="row align-items-center mb-5 mt-2 animate-fade">
     <div class="col-md-7">
-        <h1 class="fw-black m-0 display-5" style="letter-spacing: -1px;">Panel <span class="text-info">Premium</span>
+        <h1 class="fw-black m-0 display-5" style="letter-spacing: -1px;">Panel <span class="text-success">Premium</span>
             <span style="color: var(--primary-elite);">nunut</span>
         </h1>
-        <p class="text-muted fw-bold mb-0">Gestión de comunidad y curación IA <span class="text-info ps-1">● Activo
+        <p class="text-muted fw-bold mb-0">Gestión de comunidad y curación IA <span class="text-success ps-1">● Activo
                 ahora</span></p>
     </div>
     <div class="col-md-5 text-md-end mt-3 mt-md-0">
         <div class="d-inline-flex flex-column align-items-end">
             <div
                 class="d-flex align-items-center gap-2 bg-white dark-mode-bg-dark px-4 py-2 rounded-4 shadow-sm border mb-2">
-                <span class="material-symbols-outlined text-info">calendar_today</span>
+                <span class="material-symbols-outlined text-success">calendar_today</span>
                 <span class="fw-bold small">{% now "l, d F Y" %}</span>
             </div>
-            <div class="d-flex align-items-center gap-2 text-info small fw-black text-uppercase letter-spacing-widest">
+            <div
+                class="d-flex align-items-center gap-2 text-success small fw-black text-uppercase letter-spacing-widest">
                 <span class="material-symbols-outlined fs-6 anim-pulse">sensors</span> Conexión Estable
             </div>
         </div>
@@ -414,7 +415,7 @@
 
 <div class="row g-3 mb-5">
     <div class="col-6 col-md-3">
-        <div class="glass-card text-center p-4 border-info">
+        <div class="glass-card text-center p-4 border-success">
             <div class="stat-pill mb-3" style="background: rgba(133, 200, 26, 0.1); color: var(--primary-elite);">
                 <span class="material-symbols-outlined fs-6 me-1">group</span> Usuarios
             </div>
@@ -434,7 +435,7 @@
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="glass-card text-center p-4 border-info">
+        <div class="glass-card text-center p-4 border-success">
             <div class="stat-pill mb-3" style="background: rgba(108, 92, 231, 0.1); color: #6c5ce7;">
                 <span class="material-symbols-outlined fs-6 me-1">visibility</span> Alcance
             </div>
@@ -443,7 +444,7 @@
         </div>
     </div>
     <div class="col-6 col-md-3">
-        <div class="glass-card text-center p-4 border-info">
+        <div class="glass-card text-center p-4 border-success">
             <div class="stat-pill mb-3" style="background: rgba(253, 121, 168, 0.1); color: #fd79a8;">
                 <span class="material-symbols-outlined fs-6 me-1">admin_panel_settings</span> Equipo
             </div>
@@ -457,7 +458,7 @@
     <div class="col-lg-8">
         <div class="glass-card h-100 border-0 shadow-lg position-relative overflow-hidden">
             <div class="position-absolute top-0 end-0 p-4">
-                <span class="text-info fw-black small text-uppercase">Crecimiento Comunidad</span>
+                <span class="text-success fw-black small text-uppercase">Crecimiento Comunidad</span>
             </div>
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
@@ -482,10 +483,10 @@
                     <div class="flex-grow-1">
                         <div class="d-flex justify-content-between mb-1">
                             <span class="small fw-black">{{ pais.localidad }}</span>
-                            <span class="small fw-black text-info">{{ pais.count }}</span>
+                            <span class="small fw-black text-success">{{ pais.count }}</span>
                         </div>
                         <div class="progress rounded-pill bg-white dark-mode-bg-secondary" style="height: 6px;">
-                            <div class="progress-bar bg-info shadow-sm" style="width: {{ pais.count }}0%"></div>
+                            <div class="progress-bar bg-success shadow-sm" style="width: {{ pais.count }}0%"></div>
                         </div>
                     </div>
                 </div>
@@ -504,21 +505,21 @@
 <div class="row g-4 mb-5">
     <div class="col-lg-3">
         <div class="glass-card text-center h-100">
-            <h3 class="h6 fw-black mb-4 text-uppercase text-info">Distribución Género</h3>
+            <h3 class="h6 fw-black mb-4 text-uppercase text-success">Distribución Género</h3>
             <div style="height: 180px;"><canvas id="adminGenderChart"></canvas></div>
             <div class="mt-3 small fw-bold text-muted">Base de Usuarios Real</div>
         </div>
     </div>
     <div class="col-lg-3">
         <div class="glass-card h-100">
-            <h3 class="h6 fw-black mb-4 text-uppercase text-info">Rango de Edad</h3>
+            <h3 class="h6 fw-black mb-4 text-uppercase text-success">Rango de Edad</h3>
             <div style="height: 180px;"><canvas id="adminAgeChart"></canvas></div>
             <div class="mt-3 x-small text-center fw-bold text-muted">Promedio: 28 años</div>
         </div>
     </div>
     <div class="col-lg-3">
         <div class="glass-card h-100">
-            <h3 class="h6 fw-black mb-4 text-uppercase text-info">Principales Objetivos</h3>
+            <h3 class="h6 fw-black mb-4 text-uppercase text-success">Principales Objetivos</h3>
             <div style="height: 180px;"><canvas id="adminObjectivesChart"></canvas></div>
             <div class="mt-3 x-small text-center fw-bold text-muted">Tendencia Nutricional</div>
         </div>
@@ -545,7 +546,7 @@
                     <div class="flex-grow-1 overflow-hidden">
                         <div class="fw-bold text-truncate text-white" style="font-size: 0.75rem;">{{ rec.titulo }}</div>
                         <div class="d-flex gap-2 mt-1">
-                            <button class="btn btn-info btn-sm rounded-pill py-0 px-2 x-small fw-black"
+                            <button class="btn btn-success btn-sm rounded-pill py-0 px-2 x-small fw-black"
                                 onclick="curarAdmin('{{ rec.id }}', 'aprobar')">APROBAR</button>
                             <button class="btn btn-outline-danger btn-sm rounded-pill py-0 px-2 x-small fw-black"
                                 onclick="curarAdmin('{{ rec.id }}', 'rechazar')">ELIMINAR</button>
@@ -554,8 +555,8 @@
                 </div>
                 {% empty %}
                 <div class="text-center py-5">
-                    <span class="material-symbols-outlined text-info display-4 opacity-25 mb-2">check_circle</span>
-                    <p class="small text-info opacity-75 fw-bold">Sistema al día</p>
+                    <span class="material-symbols-outlined text-success display-4 opacity-25 mb-2">check_circle</span>
+                    <p class="small text-success opacity-75 fw-bold">Sistema al día</p>
                 </div>
                 {% endfor %}
             </div>
@@ -573,13 +574,12 @@
         <div class="col-md-4 col-lg-2">
             <div
                 class="glass-card p-3 border-0 bg-white dark-mode-bg-dark shadow-sm d-flex flex-column align-items-center text-center h-100">
-                <div class="rounded-circle bg-info bg-opacity-10 text-info d-flex align-items-center justify-content-center mb-2"
+                <div class="rounded-circle bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center mb-2"
                     style="width: 45px; height: 45px; font-weight: 800; font-size: 1.2rem;">
                     {{ u.email.0|upper }}
                 </div>
                 <div class="w-100 overflow-hidden">
-                    <div class="fw-bold text-truncate x-small mb-1" title="{{ u.email }}" style="font-size: 0.7rem;">{{
-                        u.email }}</div>
+                    <div class="fw-bold text-truncate x-small mb-1" title="{{ u.email }}" style="font-size: 0.7rem;">{{ u.email }}</div>
                     <div class="text-muted" style="font-size: 0.6rem;">{{ u.date_joined|date:"d M, H:i" }}</div>
                 </div>
                 <div class="mt-2 text-center">
@@ -784,8 +784,7 @@
                                 class="material-symbols-outlined fs-6 {% if receta.id in favoritas_ids %}active{% endif %}">favorite</span>
                         </button>
                         <div class="position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-50">
-                            <span class="text-white fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">{{
-                                receta.get_tipo_dieta_display|upper }}</span>
+                            <span class="text-white fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">{{ receta.get_tipo_dieta_display|upper }}</span>
                         </div>
                     </div>
                     <div class="p-3">
@@ -833,7 +832,7 @@
             </div>
             <div class="position-relative mb-3" style="z-index: 2;">
                 <p class="small text-white opacity-90 mb-0 ps-2 italic lh-base"
-                    style="font-size: 0.85rem; font-weight: 500; border-left: 2px solid var(--primary);">{{ recomendacion_ia }}</p>
+                    style="font-size: 0.85rem; font-weight: 500; border-left: 2px solid var(--primary);">{{  recomendacion_ia }}</p>
             </div>
             <div class="d-flex gap-2 mb-0" style="z-index: 2; position: relative;"><span
                     class="badge rounded-pill bg-primary bg-opacity-20 text-white x-small fw-bold border border-white border-opacity-10"
@@ -850,7 +849,7 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div class="d-flex align-items-center gap-2">
                         <div class="bg-info bg-opacity-10 p-2 rounded-circle"><span
-                                class="material-symbols-outlined text-info fs-3">water_drop</span></div>
+                                class="material-symbols-outlined text-white fs-3">water_drop</span></div>
                         <h4 class="fw-900 h5 mb-0">Hidratación</h4>
                     </div>
                     <span class="badge bg-info bg-opacity-20 text-white rounded-pill text-xs-bold px-3 py-2"
@@ -870,9 +869,7 @@
                             class="text-muted h6">/
                             <span id="meta-liters-display">{{ registro_agua.meta_litros|default:"2.0" }}</span>
                             Lts</small></h4>
-                    <p class="text-xs-bold text-muted mb-0">Vasos: <span id="current-vasos-display">{{
-                            registro_agua.cantidad_vasos|default:"0" }}</span> / <span id="meta-vasos-display">{{
-                            registro_agua.meta_vasos|default:"8" }}</span></p>
+                    <p class="text-xs-bold text-muted mb-0">Vasos: <span id="current-vasos-display">{{ registro_agua.cantidad_vasos|default:"0" }}</span> / <span id="meta-vasos-display">{{ registro_agua.meta_vasos|default:"8" }}</span></p>
                 </div>
                 {% if es_invitado %}
             </div>{% endif %}
@@ -925,21 +922,15 @@
                         style="letter-spacing: 1px;">Nivel de Energía</label>
                     <div class="d-flex justify-content-between gap-1 p-1 rounded-4 bg-light dark-mode-bg-dark border">
                         {% for i in "12345"|make_list %}<input type="radio" class="btn-check" name="energy-level"
-                            id="energy-{{ i }}" value="{{ i }}" {% if sueno_hoy.calidad|slugify==i %}checked{% elif not
-                            sueno_hoy and i=="3" %}checked{% endif %} /><label
+                            id="energy-{{ i }}" value="{{ i }}" {% if sueno_hoy.calidad|slugify == i %}checked{% elif not sueno_hoy and i == "3" %}checked{% endif %} /><label
                             class="btn btn-sm btn-outline-light border-0 flex-grow-1 py-2 rounded-3 text-main fw-bold energy-btn"
-                            for="energy-{{ i }}" onclick="selectEnergy(this)"><span class="d-block fs-3 mb-1">{% if i ==
-                                "1" %}😴{% elif i == "2" %}😪{% elif i == "3" %}😐{% elif i == "4" %}😊{% elif i == "5"
-                                %}🚀{% endif %}</span>
-                            <span class="d-block x-small lh-1 opacity-75">{% if i == "1" %}Baja{% elif i == "2" %}Leve{%
-                                elif i == "3" %}Normal{% elif i == "4" %}Bien{% elif i == "5" %}Excelente{% endif
-                                %}</span></label>
+                            for="energy-{{ i }}" onclick="selectEnergy(this)"><span class="d-block fs-3 mb-1">{% if i == "1" %}😴{% elif i == "2" %}😪{% elif i == "3" %}😐{% elif i == "4" %}😊{% elif i == "5" %}🚀{% endif %}</span>
+                            <span class="d-block x-small lh-1 opacity-75">{% if i == "1" %}Baja{% elif i == "2" %}Leve{% elif i == "3" %}Normal{% elif i == "4" %}Bien{% elif i == "5" %}Excelente{% endif %}</span></label>
                         {% endfor %}
                     </div>
                 </div>
                 <div class="text-center">
-                    <p class="small text-muted mb-3 fst-italic" id="sleep-status">{% if sueno_hoy %}¡Registro de hoy
-                        guardado!{% else %}Registra tu sueño de anoche{% endif %}</p>
+                    <p class="small text-muted mb-3 fst-italic" id="sleep-status">{% if sueno_hoy %}¡Registro de hoy guardado!{% else %}Registra tu sueño de anoche{% endif %}</p>
                     <button
                         class="btn btn-success w-100 py-3 rounded-4 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2"
                         style="background: var(--primary-elite); border: none;" onclick="saveSleep()"><span
@@ -964,7 +955,7 @@
                             class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1">Avg 7 días</span>
                     </div>
                 </div>
-                <div class="d-flex justify-content-between mb-4 border-bottom pb-3">
+                <div class="d-flex justify-content-between mb-3 border-bottom pb-3">
                     <div><span class="text-muted small fw-bold text-uppercase d-block mb-1">Descanso</span>
                         <h5 class="fw-900 mb-0">{{ analisis_semanal.sueno }} <small
                                 class="text-muted fs-6 fw-normal">horas</small></h5>
@@ -996,7 +987,7 @@
     const pageData = document.getElementById('page-data').dataset;
     window.appState = {
         isGuest: pageData.isGuest === 'true',
-        isAdmin: {{ request.user.is_staff | yesno: "true,false" }},
+        isAdmin: {{ request.user.is_staff | yesno:"true,false" }},
     csrfToken: pageData.csrfToken,
         hasReport: pageData.hasReport === 'true',
             goals: { cals: parseInt(pageData.goalCals), prot: parseInt(pageData.goalProt), carb: parseInt(pageData.goalCarb), fat: parseInt(pageData.goalFat) }
@@ -1224,7 +1215,7 @@
                     labels: ['Perder Peso', 'Ganar Masa', 'Mantener'],
                     datasets: [{
                         data: [lose, ga, ma],
-                        backgroundColor: ['#ff7675', '#00b894', '#ff9933'],
+                        backgroundColor: ['#2d6a4f', '#85c81a', '#26de81'],
                         borderWidth: 0
                     }]
                 },
@@ -1269,7 +1260,7 @@
                         </div>
                     </div>
                     <div class="col-3">
-                        <div class="p-2 border rounded-4 border-warning">
+                        <div class="p-2 border rounded-4 border-success">
                             <p class="x-small text-muted mb-0">CARB</p>
                             <p id="m-carb" class="small fw-bold mb-0">0g</p>
                         </div>

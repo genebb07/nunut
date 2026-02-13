@@ -227,6 +227,10 @@ def obtener_recomendacion_ia(perfil, racha_dias):
     return random.choice(mensajes)
 
 def _get_admin_dashboard_data(request):
+    """
+    Recopila y procesa las estadísticas clave para el panel de administración,
+    incluyendo crecimiento de usuarios, distribución demográfica y métricas de actividad.
+    """
     seed_db()
     from .models import Receta, Articulo, Perfil, LoginStreak, Sugerencia, LogActividad, RecetaFavorita, ArticuloGuardado
     from django.db.models.functions import TruncDay
@@ -394,6 +398,11 @@ def _get_admin_dashboard_data(request):
 
 @login_required
 def index(request):
+    """
+    Vista principal del dashboard.
+    Maneja la lógica para usuarios autenticados (completos o invitados) y administradores.
+    Calcula rachas, sugiere recetas y muestra el progreso diario.
+    """
     if request.user.is_staff:
         context = _get_admin_dashboard_data(request)
         context['base_template'] = get_base_template(request)
@@ -542,9 +551,14 @@ def index(request):
     })
 
 def panel(request):
+    """Renderiza la vista del panel de administración (template separado)."""
     return render(request, 'base/panel.html', {'base_template': get_base_template(request)})
 
 def seed_db():
+    """
+    Puebla la base de datos con datos iniciales (recetas, artículos, alimentos)
+    si no existen, para asegurar que la aplicación tenga contenido base.
+    """
     from .models import Receta, Articulo
     if not Receta.objects.exists():
         Receta.objects.create(
@@ -626,6 +640,11 @@ def seed_db():
         Alimento.objects.create(nombre="Avena", calorias_100g=389, proteinas_100g=16.9, carbos_100g=66, grasas_100g=6.9, fibra_100g=10.6)
 
 def planes(request):
+    """
+    Vista para el explorador de recetas y planes de comida.
+    Maneja la búsqueda, filtrado y ordenamiento de recetas, así como la
+    sincronización con APIs externas (Spoonacular/TheMealDB) si es necesario.
+    """
     seed_db()
     from .models import Receta, RecetaFavorita, ComidaDiaria
     from datetime import date, timedelta, datetime
@@ -829,6 +848,11 @@ def planes(request):
 
 @login_required
 def analizador(request):
+    """
+    Vista del analizador nutricional diario (Diario de Comidas).
+    Permite visualizar el progreso de macros del día, ver comidas registradas
+    y navegar por el historial semanal.
+    """
     perfil = request.user.perfil
     
     # 1. Manejo de Fecha
@@ -900,6 +924,12 @@ def analizador(request):
 
 @login_required
 def progreso(request):
+    """
+    Vista de progreso y métricas corporales.
+    Si es admin: Muestra estadísticas globales de la app.
+    Si es usuario: Muestra gráficas de peso, análisis de composición corporal,
+    proyecciones futuras y logros desbloqueados.
+    """
     if request.user.is_staff:
         # VISTA DE ADMIN PARA PROGRESO: Estadísticas Globales de la App
         from .models import Perfil, ComidaDiaria, RegistroAgua, RegistroSueno, Receta
@@ -980,20 +1010,72 @@ def progreso(request):
     desviacion_imc = abs(imc - 22) if imc > 0 else 5
     edad_nutri = round(edad_real + (desviacion_imc * 0.5) - (consistencia * 3))
 
-    from .models import LoginStreak, RegistroPeso
+    from .models import LoginStreak, RegistroPeso, ComidaDiaria, RegistroAgua, RegistroSueno, Logro
     import json
+    from django.db.models import Sum
     racha = LoginStreak.calcular_racha(perfil)
 
-    # Obtener historial de pesos (más reciente primero)
-    historial_pesos = list(RegistroPeso.objects.filter(perfil=perfil).order_by('-fecha')[:30])
-
-    # Preparar datos para la gráfica (mostramos en el mismo orden: último -> primero)
+    # 0. Verificar Logros
+    Logro.verificar_y_otorgar(perfil)
+    
+    # 1. Historial de Pesos (Últimos 30 registros únicos por día)
+    # Ordenamos por fecha descendente para obtener los MÁS RECIENTES
+    historial_pesos_qs = RegistroPeso.objects.filter(perfil=perfil).order_by('-fecha')[:30]
+    
+    # Convertimos a lista y ordenamos cronológicamente para la gráfica (antiguo -> nuevo)
+    historial_cronologico = sorted(list(historial_pesos_qs), key=lambda x: x.fecha)
+    
     pesos_data = {
-        'fechas': [p.fecha.strftime('%d/%m') for p in historial_pesos],
-        'valores': [float(p.peso) for p in historial_pesos]
+        'fechas': [p.fecha.strftime('%d/%m') for p in historial_cronologico],
+        'valores': [float(p.peso) for p in historial_cronologico]
     }
-    pesos_data_json = json.dumps(pesos_data)
+    
+    # Para la tabla, queremos ver primero lo más reciente (nuevo -> antiguo)
+    historial_tabla = list(historial_pesos_qs) 
 
+
+    # 2. Historial de Calorías (Últimos 7 días con registros)
+    hoy = date.today()
+    siete_dias_atras = hoy - timedelta(days=6)
+    dias_rango = [siete_dias_atras + timedelta(days=i) for i in range(7)]
+    
+    calorias_hist = []
+    for d in dias_rango:
+        suma_cal = ComidaDiaria.objects.filter(perfil=perfil, fecha=d).aggregate(total=Sum('calorias'))['total'] or 0
+        calorias_hist.append(suma_cal)
+    
+    nutricion_data = {
+        'labels': [d.strftime('%a') for d in dias_rango],
+        'valores': calorias_hist,
+        'meta': calorias_obj
+    }
+
+    # 3. Historial de Agua (Últimos 7 días)
+    agua_hist = []
+    for d in dias_rango:
+        reg_agua = RegistroAgua.objects.filter(perfil=perfil, fecha=d).first()
+        agua_hist.append(reg_agua.cantidad_vasos if reg_agua else 0)
+    
+    hidratacion_data = {
+        'labels': [d.strftime('%a') for d in dias_rango],
+        'valores': agua_hist,
+        'meta': 8 # Meta estándar
+    }
+
+    # 4. Historial de Sueño (Últimos 7 días)
+    sueno_hist = []
+    for d in dias_rango:
+        reg_sueno = RegistroSueno.objects.filter(perfil=perfil, fecha=d).first()
+        sueno_hist.append(reg_sueno.horas_totales if reg_sueno else 0)
+    
+    descanso_data = {
+        'labels': [d.strftime('%a') for d in dias_rango],
+        'valores': sueno_hist
+    }
+
+    # 5. Logros y Actividad
+    logros = Logro.objects.filter(perfil=perfil).order_by('-fecha_obtenido')[:6]
+    
     context = {
         'base_template': get_base_template(request),
         'peso_actual': peso,
@@ -1001,8 +1083,11 @@ def progreso(request):
         'imc_estado': imc_estado,
         'avatar': perfil.get_avatar_state(),
         'racha': racha,
-        'historial_pesos': historial_pesos,
-        'pesos_data': pesos_data_json,
+        'historial_pesos': historial_tabla,
+        'pesos_data': json.dumps(pesos_data),
+        'nutricion_data': json.dumps(nutricion_data),
+        'hidratacion_data': json.dumps(hidratacion_data),
+        'descanso_data': json.dumps(descanso_data),
         'composicion': {
             'grasa_kg': grasa_kg,
             'grasa_pct': grasa_pct,
@@ -1019,11 +1104,13 @@ def progreso(request):
         'proyecciones': proyecciones,
         'edad_nutri': edad_nutri,
         'edad_real': edad_real,
+        'logros': logros,
     }
     
     return render(request, 'base/progreso.html', context)
 
 def biblio(request):
+    """Vista de la biblioteca de artículos de salud y nutrición."""
     seed_db()
     from .models import Articulo, ArticuloGuardado
     articulos = Articulo.objects.all()
@@ -1040,6 +1127,7 @@ def biblio(request):
 
 @login_required
 def toggle_favorito(request, receta_id):
+    """API para marcar/desmarcar una receta como favorita."""
     from .models import Receta, RecetaFavorita
     perfil = request.user.perfil
     receta = Receta.objects.get(id=receta_id)
@@ -1055,6 +1143,7 @@ def toggle_favorito(request, receta_id):
 
 @login_required
 def toggle_guardado(request, articulo_id):
+    """API para guardar/eliminar un artículo de la biblioteca personal."""
     from .models import Articulo, ArticuloGuardado
     perfil = request.user.perfil
     articulo = Articulo.objects.get(id=articulo_id)
@@ -1069,6 +1158,7 @@ def toggle_guardado(request, articulo_id):
     return JsonResponse({'status': 'success', 'is_saved': is_saved})
 
 def iniciar_sesion(request):
+    """Maneja el inicio de sesión de usuarios."""
     # Si el usuario ya está autenticado y NO es el usuario 'invitado', redirigirle fuera
     if request.user.is_authenticated and getattr(request.user, 'username', None) != 'invitado':
         return redirect('base:index')
@@ -1106,6 +1196,7 @@ def iniciar_sesion(request):
     })
 
 def registro(request):
+    """Maneja el registro de nuevos usuarios."""
     # Si el usuario ya está autenticado y NO es 'invitado', no permitir registro
     if request.user.is_authenticated and getattr(request.user, 'username', None) != 'invitado':
         return redirect('base:index')
@@ -1149,12 +1240,19 @@ def registro(request):
     })
 
 def bienvenida(request):
+    """Vista de bienvenida/landing page para usuarios no autenticados."""
     # Si el usuario ya está autenticado y NO es 'invitado', redirigir al `index`
     if request.user.is_authenticated and getattr(request.user, 'username', None) != 'invitado':
         return redirect('base:index')
     return render(request, 'auth/bienvenida.html', {'base_template': get_base_template(request)})
 
 def recuperar_contrasena(request):
+    """
+    Flujo de recuperación de contraseña en pasos:
+    1. Solicitar email y enviar código.
+    2. Verificar código.
+    3. Establecer nueva contraseña.
+    """
     # --- LÓGICA PARA REINICIAR EL PROCESO ---
     if request.GET.get('restart'):
         request.session['reset_step'] = 1
@@ -1235,6 +1333,9 @@ def recuperar_contrasena(request):
 
 @login_required
 def guardar_paso(request, paso_id):
+    """
+    Maneja el guardado progresivo de los pasos del formulario de perfil (Onboarding).
+    """
     # Asegurar que el usuario tenga un `Perfil` asociado (puede faltar por señales no disparadas)
     from .models import Perfil
     perfil = getattr(request.user, 'perfil', None)
@@ -1294,6 +1395,7 @@ def guardar_paso(request, paso_id):
     return render(request, template_name, context)
 
 def invitado(request):
+    """Crea o recupera un perfil de 'invitado' y permite el acceso limitado sin registro."""
     # Usamos nombre en minúsculas como se solicitó
     user, created = User.objects.get_or_create(username='invitado', defaults={
         'email': 'invitado@nunut.com',
@@ -1324,6 +1426,7 @@ def invitado(request):
     return redirect('base:index')
 
 def cerrar_sesion(request):
+    """Cierra la sesión del usuario actual y redirige a la página de bienvenida."""
     """Cierra la sesión del usuario y redirige a la bienvenida."""
     logout(request)
     return redirect('base:bienvenida')
@@ -1333,6 +1436,10 @@ from .forms import EditarPerfilForm
 
 @login_required
 def perfil(request):
+    """
+    Vista de edición y visualización del perfil de usuario.
+    Permite actualizar datos personales, ver logros y seguir la racha.
+    """
     if request.method == 'POST':
         form = EditarPerfilForm(request.POST, request.FILES, instance=request.user.perfil, user=request.user)
         if form.is_valid():
@@ -1400,6 +1507,7 @@ def perfil(request):
 
 @login_required
 def toggle_dark_mode(request):
+    """Alterna el modo oscuro para el usuario actual."""
     if request.user.is_authenticated:
         perfil = request.user.perfil
         perfil.modo_oscuro = not perfil.modo_oscuro
@@ -1410,6 +1518,7 @@ def toggle_dark_mode(request):
 
 @login_required
 def perfil_api(request):
+    """API que devuelve los datos del perfil del usuario en formato JSON."""
     perfil = getattr(request.user, 'perfil', None)
     if not perfil:
         return JsonResponse({'error': 'Perfil no encontrado'}, status=404)
@@ -1437,6 +1546,10 @@ def perfil_api(request):
 
 @login_required
 def perfiles_api(request):
+    """
+    API administrativa para listar todos los perfiles de usuarios registrados.
+    Soporta paginación.
+    """
     """Listado de todos los perfiles — solo para staff/admin — con paginación simple.
 
     Query params:
@@ -1487,6 +1600,10 @@ def perfiles_api(request):
     return JsonResponse(payload)
 
 def calcular_macros_api(request):
+    """
+    Calcula y devuelve las necesidades de macronutrientes del usuario
+    basándose en sus datos físicos y objetivos.
+    """
     # Requerir usuario autenticado
     from django.contrib.auth.decorators import login_required
     # Decorator aplicado manualmente para evitar reordenar imports
@@ -1530,6 +1647,7 @@ def calcular_macros_api(request):
 
 @user_passes_test(lambda u: u.is_staff, login_url='base:index')
 def admin_dashboard(request):
+    """Vista principal del panel de administración (requiere permisos de staff)."""
     context = _get_admin_dashboard_data(request)
     context['base_template'] = get_base_template(request)
     context['es_admin_view'] = True
@@ -1537,6 +1655,7 @@ def admin_dashboard(request):
 
 @login_required
 def enviar_sugerencia(request):
+    """Permite a los usuarios enviar sugerencias o feedback a los administradores."""
     if request.method == 'POST':
         import json
         try:
@@ -1555,6 +1674,7 @@ def enviar_sugerencia(request):
 
 @user_passes_test(lambda u: u.is_staff)
 def responder_sugerencia(request, sugerencia_id):
+    """Permite a los administradores responder a una sugerencia y notificar al usuario."""
     if request.method == 'POST':
         import json
         try:
@@ -1588,6 +1708,7 @@ def responder_sugerencia(request, sugerencia_id):
 
 @user_passes_test(lambda u: u.is_staff)
 def marcar_leido_sugerencia(request, sugerencia_id):
+    """Marca una sugerencia como leída por el staff."""
     from .models import Sugerencia
     try:
         sug = Sugerencia.objects.get(id=sugerencia_id)
@@ -1599,6 +1720,7 @@ def marcar_leido_sugerencia(request, sugerencia_id):
 
 @user_passes_test(lambda u: u.is_staff)
 def archivar_sugerencia(request, sugerencia_id):
+    """Archiva una sugerencia para quitarla de la lista principal."""
     from .models import Sugerencia
     try:
         sug = Sugerencia.objects.get(id=sugerencia_id)
@@ -1610,6 +1732,7 @@ def archivar_sugerencia(request, sugerencia_id):
 
 @user_passes_test(lambda u: u.is_staff)
 def curar_receta(request, receta_id):
+    """Acción administrativa para aprobar o rechazar recetas subidas por usuarios."""
     if request.method == 'POST':
         from .models import Receta, LogActividad
         try:
@@ -1636,6 +1759,7 @@ def curar_receta(request, receta_id):
     return JsonResponse({'status': 'error'}, status=400)
 
 def admin_registro(request):
+    """Vista especial para registrar nuevos administradores mediante un código secreto."""
     # Only allow if already admin or via secret checking logic (here implemented via form code)
     if request.method == 'POST':
         code = request.POST.get('security_code')
@@ -1664,6 +1788,7 @@ def admin_registro(request):
     })
 @login_required
 def crear_receta(request):
+    """Vista para que los usuarios creen y suban nuevas recetas."""
     if request.method == 'POST':
         try:
             from .models import Receta
@@ -1728,6 +1853,7 @@ def crear_receta(request):
 
 @login_required
 def borrar_receta(request, receta_id):
+    """Permite al creador de una receta eliminarla."""
     if request.method == 'POST':
         from .models import Receta
         try:
@@ -1745,6 +1871,7 @@ def borrar_receta(request, receta_id):
 
 @login_required
 def editar_receta(request, receta_id):
+    """Permite al creador de una receta editar sus detalles."""
     from .models import Receta
     try:
         receta = Receta.objects.get(id=receta_id)
@@ -1850,6 +1977,7 @@ def editar_receta(request, receta_id):
 
 @login_required
 def actualizar_agua(request):
+    """API para incrementar o decrementar el consumo de agua del día."""
     if request.method == 'POST':
         import json
         try:
@@ -1877,6 +2005,7 @@ def actualizar_agua(request):
 # API para obtener consumo de comidas del día
 @login_required
 def comidas_hoy_api(request):
+    """API para obtener el resumen nutricional de las comidas consumidas hoy."""
     from .models import ComidaDiaria
     from datetime import date
     
@@ -1905,6 +2034,7 @@ def comidas_hoy_api(request):
 
 @login_required
 def guardar_comida_api(request):
+    """API para registrar una nueva comida en el diario."""
     if request.method == 'POST':
         import json
         from .models import ComidaDiaria
@@ -1945,6 +2075,7 @@ def guardar_comida_api(request):
 # API para guardar registro de sueño
 @login_required
 def guardar_sueno_api(request):
+    """API para registrar las horas y calidad del sueño."""
     if request.method == 'POST':
         import json
         from .models import RegistroSueno
@@ -1995,6 +2126,7 @@ def guardar_sueno_api(request):
 
 @login_required
 def guardar_peso_api(request):
+    """API para registrar el peso actual del usuario."""
     if request.method == 'POST':
         import json
         from .models import RegistroPeso
@@ -2002,10 +2134,19 @@ def guardar_peso_api(request):
         
         try:
             data = json.loads(request.body)
-            peso = float(data.get('peso', 0))
+            peso_val = data.get('peso')
             
+            if peso_val is None:
+                return JsonResponse({'status': 'error', 'message': 'El peso es requerido'}, status=400)
+            
+            from decimal import Decimal, InvalidOperation
+            try:
+                peso = Decimal(str(peso_val))
+            except (InvalidOperation, ValueError):
+                return JsonResponse({'status': 'error', 'message': 'Formato de peso inválido'}, status=400)
+
             if peso <= 0 or peso > 500:
-                return JsonResponse({'status': 'error', 'message': 'Peso inválido'}, status=400)
+                return JsonResponse({'status': 'error', 'message': 'Peso fuera de rango (0-500kg)'}, status=400)
             
             # Crear nuevo registro de peso
             RegistroPeso.objects.create(
@@ -2026,6 +2167,7 @@ def guardar_peso_api(request):
 
 @login_required
 def borrar_peso(request, peso_id):
+    """API para eliminar un registro de peso específico."""
     from .models import RegistroPeso
     if request.method in ('DELETE', 'POST'):
         try:
@@ -2041,6 +2183,7 @@ def borrar_peso(request, peso_id):
 # API para generar y descargar informe PDF
 @login_required
 def generar_informe_pdf(request):
+    """Genera y descarga un informe PDF con el progreso semanal y plan nutricional."""
     from django.http import HttpResponse
     from reportlab.lib.pagesizes import letter
     from reportlab.pdfgen import canvas
@@ -2149,6 +2292,7 @@ def generar_informe_pdf(request):
 
 @csrf_exempt
 def calificar_receta(request, receta_id):
+    """Permite a los usuarios calificar una receta (1-5 estrellas)."""
     if request.method == 'POST' and request.user.is_authenticated:
         try:
             import json
@@ -2184,6 +2328,7 @@ def calificar_receta(request, receta_id):
 
 @login_required
 def gestionar_cuenta(request):
+    """Vista para gestionar la configuración de la cuenta (usuario, email, contraseña)."""
     from .forms import ChangeUsernameForm, ChangeEmailForm
     from django.contrib.auth.forms import PasswordChangeForm
     
@@ -2197,6 +2342,7 @@ def gestionar_cuenta(request):
 
 @login_required
 def cambiar_username(request):
+    """Procesa el cambio de nombre de usuario."""
     from .forms import ChangeUsernameForm
     if request.method == 'POST':
         form = ChangeUsernameForm(request.POST, user=request.user)
@@ -2211,6 +2357,7 @@ def cambiar_username(request):
 
 @login_required
 def cambiar_email(request):
+    """Procesa el cambio de correo electrónico."""
     from .forms import ChangeEmailForm
     if request.method == 'POST':
         form = ChangeEmailForm(request.POST, user=request.user)
@@ -2225,6 +2372,7 @@ def cambiar_email(request):
 
 @login_required
 def cambiar_contrasena(request):
+    """Procesa el cambio de contraseña."""
     if request.method == 'POST':
         from django.contrib.auth import update_session_auth_hash
         from django.contrib.auth.forms import PasswordChangeForm
@@ -2240,6 +2388,7 @@ def cambiar_contrasena(request):
 
 @login_required
 def agregar_al_calendario(request):
+    """API para agregar recetas al calendario de comidas (Meal Planner)."""
     if request.method == 'POST':
         import json
         try:
@@ -2334,6 +2483,7 @@ def agregar_al_calendario(request):
 
 @login_required
 def quitar_del_calendario(request, comida_id):
+    """API para eliminar una comida planificada del calendario."""
     if request.method == 'POST':
         from .models import ComidaDiaria
         try:
@@ -2346,6 +2496,7 @@ def quitar_del_calendario(request, comida_id):
 
 @login_required
 def obtener_calorias_dias(request):
+    """API que devuelve los datos de consumo calórico de los próximos 7 días."""
     """API endpoint to get calorie data for the next 7 days"""
     try:
         from .models import ComidaDiaria
@@ -2385,6 +2536,10 @@ def obtener_calorias_dias(request):
 
 @login_required
 def buscar_alimentos_api(request):
+    """
+    API de búsqueda de alimentos. 
+    Busca primero en la BD local, y si no encuentra, usa IA (Gemini) para obtener info nutricional.
+    """
     from .models import Alimento
     from django.db.models import Q
     from django.conf import settings
@@ -2479,6 +2634,7 @@ def buscar_alimentos_api(request):
 
 @login_required
 def calcular_nutricion_api(request):
+    """API que calcula la información nutricional total basada en una lista de ingredientes."""
     """API to calculate nutrition from ingredients list"""
     import json
     from .models import Alimento

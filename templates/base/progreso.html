@@ -132,916 +132,1001 @@
     }
 </style>
 
-{% if es_admin_view %}
-<div class="col-12 mt-4 animate-fade">
-    <div class="d-flex align-items-center gap-3 mb-5">
-        <div class="bg-info bg-opacity-10 p-3 rounded-4">
-            <span class="material-symbols-outlined text-info display-5">analytics</span>
-        </div>
-        <div>
-            <h1 class="fw-black m-0 h2">Estadísticas de <span class="text-lime">Rendimiento</span></h1>
-            <p class="text-muted fw-bold mb-0">Análisis global de la plataforma nunut</p>
-        </div>
-    </div>
-
-    <div class="row g-4">
-        <!-- Stats Grid -->
-        <div class="col-lg-8">
-            <div class="row g-4 mb-4">
-                <div class="col-md-6">
-                    <div class="card-pro h-100 border-info border-opacity-20">
-                        <h3 class="h6 fw-black text-uppercase text-info letter-spacing-widest mb-4">Interacción Diaria
-                        </h3>
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <span class="fw-bold">Comidas Registradas</span>
-                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">{{
-                                app_stats.comidas_registradas_hoy }} hoy</span>
-                        </div>
-                        <div class="progress rounded-pill bg-light" style="height: 10px;">
-                            <div class="progress-bar bg-success shadow-sm" style="width: 75%;"></div>
-                        </div>
-                        <p class="x-small text-muted mt-3 mb-0">Métrica basada en registros del día actual.</p>
-                    </div>
+<div class="container-fluid px-2 px-lg-3">
+    {% if es_admin_view %}
+    <div class="row">
+        <div class="col-12 mt-4 animate-fade">
+            <div class="d-flex align-items-center gap-3 mb-5">
+                <div class="bg-info bg-opacity-10 p-3 rounded-4">
+                    <span class="material-symbols-outlined text-info display-5">analytics</span>
                 </div>
-                <div class="col-md-6">
-                    <div class="card-pro h-100 border-info border-opacity-20">
-                        <h3 class="h6 fw-black text-uppercase text-info letter-spacing-widest mb-4">Consumo de Recursos
-                        </h3>
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <span class="fw-bold">Hidratación Global</span>
-                            <span class="text-info fw-black h4 mb-0">{{ app_stats.litros_agua_hoy }} <small
-                                    class="text-muted" style="font-size: 0.6rem;">LITROS</small></span>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between">
-                            <span class="fw-bold">Descanso Promedio</span>
-                            <span class="text-warning fw-black h4 mb-0">{{ app_stats.promedio_sueno_7d }} <small
-                                    class="text-muted" style="font-size: 0.6rem;">HORAS</small></span>
-                        </div>
-                        <p class="x-small text-muted mt-3 mb-0">Basado en el promedio de los últimos 7 días.</p>
-                    </div>
+                <div>
+                    <h1 class="fw-black m-0 h2">Estadísticas de <span class="text-lime">Rendimiento</span></h1>
+                    <p class="text-muted fw-bold mb-0">Análisis global de la plataforma nunut</p>
                 </div>
             </div>
 
-            <div
-                class="card-pro border-0 shadow-lg p-5 text-center bg-dark text-white overflow-hidden position-relative">
-                <div class="position-absolute top-0 start-0 w-100 h-100 bg-info opacity-5"
-                    style="background: radial-gradient(circle, var(--primary-lime) 0%, transparent 70%);"></div>
-                <h3 class="h4 fw-black mb-2">Base de Conocimiento</h3>
-                <p class="text-slate-400 mb-4 px-lg-5">Actualmente contamos con <span class="text-info">{{
-                        app_stats.recetas_totales }} recetas curadas</span> que alimentan nuestro motor de IA para
-                    recomendaciones personalizadas.</p>
-                <div class="d-flex justify-content-center gap-4">
-                    <div class="text-center">
-                        <div class="h2 fw-black text-lime mb-0">100%</div>
-                        <div class="x-small text-uppercase fw-bold letter-spacing-widest opacity-50">Disponibilidad
+            <div class="row g-4">
+                <!-- Stats Grid -->
+                <div class="col-lg-8">
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="card-pro h-100 border-info border-opacity-20">
+                                <h3 class="h6 fw-black text-uppercase text-info letter-spacing-widest mb-4">Interacción
+                                    Diaria
+                                </h3>
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <span class="fw-bold">Comidas Registradas</span>
+                                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">{{ app_stats.comidas_registradas_hoy }} hoy</span>
+                                </div>
+                                <div class="progress rounded-pill bg-light" style="height: 10px;">
+                                    <div class="progress-bar bg-success shadow-sm" style="width: 75%;"></div>
+                                </div>
+                                <p class="x-small text-muted mt-3 mb-0">Métrica basada en registros del día actual.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card-pro h-100 border-info border-opacity-20">
+                                <h3 class="h6 fw-black text-uppercase text-info letter-spacing-widest mb-4">Consumo de
+                                    Recursos
+                                </h3>
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <span class="fw-bold">Hidratación Global</span>
+                                    <span class="text-info fw-black h4 mb-0">{{ app_stats.litros_agua_hoy }} <small
+                                            class="text-muted" style="font-size: 0.6rem;">LITROS</small></span>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="fw-bold">Descanso Promedio</span>
+                                    <span class="text-warning fw-black h4 mb-0">{{ app_stats.promedio_sueno_7d }} <small
+                                            class="text-muted" style="font-size: 0.6rem;">HORAS</small></span>
+                                </div>
+                                <p class="x-small text-muted mt-3 mb-0">Basado en el promedio de los últimos 7 días.</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="vr opacity-20"></div>
-                    <div class="text-center">
-                        <div class="h2 fw-black text-info mb-0">IA</div>
-                        <div class="x-small text-uppercase fw-bold letter-spacing-widest opacity-50">Optimizado</div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <div class="col-lg-4">
-            <div class="card-pro h-100 bg-white dark-mode-bg-dark border-0 shadow-lg">
-                <h3 class="h5 fw-black mb-1">Tendencia de Objetivos</h3>
-                <p class="small text-muted mb-4">Distribución de metas de usuario</p>
-                <div class="d-flex flex-column gap-3">
-                    {% for obj in app_stats.objetivos %}
                     <div
-                        class="p-3 rounded-4 bg-light dark-mode-bg-secondary border border-white border-opacity-10 shadow-sm">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="fw-black small text-uppercase" style="font-size: 0.65rem;">
-                                {% if obj.objetivo == 'PERDER' %}Bajar Peso{% elif obj.objetivo == 'GANAR' %}Masa
-                                Muscular{% else %}Salud/Mantener{% endif %}
-                            </span>
-                            <span class="badge bg-lime bg-opacity-20 text-lime rounded-pill px-2 py-1"
-                                style="font-size: 0.6rem;">{{ obj.count }}</span>
-                        </div>
-                        <div class="progress" style="height: 6px;">
-                            <div class="progress-bar bg-lime" style="width: {{ obj.count }}0%;"></div>
+                        class="card-pro border-0 shadow-lg p-5 text-center bg-dark text-white overflow-hidden position-relative">
+                        <div class="position-absolute top-0 start-0 w-100 h-100 bg-info opacity-5"
+                            style="background: radial-gradient(circle, var(--primary-lime) 0%, transparent 70%);"></div>
+                        <h3 class="h4 fw-black mb-2">Base de Conocimiento</h3>
+                        <p class="text-slate-400 mb-4 px-lg-5">Actualmente contamos con <span class="text-info">{{
+                                app_stats.recetas_totales }} recetas curadas</span> que alimentan nuestro motor de IA
+                            para
+                            recomendaciones personalizadas.</p>
+                        <div class="d-flex justify-content-center gap-4">
+                            <div class="text-center">
+                                <div class="h2 fw-black text-lime mb-0">100%</div>
+                                <div class="x-small text-uppercase fw-bold letter-spacing-widest opacity-50">
+                                    Disponibilidad
+                                </div>
+                            </div>
+                            <div class="vr opacity-20"></div>
+                            <div class="text-center">
+                                <div class="h2 fw-black text-info mb-0">IA</div>
+                                <div class="x-small text-uppercase fw-bold letter-spacing-widest opacity-50">Optimizado
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    {% endfor %}
                 </div>
-                <div class="mt-5 p-4 rounded-4 bg-info bg-opacity-10 text-info text-center">
-                    <span class="material-symbols-outlined display-6 mb-2">info</span>
-                    <p class="fw-bold mb-0">Data consolidada de {{ app_stats.total_users }} perfiles activos.</p>
+
+                <div class="col-lg-4">
+                    <div class="card-pro h-100 bg-white dark-mode-bg-dark border-0 shadow-lg">
+                        <h3 class="h5 fw-black mb-1">Tendencia de Objetivos</h3>
+                        <p class="small text-muted mb-4">Distribución de metas de usuario</p>
+                        <div class="d-flex flex-column gap-3">
+                            {% for obj in app_stats.objetivos %}
+                            <div
+                                class="p-3 rounded-4 bg-light dark-mode-bg-secondary border border-white border-opacity-10 shadow-sm">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-black small text-uppercase" style="font-size: 0.65rem;">
+                                        {% if obj.objetivo == 'PERDER' %}Bajar Peso{% elif obj.objetivo == 'GANAR' %}Masa Muscular{% else %}Salud/Mantener{% endif %}
+                                    </span>
+                                    <span class="badge bg-lime bg-opacity-20 text-lime rounded-pill px-2 py-1"
+                                        style="font-size: 0.6rem;">{{ obj.count }}</span>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-lime" style="width: {{ obj.count }}0%;"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-5 p-4 rounded-4 bg-info bg-opacity-10 text-info text-center">
+                            <span class="material-symbols-outlined display-6 mb-2">info</span>
+                            <p class="fw-bold mb-0">Data consolidada de {{ app_stats.total_users }} perfiles activos.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-{% elif user.username == 'invitado' %}
-<div class="guest-lock-overlay">
-    <div class="card-pro text-center shadow-lg border-primary border-2" style="max-width: 400px; background: white;">
-        <div
-            class="size-24 mx-auto bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center text-primary mb-4">
-            <span class="material-symbols-outlined display-4">lock</span>
-        </div>
-        <h3 class="fw-black mb-2">Contenido Exclusivo</h3>
-        <p class="text-muted small mb-4">Regístrate para ver tu evolución real y recibir análisis personalizados de
-            la IA.</p>
-        <div class="d-grid gap-2">
-            <a href="{% url 'base:registro' %}" class="btn btn-primary rounded-pill fw-black py-3">CREAR CUENTA
-                GRATIS</a>
-            <a href="{% url 'base:iniciar_sesion' %}" class="btn btn-link text-muted fw-bold">Ya tengo cuenta</a>
+    {% elif user.username == 'invitado' %}
+    <div class="row">
+        <div class="col-12 position-relative" style="min-height: 400px;">
+            <div class="guest-lock-overlay">
+                <div class="card-pro text-center shadow-lg border-primary border-2"
+                    style="max-width: 400px; background: white;">
+                    <div
+                        class="size-24 mx-auto bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center text-primary mb-4">
+                        <span class="material-symbols-outlined display-4">lock</span>
+                    </div>
+                    <h3 class="fw-black mb-2">Contenido Exclusivo</h3>
+                    <p class="text-muted small mb-4">Regístrate para ver tu evolución real y recibir análisis
+                        personalizados de
+                        la IA.</p>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'base:registro' %}" class="btn btn-primary rounded-pill fw-black py-3">CREAR
+                            CUENTA
+                            GRATIS</a>
+                        <a href="{% url 'base:iniciar_sesion' %}" class="btn btn-link text-muted fw-bold">Ya tengo
+                            cuenta</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-<div class="col-12 col-lg-8">
     {% else %}
-    <!-- COLUMNA PRINCIPAL -->
-    <div class="col-12 col-lg-8">
-        {% endif %}
-        <!-- AVATAR DINÁMICO IA -->
-        <div class="card-pro text-center position-relative overflow-hidden"
-            style="background: linear-gradient(135deg, var(--bg-content) 0%, rgba(133, 200, 26, 0.05) 100%);">
+    <!-- USER NORMAL LAYOUT -->
+    <div class="row g-3 g-lg-4">
+        <!-- COLUMNA PRINCIPAL -->
+        <div class="col-12 col-lg-8">
+            <!-- AVATAR DINÁMICO IA -->
+            <div class="card-pro text-center position-relative overflow-hidden"
+                style="background: linear-gradient(135deg, var(--bg-content) 0%, rgba(133, 200, 26, 0.05) 100%);">
 
-            <div class="position-absolute top-0 end-0 p-4">
-                <span class="badge bg-white text-dark rounded-pill shadow-sm border px-3 py-2 fw-black"
-                    style="font-size: 0.65rem; color: #94a3b8 !important;">
-                    IA ENGINE v2.0
-                </span>
-            </div>
+                <div class="position-absolute top-0 end-0 p-4">
+                    <span class="badge bg-white text-dark rounded-pill shadow-sm border px-3 py-2 fw-black"
+                        style="font-size: 0.65rem; color: #94a3b8 !important;">
+                        IA ENGINE v2.0
+                    </span>
+                </div>
 
-            <div class="row align-items-center g-4">
-                <div class="col-md-5">
-                    <style>
-                        .avatar-wrapper {
-                            position: relative;
-                            width: 220px;
-                            height: 260px;
-                            margin: 0 auto;
-                        }
-
-                        .character-float {
-                            animation: float 3s ease-in-out infinite;
-                            transform-origin: center bottom;
-                        }
-
-                        .character-breathe {
-                            animation: breathe 4s ease-in-out infinite;
-                            transform-origin: center center;
-                        }
-
-                        .eye-blink {
-                            animation: blink 4s infinite;
-                            transform-origin: center;
-                        }
-
-                        .mouth-anim {
-                            transition: d 0.3s ease;
-                        }
-
-                        /* Mood Animations */
-                        .zzz-anim {
-                            animation: float-zzz 2s infinite linear;
-                            opacity: 0;
-                        }
-
-                        .spark-anim {
-                            animation: pulse-spark 1s infinite alternate;
-                        }
-
-                        /* Hydration */
-                        .drop-anim {
-                            animation: drop-fall-new 2s infinite ease-in;
-                        }
-
-                        @keyframes float {
-
-                            0%,
-                            100% {
-                                transform: translateY(0);
+                <div class="row align-items-center g-4">
+                    <div class="col-md-5">
+                        <style>
+                            .avatar-wrapper {
+                                position: relative;
+                                width: 220px;
+                                height: 260px;
+                                margin: 0 auto;
                             }
 
-                            50% {
-                                transform: translateY(-10px);
-                            }
-                        }
-
-                        @keyframes breathe {
-
-                            0%,
-                            100% {
-                                transform: scale(1);
+                            .character-float {
+                                animation: float 3s ease-in-out infinite;
+                                transform-origin: center bottom;
                             }
 
-                            50% {
-                                transform: scale(1.02);
-                            }
-                        }
-
-                        @keyframes blink {
-
-                            0%,
-                            48%,
-                            52%,
-                            100% {
-                                transform: scaleY(1);
+                            .character-breathe {
+                                animation: breathe 4s ease-in-out infinite;
+                                transform-origin: center center;
                             }
 
-                            50% {
-                                transform: scaleY(0.1);
+                            .eye-blink {
+                                animation: blink 4s infinite;
+                                transform-origin: center;
                             }
-                        }
 
-                        @keyframes float-zzz {
-                            0% {
-                                transform: translate(0, 0) scale(1);
+                            .mouth-anim {
+                                transition: d 0.3s ease;
+                            }
+
+                            /* Mood Animations */
+                            .zzz-anim {
+                                animation: float-zzz 2s infinite linear;
                                 opacity: 0;
                             }
 
-                            20% {
-                                opacity: 1;
+                            .spark-anim {
+                                animation: pulse-spark 1s infinite alternate;
                             }
 
-                            100% {
-                                transform: translate(20px, -30px) scale(1.5);
-                                opacity: 0;
-                            }
-                        }
-
-                        @keyframes pulse-spark {
-                            0% {
-                                transform: scale(1);
-                                opacity: 0.7;
+                            /* Hydration */
+                            .drop-anim {
+                                animation: drop-fall-new 2s infinite ease-in;
                             }
 
-                            100% {
-                                transform: scale(1.3);
-                                opacity: 1;
-                            }
-                        }
+                            @keyframes float {
 
-                        @keyframes drop-fall-new {
-                            0% {
-                                transform: translateY(-5px);
-                                opacity: 0;
-                            }
+                                0%,
+                                100% {
+                                    transform: translateY(0);
+                                }
 
-                            30% {
-                                opacity: 1;
+                                50% {
+                                    transform: translateY(-10px);
+                                }
                             }
 
-                            100% {
-                                transform: translateY(15px);
-                                opacity: 0;
-                            }
-                        }
+                            @keyframes breathe {
 
-                        .shadow-pulse {
-                            animation: shadow-scale 3s ease-in-out infinite;
-                            transform-origin: center;
-                        }
+                                0%,
+                                100% {
+                                    transform: scale(1);
+                                }
 
-                        @keyframes shadow-scale {
-
-                            0%,
-                            100% {
-                                transform: scale(1);
-                                opacity: 0.2;
+                                50% {
+                                    transform: scale(1.02);
+                                }
                             }
 
-                            50% {
-                                transform: scale(0.8);
-                                opacity: 0.1;
+                            @keyframes blink {
+
+                                0%,
+                                48%,
+                                52%,
+                                100% {
+                                    transform: scaleY(1);
+                                }
+
+                                50% {
+                                    transform: scaleY(0.1);
+                                }
                             }
-                        }
-                    </style>
 
-                    <div class="avatar-container animate__animated animate__fadeIn">
-                        <div class="avatar-wrapper">
-                            <svg width="100%" height="100%" viewBox="0 0 200 240" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <!-- Shadow -->
-                                <ellipse cx="100" cy="220" rx="60" ry="8" fill="#000" class="shadow-pulse" />
+                            @keyframes float-zzz {
+                                0% {
+                                    transform: translate(0, 0) scale(1);
+                                    opacity: 0;
+                                }
 
-                                <!-- Character Group -->
-                                <g class="character-float">
-                                    <g class="character-breathe">
-                                        <!-- Body Shape Based on Type -->
-                                        {% if avatar.cuerpo == 'flaco' %}
-                                        <!-- Slim Body -->
-                                        <path d="M65 80 C65 40 135 40 135 80 V180 C135 210 65 210 65 180 V80 Z"
-                                            fill="#FFD1DC" stroke="#FFB6C1" stroke-width="3" />
-                                        {% elif avatar.cuerpo == 'ancho' %}
-                                        <!-- Round Body -->
-                                        <ellipse cx="100" cy="140" rx="85" ry="75" fill="#FFD1DC" stroke="#FFB6C1"
-                                            stroke-width="3" />
-                                        {% else %}
-                                        <!-- Normal Body (Blob) -->
-                                        <path d="M50 140 C50 80 150 80 150 140 C150 200 50 200 50 140 Z" fill="#FFD1DC"
-                                            stroke="#FFB6C1" stroke-width="3" />
-                                        {% endif %}
+                                20% {
+                                    opacity: 1;
+                                }
 
-                                        <!-- Face Group -->
-                                        <g transform="translate(0, -10)">
-                                            <!-- Eyes -->
-                                            {% if avatar.animo == 'cansado' %}
-                                            <!-- Closed Eyes -->
-                                            <path d="M75 125 Q85 130 95 125" stroke="#555" stroke-width="3" fill="none"
-                                                stroke-linecap="round" />
-                                            <path d="M105 125 Q115 130 125 125" stroke="#555" stroke-width="3"
-                                                fill="none" stroke-linecap="round" />
+                                100% {
+                                    transform: translate(20px, -30px) scale(1.5);
+                                    opacity: 0;
+                                }
+                            }
+
+                            @keyframes pulse-spark {
+                                0% {
+                                    transform: scale(1);
+                                    opacity: 0.7;
+                                }
+
+                                100% {
+                                    transform: scale(1.3);
+                                    opacity: 1;
+                                }
+                            }
+
+                            @keyframes drop-fall-new {
+                                0% {
+                                    transform: translateY(-5px);
+                                    opacity: 0;
+                                }
+
+                                30% {
+                                    opacity: 1;
+                                }
+
+                                100% {
+                                    transform: translateY(15px);
+                                    opacity: 0;
+                                }
+                            }
+
+                            .shadow-pulse {
+                                animation: shadow-scale 3s ease-in-out infinite;
+                                transform-origin: center;
+                            }
+
+                            @keyframes shadow-scale {
+
+                                0%,
+                                100% {
+                                    transform: scale(1);
+                                    opacity: 0.2;
+                                }
+
+                                50% {
+                                    transform: scale(0.8);
+                                    opacity: 0.1;
+                                }
+                            }
+                        </style>
+
+                        <div class="avatar-container animate__animated animate__fadeIn">
+                            <div class="avatar-wrapper">
+                                <svg width="100%" height="100%" viewBox="0 0 200 240" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <!-- Shadow -->
+                                    <ellipse cx="100" cy="220" rx="60" ry="8" fill="#000" class="shadow-pulse" />
+
+                                    <!-- Character Group -->
+                                    <g class="character-float">
+                                        <g class="character-breathe">
+                                            <!-- Body Shape Based on Type -->
+                                            {% if avatar.cuerpo == 'flaco' %}
+                                            <!-- Slim Body -->
+                                            <path d="M65 80 C65 40 135 40 135 80 V180 C135 210 65 210 65 180 V80 Z"
+                                                fill="#FFD1DC" stroke="#FFB6C1" stroke-width="3" />
+                                            {% elif avatar.cuerpo == 'ancho' %}
+                                            <!-- Round Body -->
+                                            <ellipse cx="100" cy="140" rx="85" ry="75" fill="#FFD1DC" stroke="#FFB6C1"
+                                                stroke-width="3" />
                                             {% else %}
-                                            <!-- Open Eyes with Sparkle -->
-                                            <g class="eye-blink">
-                                                <circle cx="80" cy="125" r="8" fill="#333" />
-                                                <circle cx="83" cy="122" r="3" fill="white" />
+                                            <!-- Normal Body (Blob) -->
+                                            <path d="M50 140 C50 80 150 80 150 140 C150 200 50 200 50 140 Z"
+                                                fill="#FFD1DC" stroke="#FFB6C1" stroke-width="3" />
+                                            {% endif %}
 
-                                                <circle cx="120" cy="125" r="8" fill="#333" />
-                                                <circle cx="123" cy="122" r="3" fill="white" />
+                                            <!-- Face Group -->
+                                            <g transform="translate(0, -10)">
+                                                <!-- Eyes -->
+                                                {% if avatar.animo == 'cansado' %}
+                                                <!-- Closed Eyes -->
+                                                <path d="M75 125 Q85 130 95 125" stroke="#555" stroke-width="3"
+                                                    fill="none" stroke-linecap="round" />
+                                                <path d="M105 125 Q115 130 125 125" stroke="#555" stroke-width="3"
+                                                    fill="none" stroke-linecap="round" />
+                                                {% else %}
+                                                <!-- Open Eyes with Sparkle -->
+                                                <g class="eye-blink">
+                                                    <circle cx="80" cy="125" r="8" fill="#333" />
+                                                    <circle cx="83" cy="122" r="3" fill="white" />
+
+                                                    <circle cx="120" cy="125" r="8" fill="#333" />
+                                                    <circle cx="123" cy="122" r="3" fill="white" />
+                                                </g>
+                                                {% endif %}
+
+                                                <!-- Mouth -->
+                                                {% if avatar.animo == 'energico' %}
+                                                <path d="M85 140 Q100 155 115 140" stroke="#555" stroke-width="3"
+                                                    fill="none" stroke-linecap="round" />
+                                                {% elif avatar.animo == 'cansado' %}
+                                                <circle cx="100" cy="145" r="4" fill="#555" opacity="0.5" />
+                                                {% else %}
+                                                <path d="M90 142 Q100 148 110 142" stroke="#555" stroke-width="3"
+                                                    fill="none" stroke-linecap="round" />
+                                                {% endif %}
+
+                                                <!-- Cheeks -->
+                                                <circle cx="65" cy="135" r="6" fill="#FF8FAB" opacity="0.4" />
+                                                <circle cx="135" cy="135" r="6" fill="#FF8FAB" opacity="0.4" />
                                             </g>
-                                            {% endif %}
-
-                                            <!-- Mouth -->
-                                            {% if avatar.animo == 'energico' %}
-                                            <path d="M85 140 Q100 155 115 140" stroke="#555" stroke-width="3"
-                                                fill="none" stroke-linecap="round" />
-                                            {% elif avatar.animo == 'cansado' %}
-                                            <circle cx="100" cy="145" r="4" fill="#555" opacity="0.5" />
-                                            {% else %}
-                                            <path d="M90 142 Q100 148 110 142" stroke="#555" stroke-width="3"
-                                                fill="none" stroke-linecap="round" />
-                                            {% endif %}
-
-                                            <!-- Cheeks -->
-                                            <circle cx="65" cy="135" r="6" fill="#FF8FAB" opacity="0.4" />
-                                            <circle cx="135" cy="135" r="6" fill="#FF8FAB" opacity="0.4" />
                                         </g>
                                     </g>
-                                </g>
 
-                                <!-- Accessories / Status Effects -->
+                                    <!-- Accessories / Status Effects -->
 
-                                <!-- Sleep Zzz -->
+                                    <!-- Sleep Zzz -->
+                                    {% if avatar.animo == 'cansado' %}
+                                    <g transform="translate(130, 80)">
+                                        <text x="0" y="0" font-family="sans-serif" font-weight="bold" fill="#888"
+                                            font-size="20" class="zzz-anim" style="animation-delay: 0s;">Z</text>
+                                        <text x="15" y="-15" font-family="sans-serif" font-weight="bold" fill="#888"
+                                            font-size="16" class="zzz-anim" style="animation-delay: 0.5s;">Z</text>
+                                        <text x="25" y="-30" font-family="sans-serif" font-weight="bold" fill="#888"
+                                            font-size="12" class="zzz-anim" style="animation-delay: 1s;">z</text>
+                                    </g>
+                                    {% endif %}
+
+                                    <!-- Energy Sparks -->
+                                    {% if avatar.animo == 'energico' %}
+                                    <path d="M160 100 L170 80 L180 100" stroke="#FFD700" stroke-width="3" fill="none"
+                                        class="spark-anim" />
+                                    <path d="M30 100 L40 80 L20 100" stroke="#FFD700" stroke-width="3" fill="none"
+                                        class="spark-anim" style="animation-delay: 0.5s;" />
+                                    {% endif %}
+
+                                    <!-- Dehydration Drop -->
+                                    {% if avatar.hidratacion == 'deshidratado' %}
+                                    <path d="M140 100 Q145 110 140 115 C138 117 135 117 133 115 Q128 110 133 100"
+                                        fill="#38BDF8" class="drop-anim" />
+                                    {% endif %}
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-7 text-md-start">
+                        <h2 class="h4 fw-black mb-1">Tu Estado Metabólico</h2>
+                        <p class="small text-slate-400 fw-bold mb-4">Análisis predictivo basado en tus últimos 7 días
+                        </p>
+
+                        <div class="d-flex flex-wrap gap-2 mb-4">
+                            <span
+                                class="badge bg-white text-dark rounded-pill border px-3 py-2 shadow-sm d-flex align-items-center gap-2 fw-black"
+                                style="font-size: 0.7rem;">
+                                <span
+                                    class="material-symbols-outlined fs-6 {% if avatar.animo == 'energico' %}text-success{% elif avatar.animo == 'cansado' %}text-danger{% else %}text-warning{% endif %}">
+                                    {% if avatar.animo == 'energico' %}bolt{% elif avatar.animo == 'cansado' %}battery_low{% else %}battery_charging_80{% endif %}
+                                </span>
+                                {{ avatar.animo|upper }}
+                            </span>
+                            <span
+                                class="badge bg-white text-dark rounded-pill border px-3 py-2 shadow-sm d-flex align-items-center gap-2 fw-black"
+                                style="font-size: 0.7rem;">
+                                <span
+                                    class="material-symbols-outlined fs-6 {% if avatar.hidratacion == 'hidratado' %}text-info{% else %}text-danger{% endif %}">
+                                    water_drop
+                                </span>
+                                {{ avatar.hidratacion|upper }}
+                            </span>
+                        </div>
+
+                        <div
+                            class="p-3 bg-white bg-opacity-50 dark-mode-bg-dark rounded-4-pro border border-white border-opacity-20 shadow-sm">
+                            <p class="small mb-0 fw-bold">
                                 {% if avatar.animo == 'cansado' %}
-                                <g transform="translate(130, 80)">
-                                    <text x="0" y="0" font-family="sans-serif" font-weight="bold" fill="#888"
-                                        font-size="20" class="zzz-anim" style="animation-delay: 0s;">Z</text>
-                                    <text x="15" y="-15" font-family="sans-serif" font-weight="bold" fill="#888"
-                                        font-size="16" class="zzz-anim" style="animation-delay: 0.5s;">Z</text>
-                                    <text x="25" y="-30" font-family="sans-serif" font-weight="bold" fill="#888"
-                                        font-size="12" class="zzz-anim" style="animation-delay: 1s;">z</text>
-                                </g>
+                                <span class="text-danger">Detecto fatiga muscular.</span> Reduce el volumen de hoy y
+                                aumenta
+                                tu hidratación.
+                                {% elif avatar.animo == 'energico' %}
+                                <span class="text-success">Estado óptimo.</span> Tu metabolismo está en fase de quema de
+                                grasa eficiente.
+                                {% else %}
+                                Mantienes un balance estable. Buen trabajo.
                                 {% endif %}
-
-                                <!-- Energy Sparks -->
-                                {% if avatar.animo == 'energico' %}
-                                <path d="M160 100 L170 80 L180 100" stroke="#FFD700" stroke-width="3" fill="none"
-                                    class="spark-anim" />
-                                <path d="M30 100 L40 80 L20 100" stroke="#FFD700" stroke-width="3" fill="none"
-                                    class="spark-anim" style="animation-delay: 0.5s;" />
-                                {% endif %}
-
-                                <!-- Dehydration Drop -->
-                                {% if avatar.hidratacion == 'deshidratado' %}
-                                <path d="M140 100 Q145 110 140 115 C138 117 135 117 133 115 Q128 110 133 100"
-                                    fill="#38BDF8" class="drop-anim" />
-                                {% endif %}
-                            </svg>
+                            </p>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-7 text-md-start">
-                    <h2 class="h4 fw-black mb-1">Tu Estado Metabólico</h2>
-                    <p class="small text-slate-400 fw-bold mb-4">Análisis predictivo basado en tus últimos 7 días</p>
+            </div>
 
-                    <div class="d-flex flex-wrap gap-2 mb-4">
-                        <span
-                            class="badge bg-white text-dark rounded-pill border px-3 py-2 shadow-sm d-flex align-items-center gap-2 fw-black"
-                            style="font-size: 0.7rem;">
+            <!-- COMPOSICIÓN CORPORAL -->
+            <div class="card-pro">
+                <div class="d-flex flex-wrap justify-content-between align-items-end mb-4">
+                    <div>
+                        <h2 class="h3 fw-black mb-1">Composición Corporal</h2>
+                        <p class="small text-slate-400 fw-bold mb-0">Tendencia de peso y métricas avanzadas</p>
+                    </div>
+                    <div class="d-flex gap-1 bg-slate-50 p-1 rounded-pill">
+                        <button class="btn btn-sm bg-white shadow-sm rounded-pill px-3 fw-black"
+                            style="font-size: 0.7rem;">SEMANA</button>
+                        <button class="btn btn-sm text-slate-400 rounded-pill px-3 fw-black"
+                            style="font-size: 0.7rem;">MES</button>
+                        <button class="btn btn-sm text-slate-400 rounded-pill px-3 fw-black"
+                            style="font-size: 0.7rem;">TOTAL</button>
+                    </div>
+                </div>
+
+                <div class="position-relative mb-5" style="height: 250px;">
+                    <canvas id="pesoChart"></canvas>
+                    <div class="position-absolute top-0 end-0 text-end">
+                        <span class="display-5 fw-black text-dark dark-mode-text-white">{{ peso_actual|floatformat:1 }}</span>
+                        <span class="text-slate-400 fw-black">KG</span>
+                        <div class="d-flex align-items-center justify-content-end text-lime fw-black"
+                            style="font-size: 0.75rem;">
+                            <span class="material-symbols-outlined fs-6">{% if avatar.tendencia == 'bajando' %}trending_down{% else %}trending_up{% endif %}</span>
+                            TENDENCIA: {{ avatar.tendencia|upper }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NUEVAS GRÁFICAS DE AVANCE -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="p-3 bg-slate-50 border rounded-4-pro h-100">
+                            <h4 class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-3"
+                                style="font-size: 0.6rem;">Nutrición (kcal)</h4>
+                            <div style="height: 120px;">
+                                <canvas id="nutricionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 bg-slate-50 border rounded-4-pro h-100">
+                            <h4 class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-3"
+                                style="font-size: 0.6rem;">Hidratación (vasos)</h4>
+                            <div style="height: 120px;">
+                                <canvas id="hidratacionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 bg-slate-50 border rounded-4-pro h-100">
+                            <h4 class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-3"
+                                style="font-size: 0.6rem;">Descanso (horas)</h4>
+                            <div style="height: 120px;">
+                                <canvas id="descansoChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulario de Registro de Peso -->
+                <div class="card bg-slate-50 border rounded-4-pro p-4 mb-4">
+                    <h3 class="text-uppercase fw-black letter-spacing-widest small mb-3">Registrar Nuevo Peso</h3>
+                    <form id="formPeso" method="POST" class="row g-3 align-items-end">
+                        {% csrf_token %}
+                        <div class="col-md-6">
+                            <label for="inputPeso" class="form-label fw-bold small">Peso (kg)</label>
+                            <input type="number" class="form-control rounded-pill" id="inputPeso" placeholder="Ej: 75.5"
+                                step="0.1" min="20" max="300" required>
+                        </div>
+                        <div class="col-md-6">
+                            <button type="submit" class="btn btn-lime rounded-pill fw-black w-100">
+                                <span class="material-symbols-outlined fs-6 me-2">add_circle</span>
+                                REGISTRAR PESO
+                            </button>
+                        </div>
+                    </form>
+                    <div id="pesoMessage" class="mt-3" style="display: none;"></div>
+                </div>
+
+                <!-- Historial de Pesos Completo -->
+                {% if historial_pesos %}
+                <div class="mb-4">
+                    <h3 class="text-uppercase fw-black letter-spacing-widest small mb-3">
+                        <span class="material-symbols-outlined fs-6 me-2 align-middle">history</span>
+                        Historial Completo de Pesos
+                    </h3>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="fw-black small text-uppercase">Fecha</th>
+                                    <th class="fw-black small text-uppercase">Peso</th>
+                                    <th class="fw-black small text-uppercase text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for registro in historial_pesos %}
+                                <tr id="peso-row-{{ registro.id }}">
+                                    <td class="fw-bold">
+                                        <span
+                                            class="material-symbols-outlined fs-6 me-2 text-info align-middle">calendar_today</span>
+                                        {{ registro.fecha|date:"d/m/Y" }}
+                                    </td>
+                                    <td class="fw-black h5 mb-0 text-lime">{{ registro.peso }} kg</td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-outline-danger rounded-pill"
+                                            onclick="borrarPeso({{ registro.id }})" title="Eliminar registro">
+                                            <span class="material-symbols-outlined fs-6">delete</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="small text-muted mb-0">
+                        <span class="material-symbols-outlined fs-6 me-1 align-middle">info</span>
+                        Total de registros: <strong>{{ historial_pesos|length }}</strong>
+                    </p>
+                </div>
+                {% else %}
+                <div class="alert alert-info mb-4">
+                    <span class="material-symbols-outlined fs-5 me-2 align-middle">info</span>
+                    <strong>No hay registros de peso aún.</strong> Agrega tu primer peso usando el formulario arriba.
+                </div>
+                {% endif %}
+
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 bg-slate-50 border rounded-4-pro h-100">
+                            <p class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-1"
+                                style="font-size: 0.6rem;">IMC Actual</p>
+                            <p class="h4 fw-black mb-1">{{ imc }}</p>
                             <span
-                                class="material-symbols-outlined fs-6 {% if avatar.animo == 'energico' %}text-success{% elif avatar.animo == 'cansado' %}text-danger{% else %}text-warning{% endif %}">
-                                {% if avatar.animo == 'energico' %}bolt{% elif avatar.animo == 'cansado' %}battery_low{%
-                                else %}battery_charging_80{% endif %}
-                            </span>
-                            {{ avatar.animo|upper }}
-                        </span>
-                        <span
-                            class="badge bg-white text-dark rounded-pill border px-3 py-2 shadow-sm d-flex align-items-center gap-2 fw-black"
-                            style="font-size: 0.7rem;">
-                            <span
-                                class="material-symbols-outlined fs-6 {% if avatar.hidratacion == 'hidratado' %}text-info{% else %}text-danger{% endif %}">
-                                water_drop
-                            </span>
-                            {{ avatar.hidratacion|upper }}
-                        </span>
+                                class="badge rounded-pill {% if imc < 25 %}bg-success{% else %}bg-warning{% endif %} bg-opacity-10 {% if imc < 25 %}text-success{% else %}text-warning{% endif %} fw-black"
+                                style="font-size: 0.6rem;">{{ imc_estado }}</span>
+                        </div>
                     </div>
-
-                    <div
-                        class="p-3 bg-white bg-opacity-50 dark-mode-bg-dark rounded-4-pro border border-white border-opacity-20 shadow-sm">
-                        <p class="small mb-0 fw-bold">
-                            {% if avatar.animo == 'cansado' %}
-                            <span class="text-danger">Detecto fatiga muscular.</span> Reduce el volumen de hoy y aumenta
-                            tu hidratación.
-                            {% elif avatar.animo == 'energico' %}
-                            <span class="text-success">Estado óptimo.</span> Tu metabolismo está en fase de quema de
-                            grasa eficiente.
-                            {% else %}
-                            Mantienes un balance estable. Buen trabajo.
-                            {% endif %}
-                        </p>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 bg-slate-50 border rounded-4-pro h-100">
+                            <p class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-1"
+                                style="font-size: 0.6rem;">% Grasa Est.</p>
+                            <p class="h4 fw-black mb-1">{{ composicion.grasa_pct }}%</p>
+                            <span class="text-slate-400 fw-black" style="font-size: 0.6rem;">IA ANALYZED</span>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- COMPOSICIÓN CORPORAL -->
-        <div class="card-pro">
-            <div class="d-flex flex-wrap justify-content-between align-items-end mb-4">
-                <div>
-                    <h2 class="h3 fw-black mb-1">Composición Corporal</h2>
-                    <p class="small text-slate-400 fw-bold mb-0">Tendencia de peso y métricas avanzadas</p>
-                </div>
-                <div class="d-flex gap-1 bg-slate-50 p-1 rounded-pill">
-                    <button class="btn btn-sm bg-white shadow-sm rounded-pill px-3 fw-black"
-                        style="font-size: 0.7rem;">SEMANA</button>
-                    <button class="btn btn-sm text-slate-400 rounded-pill px-3 fw-black"
-                        style="font-size: 0.7rem;">MES</button>
-                    <button class="btn btn-sm text-slate-400 rounded-pill px-3 fw-black"
-                        style="font-size: 0.7rem;">TOTAL</button>
-                </div>
-            </div>
-
-            <div class="position-relative mb-4" style="height: 200px;">
-                <canvas id="pesoChart" width="800" height="200"></canvas>
-                <div class="position-absolute top-0 end-0 text-end">
-                    <span class="display-5 fw-black text-dark dark-mode-text-white">{{ peso_actual|floatformat:1
-                        }}</span>
-                    <span class="text-slate-400 fw-black">KG</span>
-                    <div class="d-flex align-items-center justify-content-end text-lime fw-black"
-                        style="font-size: 0.75rem;">
-                        <span class="material-symbols-outlined fs-6">{% if avatar.tendencia == 'bajando'
-                            %}trending_down{% else %}trending_up{% endif %}</span>
-                        TENDENCIA: {{ avatar.tendencia|upper }}
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 bg-slate-50 border rounded-4-pro h-100">
+                            <p class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-1"
+                                style="font-size: 0.6rem;">Músculo</p>
+                            <p class="h4 fw-black mb-1">{{ composicion.musculo_kg }}kg</p>
+                            <span class="text-lime fw-black" style="font-size: 0.6rem;">ESTIMADO</span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 bg-slate-50 border rounded-4-pro h-100">
+                            <p class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-1"
+                                style="font-size: 0.6rem;">Agua Corp.</p>
+                            <p class="h4 fw-black mb-1">{{ composicion.agua_lt }}L</p>
+                            <span class="text-info fw-black" style="font-size: 0.6rem;">HIDRATACIÓN</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Formulario de Registro de Peso -->
-            <div class="card bg-slate-50 border rounded-4-pro p-4 mb-4">
-                <h3 class="text-uppercase fw-black letter-spacing-widest small mb-3">Registrar Nuevo Peso</h3>
-                <form id="formPeso" class="row g-3 align-items-end">
-                    <div class="col-md-6">
-                        <label for="inputPeso" class="form-label fw-bold small">Peso (kg)</label>
-                        <input type="number" class="form-control rounded-pill" id="inputPeso" placeholder="Ej: 75.5"
-                            step="0.1" min="20" max="300" required>
-                    </div>
-                    <div class="col-md-6">
-                        <button type="submit" class="btn btn-lime rounded-pill fw-black w-100">
-                            <span class="material-symbols-outlined fs-6 me-2">add_circle</span>
-                            REGISTRAR PESO
-                        </button>
-                    </div>
-                </form>
-                <div id="pesoMessage" class="mt-3" style="display: none;"></div>
-            </div>
-
-            <!-- Historial de Pesos Completo -->
-            {% if historial_pesos %}
-            <div class="mb-4">
-                <h3 class="text-uppercase fw-black letter-spacing-widest small mb-3">
-                    <span class="material-symbols-outlined fs-6 me-2 align-middle">history</span>
-                    Historial Completo de Pesos
-                </h3>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="bg-slate-50">
-                            <tr>
-                                <th class="fw-black small text-uppercase">Fecha</th>
-                                <th class="fw-black small text-uppercase">Peso</th>
-                                <th class="fw-black small text-uppercase text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for registro in historial_pesos %}
-                            <tr id="peso-row-{{ registro.id }}">
-                                <td class="fw-bold">
-                                    <span
-                                        class="material-symbols-outlined fs-6 me-2 text-info align-middle">calendar_today</span>
-                                    {{ registro.fecha|date:"d/m/Y" }}
-                                </td>
-                                <td class="fw-black h5 mb-0 text-lime">{{ registro.peso }} kg</td>
-                                <td class="text-center">
-                                    <button class="btn btn-sm btn-outline-danger rounded-pill"
-                                        onclick="borrarPeso({{ registro.id }})" title="Eliminar registro">
-                                        <span class="material-symbols-outlined fs-6">delete</span>
-                                    </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                <p class="small text-muted mb-0">
-                    <span class="material-symbols-outlined fs-6 me-1 align-middle">info</span>
-                    Total de registros: <strong>{{ historial_pesos|length }}</strong>
-                </p>
-            </div>
-            {% else %}
-            <div class="alert alert-info mb-4">
-                <span class="material-symbols-outlined fs-5 me-2 align-middle">info</span>
-                <strong>No hay registros de peso aún.</strong> Agrega tu primer peso usando el formulario arriba.
-            </div>
-            {% endif %}
-
-            <div class="row g-3">
-                <div class="col-6 col-md-3">
-                    <div class="p-3 bg-slate-50 border rounded-4-pro h-100">
-                        <p class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-1"
-                            style="font-size: 0.6rem;">IMC Actual</p>
-                        <p class="h4 fw-black mb-1">{{ imc }}</p>
-                        <span
-                            class="badge rounded-pill {% if imc < 25 %}bg-success{% else %}bg-warning{% endif %} bg-opacity-10 {% if imc < 25 %}text-success{% else %}text-warning{% endif %} fw-black"
-                            style="font-size: 0.6rem;">{{ imc_estado }}</span>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="p-3 bg-slate-50 border rounded-4-pro h-100">
-                        <p class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-1"
-                            style="font-size: 0.6rem;">% Grasa Est.</p>
-                        <p class="h4 fw-black mb-1">{{ composicion.grasa_pct }}%</p>
-                        <span class="text-slate-400 fw-black" style="font-size: 0.6rem;">IA ANALYZED</span>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="p-3 bg-slate-50 border rounded-4-pro h-100">
-                        <p class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-1"
-                            style="font-size: 0.6rem;">Músculo</p>
-                        <p class="h4 fw-black mb-1">{{ composicion.musculo_kg }}kg</p>
-                        <span class="text-lime fw-black" style="font-size: 0.6rem;">ESTIMADO</span>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="p-3 bg-slate-50 border rounded-4-pro h-100">
-                        <p class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-1"
-                            style="font-size: 0.6rem;">Agua Corp.</p>
-                        <p class="h4 fw-black mb-1">{{ composicion.agua_lt }}L</p>
-                        <span class="text-info fw-black" style="font-size: 0.6rem;">HIDRATACIÓN</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <script>
-            // Gráfica de peso con Chart.js
-            document.addEventListener('DOMContentLoaded', function () {
-                const ctx = document.getElementById('pesoChart');
-                if (ctx) {
-                    const pesosData = {{ pesos_data| safe |default: '{"fechas": [], "valores": []}'
-                }
-            };
-
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: (pesosData.fechas && pesosData.fechas.length > 0) ? pesosData.fechas : ['Hoy'],
-                    datasets: [{
-                        label: 'Peso (kg)',
-                        data: (pesosData.valores && pesosData.valores.length > 0) ? pesosData.valores : [{{ peso_actual|default: 0
-                    }}],
-                borderColor: '#85c81a',
-                backgroundColor: 'rgba(133, 200, 26, 0.1)',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4,
-                pointRadius: 4,
-                pointBackgroundColor: '#85c81a',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-                pointHoverRadius: 6
-            }]
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    // Configuración común para gráficas
+                    const chartOptions = {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(0,0,0,0.8)',
+                                titleFont: { size: 12, weight: '900' },
+                                bodyFont: { size: 12 },
+                                padding: 10,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function (context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += context.parsed.y;
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
                         },
-                options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        padding: 12,
-                        titleFont: { size: 14, weight: 'bold' },
-                        bodyFont: { size: 13 },
-                        callbacks: {
-                            label: function (context) {
-                                return 'Peso: ' + context.parsed.y.toFixed(1) + ' kg';
+                        scales: {
+                            y: {
+                                display: true,
+                                beginAtZero: true,
+                                grid: { color: 'rgba(0,0,0,0.05)' },
+                                ticks: { font: { size: 10, weight: '700' } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { font: { size: 10, weight: '700' } }
                             }
                         }
+                    };
+
+                    // 1. Gráfica de Peso
+                    const ctxPeso = document.getElementById('pesoChart');
+                    if (ctxPeso) {
+                        try {
+                            const pesosData = {{ pesos_data| safe |default: '{"fechas": [], "valores": []}'
+                        }};
+
+                    new Chart(ctxPeso, {
+                        type: 'line',
+                        data: {
+                            labels: (pesosData.fechas && pesosData.fechas.length > 0) ? pesosData.fechas : ['Hoy'],
+                            datasets: [{
+                                label: 'Peso (kg)',
+                                data: (pesosData.valores && pesosData.valores.length > 0) ? pesosData.valores : [{{ peso_actual|default: 0
+                            }}],
+                        borderColor: '#85c81a',
+                        backgroundColor: 'rgba(133, 200, 26, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#85c81a',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                            },
+                    options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: chartOptions.plugins,
+                    scales: {
+                        y: { display: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+                        x: { grid: { display: false } }
                     }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        grid: { color: 'rgba(0, 0, 0, 0.05)' },
-                        ticks: { callback: function (value) { return value + ' kg'; } }
-                    },
-                    x: { grid: { display: false } }
                 }
-            }
+                        });
+                    } catch (e) {
+                    console.error('Error initializing pesoChart:', e);
+                }
+                }
+
+                // 2. Gráfica de Nutrición
+                const ctxNutri = document.getElementById('nutricionChart');
+                if (ctxNutri) {
+                    try {
+                        const nutriData = {{ nutricion_data| safe |default: '{"labels":[], "valores":[]}'
+                    }};
+                new Chart(ctxNutri, {
+                    type: 'bar',
+                    data: {
+                        labels: nutriData.labels,
+                        datasets: [{
+                            label: 'Kcal',
+                            data: nutriData.valores,
+                            backgroundColor: '#85c81a',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        ...chartOptions,
+                        scales: {
+                            x: { grid: { display: false }, ticks: { display: true } },
+                            y: { display: false }
+                        }
+                    }
+                });
+                    } catch (e) {
+                    console.error('Error initializing nutricionChart:', e);
+                }
+                }
+
+                // 3. Gráfica de Hidratación
+                const ctxAgua = document.getElementById('hidratacionChart');
+                if (ctxAgua) {
+                    try {
+                        const aguaData = {{ hidratacion_data| safe |default: '{"labels":[], "valores":[]}'
+                    }};
+                new Chart(ctxAgua, {
+                    type: 'line',
+                    data: {
+                        labels: aguaData.labels,
+                        datasets: [{
+                            label: 'Vasos',
+                            data: aguaData.valores,
+                            borderColor: '#38bdf8',
+                            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 0
+                        }]
+                    },
+                    options: {
+                        ...chartOptions,
+                        scales: {
+                            x: { grid: { display: false }, ticks: { display: true } },
+                            y: { display: false }
+                        }
+                    }
+                });
+                    } catch (e) {
+                    console.error('Error initializing hidratacionChart:', e);
+                }
+                }
+
+                // 4. Gráfica de Descanso
+                const ctxSueno = document.getElementById('descansoChart');
+                if (ctxSueno) {
+                    try {
+                        const suenoData = {{ descanso_data| safe |default: '{"labels":[], "valores":[]}'
+                    }};
+                new Chart(ctxSueno, {
+                    type: 'bar',
+                    data: {
+                        labels: suenoData.labels,
+                        datasets: [{
+                            label: 'Horas',
+                            data: suenoData.valores,
+                            backgroundColor: '#a855f7',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        ...chartOptions,
+                        scales: {
+                            x: { grid: { display: false }, ticks: { display: true } },
+                            y: { display: false }
+                        }
+                    }
+                });
+                    } catch (e) {
+                    console.error('Error initializing descansoChart:', e);
+                }
+                }
+
+                // Manejo del formulario de peso
+                const formPeso = document.getElementById('formPeso');
+                if (formPeso) {
+                    formPeso.addEventListener('submit', async function (e) {
+                        e.preventDefault();
+
+                        const pesoInput = document.getElementById('inputPeso');
+                        const peso = pesoInput.value;
+                        // Assuming messageDiv logic is handled elseware or inline below
+                        // Creating a simplified handler for robustness
+
+                        // Find or create message container
+                        let messageDiv = document.getElementById('pesoMessage');
+                        if (!messageDiv) {
+                            messageDiv = document.createElement('div');
+                            messageDiv.id = 'pesoMessage';
+                            formPeso.parentNode.insertBefore(messageDiv, formPeso);
+                        }
+
+                        if (!peso) return;
+
+                        try {
+                            const response = await fetch('{% url "base:guardar_peso_api" %}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': '{{ csrf_token }}'
+                                },
+                                body: JSON.stringify({ peso: parseFloat(peso) })
+                            });
+
+                            const data = await response.json();
+
+                            if (data.status === 'success') {
+                                messageDiv.className = 'alert alert-success mt-3';
+                                messageDiv.textContent = '✅ ' + data.message;
+                                messageDiv.style.display = 'block';
+
+                                formPeso.reset();
+
+                                setTimeout(() => { location.reload(); }, 1200);
+                            } else {
+                                messageDiv.className = 'alert alert-danger mt-3';
+                                messageDiv.textContent = '❌ ' + (data.message || 'Error');
+                                messageDiv.style.display = 'block';
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            messageDiv.className = 'alert alert-danger mt-3';
+                            messageDiv.textContent = '❌ Error al registrar el peso';
+                            messageDiv.style.display = 'block';
+                        }
                     });
                 }
+                });
 
-            // Manejo del formulario de peso
-            const formPeso = document.getElementById('formPeso');
-            if (formPeso) {
-                formPeso.addEventListener('submit', async function (e) {
-                    e.preventDefault();
-
-                    const peso = document.getElementById('inputPeso').value;
-                    const messageDiv = document.getElementById('pesoMessage');
+                // Función para borrar un peso (global)
+                async function borrarPeso(pesoId) {
+                    if (!confirm('¿Estás seguro de que quieres eliminar este registro de peso?')) {
+                        return;
+                    }
 
                     try {
-                        const response = await fetch('{% url "base:guardar_peso_api" %}', {
-                            method: 'POST',
+                        const response = await fetch(`/api/borrar_peso/${pesoId}/`, {
+                            method: 'DELETE',
                             headers: {
-                                'Content-Type': 'application/json',
                                 'X-CSRFToken': '{{ csrf_token }}'
-                            },
-                            body: JSON.stringify({ peso: parseFloat(peso) })
+                            }
                         });
 
                         const data = await response.json();
 
                         if (data.status === 'success') {
-                            messageDiv.className = 'alert alert-success mt-3';
-                            messageDiv.textContent = '✅ ' + data.message;
-                            messageDiv.style.display = 'block';
-
-                            formPeso.reset();
-
-                            setTimeout(() => { location.reload(); }, 1200);
+                            const row = document.getElementById(`peso-row-${pesoId}`);
+                            if (row) {
+                                row.style.transition = 'opacity 0.3s';
+                                row.style.opacity = '0';
+                                setTimeout(() => {
+                                    location.reload();
+                                }, 300);
+                            }
                         } else {
-                            messageDiv.className = 'alert alert-danger mt-3';
-                            messageDiv.textContent = '❌ ' + (data.message || 'Error');
-                            messageDiv.style.display = 'block';
+                            alert('❌ ' + (data.message || 'Error al eliminar'));
                         }
                     } catch (error) {
-                        messageDiv.className = 'alert alert-danger mt-3';
-                        messageDiv.textContent = '❌ Error al registrar el peso';
-                        messageDiv.style.display = 'block';
+                        console.error('Error al borrar el peso:', error);
+                        alert('❌ Error de conexión al eliminar');
                     }
-                });
-            }
-            });
-
-            // Función para borrar un peso
-            async function borrarPeso(pesoId) {
-                if (!confirm('¿Estás seguro de que quieres eliminar este registro de peso?')) {
-                    return;
                 }
-
-                try {
-                    const response = await fetch(`/api/borrar_peso/${pesoId}/`, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRFToken': '{{ csrf_token }}'
-                        }
-                    });
-
-                    const data = await response.json();
-
-                    if (data.status === 'success') {
-                        // Eliminar la fila de la tabla con animación
-                        const row = document.getElementById(`peso-row-${pesoId}`);
-                        if (row) {
-                            row.style.transition = 'opacity 0.3s';
-                            row.style.opacity = '0';
-                            setTimeout(() => {
-                                location.reload();
-                            }, 300);
-                        }
-                    } else {
-                        alert('❌ ' + data.message);
-                    }
-                } catch (error) {
-                    alert('❌ Error al eliminar el peso');
-                }
-            }
-        </script>
-
-        <!-- HIDRATACIÓN Y METABOLISMO -->
-        <div class="row g-4">
-            <div class="col-md-6">
-                <div class="card-pro h-100">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h3 class="text-uppercase fw-black letter-spacing-widest small mb-0">Hidratación Semanal</h3>
-                        <span class="material-symbols-outlined text-info">water_drop</span>
-                    </div>
-                    <div class="d-flex align-items-end justify-content-between gap-2" style="height: 128px;">
-                        <div class="d-flex flex-column align-items-center flex-grow-1 gap-2">
-                            <div class="w-100 bg-info bg-opacity-10 rounded-pill position-relative overflow-hidden"
-                                style="height: 96px;">
-                                <div class="position-absolute bottom-0 w-100 bg-info rounded-pill" style="height: 80%;">
-                                </div>
-                            </div>
-                            <span class="fw-black text-slate-400" style="font-size: 0.6rem;">L</span>
-                        </div>
-                        <div class="d-flex flex-column align-items-center flex-grow-1 gap-2">
-                            <div class="w-100 bg-info bg-opacity-10 rounded-pill position-relative overflow-hidden"
-                                style="height: 96px;">
-                                <div class="position-absolute bottom-0 w-100 bg-info rounded-pill"
-                                    style="height: 100%;"></div>
-                            </div>
-                            <span class="fw-black text-slate-400" style="font-size: 0.6rem;">M</span>
-                        </div>
-                        <div class="d-flex flex-column align-items-center flex-grow-1 gap-2">
-                            <div class="w-100 bg-info bg-opacity-10 rounded-pill position-relative overflow-hidden"
-                                style="height: 96px;">
-                                <div class="position-absolute bottom-0 w-100 bg-info rounded-pill" style="height: 60%;">
-                                </div>
-                            </div>
-                            <span class="fw-black text-slate-400" style="font-size: 0.6rem;">X</span>
-                        </div>
-                        <div class="d-flex flex-column align-items-center flex-grow-1 gap-2">
-                            <div class="w-100 bg-info bg-opacity-10 rounded-pill position-relative overflow-hidden"
-                                style="height: 96px;">
-                                <div class="position-absolute bottom-0 w-100 bg-info rounded-pill" style="height: 90%;">
-                                </div>
-                            </div>
-                            <span class="fw-black text-slate-400" style="font-size: 0.6rem;">J</span>
-                        </div>
-                        <div class="d-flex flex-column align-items-center flex-grow-1 gap-2">
-                            <div class="w-100 bg-lime bg-opacity-10 rounded-pill position-relative overflow-hidden border border-lime shadow-sm"
-                                style="height: 96px;">
-                                <div class="position-absolute bottom-0 w-100 bg-lime rounded-pill" style="height: 85%;">
-                                </div>
-                            </div>
-                            <span class="fw-black text-lime" style="font-size: 0.6rem;">V</span>
-                        </div>
-                        <div class="d-flex flex-column align-items-center flex-grow-1 gap-2 opacity-50">
-                            <div class="w-100 bg-secondary rounded-pill" style="height: 96px;"></div>
-                            <span class="fw-black text-slate-400" style="font-size: 0.6rem;">S</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card-pro h-100">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h3 class="text-uppercase fw-black letter-spacing-widest small mb-0">Metabolismo</h3>
-                        <span class="material-symbols-outlined text-primary">bolt</span>
-                    </div>
-                    <div class="d-grid gap-3">
-                        <div class="p-3 bg-slate-50 rounded-4-pro">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="fw-black text-slate-400 text-uppercase"
-                                    style="font-size: 0.6rem;">TMB</span>
-                                <span class="fw-black text-primary" style="font-size: 0.6rem;">{{ metabolismo.tmb }}
-                                    kcal</span>
-                            </div>
-                            <div class="progress" style="height: 6px;">
-                                <div class="progress-bar bg-primary" style="width: 100%"></div>
-                            </div>
-                        </div>
-                        <div class="p-3 bg-slate-50 rounded-4-pro">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="fw-black text-slate-400 text-uppercase" style="font-size: 0.6rem;">Gasto
-                                    Total (TDEE)</span>
-                                <span class="fw-black text-warning" style="font-size: 0.6rem;">{{ metabolismo.tdee }}
-                                    kcal</span>
-                            </div>
-                            <div class="progress" style="height: 6px;">
-                                <div class="progress-bar bg-warning" style="width: 100%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            </script>
         </div>
-    </div>
 
-    {% if not es_admin_view %}
-    <!-- COLUMNA LATERAL -->
-    <div class="col-12 col-lg-4">
-        <!-- Disciplina Card -->
-        <div class="card-pro bg-dark text-white border-0 shadow-lg" style="background: #0f172a !important;">
-            <div class="d-flex justify-content-between align-items-start mb-4">
-                <div>
-                    <p class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-1"
-                        style="font-size: 0.6rem;">Disciplina</p>
-                    <h3 class="fw-black h4">Consistencia</h3>
+        <!-- COLUMNA LATERAL -->
+        <div class="col-12 col-lg-4">
+            <!-- Disciplina y Consistencia -->
+            <div class="card-pro mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <p class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-1"
+                            style="font-size: 0.6rem;">Disciplina</p>
+                        <h3 class="fw-black h4 mb-0">Consistencia</h3>
+                    </div>
+                    <div class="bg-warning bg-opacity-20 text-warning p-2 rounded-4 d-flex align-items-center gap-2">
+                        <span class="material-symbols-outlined fill-1">local_fire_department</span>
+                        <span class="h4 fw-black mb-0 text-black">{{ racha }}</span>
+                    </div>
                 </div>
-                <div class="bg-warning bg-opacity-20 text-warning p-2 rounded-4 d-flex align-items-center gap-2">
-                    <span class="material-symbols-outlined fill-1">local_fire_department</span>
-                    <span class="h4 fw-black mb-0">{{ racha }}</span>
-                </div>
-            </div>
 
-            <div class="mb-4 d-grid gap-3">
-                <div class="bg-white bg-opacity-10 p-3 rounded-4-pro border border-white border-opacity-10">
+                <div class="bg-slate-50 p-3 rounded-4-pro border mb-4">
                     <div class="d-flex justify-content-between mb-2">
                         <span class="small fw-black">Tendencia Mensual</span>
                         <span class="small fw-black text-lime">PREDICCIÓN IA</span>
                     </div>
                     <p class="small mb-0 opacity-75">Tu tendencia actual es {{ proyecciones.tendencia }}.</p>
                 </div>
-            </div>
 
-            <div>
-                <h4 class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-3"
-                    style="font-size: 0.6rem;">Edad Nutricional</h4>
-                <div class="d-flex align-items-baseline gap-2">
-                    <span class="display-6 fw-black">{{ edad_nutri }}</span>
-                    <span class="text-slate-400 fw-bold">vs {{ edad_real }} real</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Logros -->
-        <div class="card-pro">
-            <h3 class="text-uppercase fw-black letter-spacing-widest small mb-4">Logros Alcanzados</h3>
-            <div class="d-grid gap-4">
-                <div class="d-flex align-items-center gap-3">
-                    <div
-                        class="size-12 rounded-4-pro bg-lime bg-opacity-10 d-flex align-items-center justify-content-center text-lime flex-shrink-0">
-                        <span class="material-symbols-outlined fs-3">tire_repair</span>
-                    </div>
-                    <div>
-                        <p class="small fw-black mb-0">Racha Implacable</p>
-                        <p class="text-uppercase text-slate-400 fw-bold mb-0" style="font-size: 0.6rem;">Has accedido {{
-                            racha }} días seguidos</p>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center gap-3">
-                    <div
-                        class="size-12 rounded-4-pro bg-info bg-opacity-10 d-flex align-items-center justify-content-center text-info flex-shrink-0">
-                        <span class="material-symbols-outlined fs-3">mountain_flag</span>
-                    </div>
-                    <div>
-                        <p class="small fw-black mb-0">Punto de Inflexión</p>
-                        <p class="text-uppercase text-slate-400 fw-bold mb-0" style="font-size: 0.6rem;">Tendencia de
-                            peso consolidada</p>
+                <div>
+                    <h4 class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-2"
+                        style="font-size: 0.6rem;">Edad Nutricional</h4>
+                    <div class="d-flex align-items-baseline gap-2">
+                        <span class="display-6 fw-black">{{ edad_nutri }}</span>
+                        <span class="text-slate-400 fw-bold">vs {{ edad_real }} real</span>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Barra Lateral Adicional -->
-        <div class="card-pro mb-4">
-            <h5 class="fw-black mb-4 h6 text-uppercase" style="letter-spacing: 1px;">Resumen Científico</h5>
-            <div class="table-responsive">
-                <table class="table align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <th class="small text-muted fw-bold">Métrica</th>
-                            <th class="text-end small text-muted fw-bold">Valor</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="small fw-bold py-3">Grasa Corporal</td>
-                            <td class="text-end font-mono fw-black text-primary">{{ composicion.grasa_pct }}%</td>
-                        </tr>
-                        <tr>
-                            <td class="small fw-bold py-3">Masa Magra</td>
-                            <td class="text-end font-mono fw-black">{{ composicion.masa_magra }}kg</td>
-                        </tr>
-                        <tr>
-                            <td class="small fw-bold py-3">TMB</td>
-                            <td class="text-end font-mono fw-black">{{ metabolismo.tmb }}kcal</td>
-                        </tr>
-                        <tr>
-                            <td class="small fw-bold py-3">Gasto Total</td>
-                            <td class="text-end font-mono fw-black">{{ metabolismo.tdee }}kcal</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <!-- Logros Alcanzados -->
+            <div class="card-pro mb-4">
+                <h3 class="text-uppercase fw-black letter-spacing-widest small mb-4">Logros Alcanzados</h3>
+                <div class="d-grid gap-4">
+                    {% for logro in logros %}
+                    <div class="d-flex align-items-center gap-3">
+                        <div
+                            class="size-12 rounded-4-pro {{ logro.bg_class }} bg-opacity-10 d-flex align-items-center justify-content-center {{ logro.color_class }} flex-shrink-0">
+                            <span class="material-symbols-outlined fs-3">{{ logro.icono }}</span>
+                        </div>
+                        <div>
+                            <p class="small fw-black mb-0">{{ logro.titulo }}</p>
+                            <p class="text-uppercase text-slate-400 fw-bold mb-0" style="font-size: 0.6rem;">{{ logro.descripcion }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="small text-muted mb-0">No has desbloqueado logros todavía. ¡Sigue adelante!</p>
+                    {% endfor %}
+                </div>
             </div>
-        </div>
 
-        <div class="card-pro bg-soft-purple border-0" style="background: rgba(168, 85, 247, 0.05);">
-            <div class="d-flex align-items-center gap-3 mb-3">
-                <span class="material-symbols-outlined text-purple" style="color: #a855f7;">psychology</span>
-                <span class="text-technical" style="color: #a855f7; font-weight: 800; font-size: 0.7rem;">INSIGHT
-                    IA</span>
+            <!-- Resumen Científico -->
+            <div class="card-pro mb-4">
+                <h5 class="fw-black mb-4 h6 text-uppercase" style="letter-spacing: 1px;">Resumen Científico</h5>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th class="small text-muted fw-bold">Métrica</th>
+                                <th class="text-end small text-muted fw-bold">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="small fw-bold py-3">Grasa Corporal</td>
+                                <td class="text-end font-mono fw-black text-lime">{{ composicion.grasa_pct }}%</td>
+                            </tr>
+                            <tr>
+                                <td class="small fw-bold py-3">Masa Magra</td>
+                                <td class="text-end font-mono fw-black">{{ composicion.masa_magra }}kg</td>
+                            </tr>
+                            <tr>
+                                <td class="small fw-bold py-3">TMB</td>
+                                <td class="text-end font-mono fw-black">{{ metabolismo.tmb }}kcal</td>
+                            </tr>
+                            <tr>
+                                <td class="small fw-bold py-3">Gasto Total</td>
+                                <td class="text-end font-mono fw-black">{{ metabolismo.tdee }}kcal</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <p class="small fw-bold mb-3" style="color: #6b21a8;">
-                Manteniendo el déficit actual, alcanzarás tu meta de peso en aproximadamente <span class="fw-black">45
-                    días</span>.
-            </p>
-            <div class="progress" style="height: 6px; background-color: rgba(168, 85, 247, 0.2);">
-                <div class="progress-bar" style="width: 75%; background-color: #a855f7;"></div>
-            </div>
-        </div>
 
-        <!-- Meta -->
-        <div class="card-pro border-2 bg-lime bg-opacity-10" style="border-color: rgba(133, 200, 26, 0.2) !important;">
-            <p class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-2" style="font-size: 0.6rem;">
-                Próxima Meta</p>
-            <h4 class="fw-black mb-3">Objetivo Nutricional</h4>
-            <div class="progress bg-white shadow-sm" style="height: 12px;">
-                <div class="progress-bar bg-lime" style="width: 65%"></div>
+            <!-- Insight IA -->
+            <div class="card-pro mb-4"
+                style="background: rgba(168, 85, 247, 0.05); border-color: rgba(168, 85, 247, 0.1);">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <span class="material-symbols-outlined text-purple" style="color: #a855f7;">psychology</span>
+                    <span class="text-technical" style="color: #a855f7; font-weight: 800; font-size: 0.7rem;">INSIGHT
+                        IA</span>
+                </div>
+                <p class="small fw-bold mb-3" style="color: #6b21a8;">
+                    {% if proyecciones.tendencia == 'DESCENSO' %}
+                    Manteniendo el déficit actual, alcanzarás tu meta de peso en aproximadamente <span
+                        class="fw-black">45 días</span>.
+                    {% elif proyecciones.tendencia == 'ASCENSO' %}
+                    Con tu superávit actual, alcanzarás tu objetivo de volumen en tiempo récord.
+                    {% else %}
+                    Tu balance energético está equilibrado. Ideal para mantenimiento a largo plazo.
+                    {% endif %}
+                </p>
+                <div class="progress" style="height: 6px; background-color: rgba(168, 85, 247, 0.2);">
+                    <div class="progress-bar" style="width: 75%; background-color: #a855f7;"></div>
+                </div>
             </div>
-            <p class="small mt-2 mb-0 fw-bold text-muted">Aproximadamente 21 días al ritmo actual.</p>
+
+            <!-- Próxima Meta -->
+            <div class="card-pro border-2 bg-lime bg-opacity-10"
+                style="border-color: rgba(133, 200, 26, 0.2) !important;">
+                <p class="text-uppercase text-slate-400 fw-black letter-spacing-widest mb-2" style="font-size: 0.6rem;">
+                    Próxima Meta</p>
+                <h4 class="fw-black mb-3">Objetivo Nutricional</h4>
+                <div class="progress bg-white shadow-sm" style="height: 12px;">
+                    <div class="progress-bar bg-lime" style="width: 65%"></div>
+                </div>
+                <p class="small mt-2 mb-0 fw-bold text-muted">Aproximadamente 21 días al ritmo actual.</p>
+            </div>
         </div>
     </div>
     {% endif %}
-</div>
 </div>
 {% endblock %}

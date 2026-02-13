@@ -27,6 +27,10 @@ class Gustos(models.Model):
         return self.nombre
 
 class Perfil(models.Model):
+    """
+    Modelo principal que almacena la información detallada del perfil de usuario,
+    incluyendo datos físicos, preferencias dietéticas, metas y estado de salud.
+    """
     OPCIONES_GENERO = [('H', 'Hombre'), ('M', 'Mujer')]
     OPCIONES_SOMATOTIPO = [('ECTO', 'Ectomorfo'), ('MESO', 'Mesomorfo'), ('ENDO', 'Endomorfo')]
     OPCIONES_DIETA = [('OMNI', 'Omnívora'), ('VEGE', 'Vegetariana'), ('VEGA', 'Vegana'), ('PALEO', 'Paleo'), ('OTRO', 'Personalizada')]
@@ -66,11 +70,13 @@ class Perfil(models.Model):
     
     @property
     def edad(self):
+        """Calcula la edad actual del usuario basada en su fecha de nacimiento."""
         if not self.fecha_nacimiento: return 30
         today = date.today()
         return today.year - self.fecha_nacimiento.year - ((today.month, today.day) < (self.fecha_nacimiento.month, self.fecha_nacimiento.day))
 
     def get_foto_base64(self):
+        """Retorna la imagen de perfil codificada en base64 para ser usada directamente en plantillas HTML."""
         if self.foto_perfil:
             import base64
             try:
@@ -81,10 +87,12 @@ class Perfil(models.Model):
         return None
 
     def obtener_peso_actual(self):
+        """Obtiene el registro de peso más reciente del usuario, o 0 si no hay registros."""
         ultimo = self.historial_peso.first()
         return ultimo.peso if ultimo else 0
 
     def calcular_tmb(self):
+        """Calcula la Tasa Metabólica Basal (TMB) utilizando la fórmula de Mifflin-St Jeor."""
         peso = self.obtener_peso_actual()
         if not (peso and self.altura and self.fecha_nacimiento): return 0
         if self.genero == 'H':
@@ -92,10 +100,15 @@ class Perfil(models.Model):
         return (10 * float(peso)) + (6.25 * float(self.altura)) - (5 * self.edad) - 161
     
     def calcular_tdee(self):
+        """Calcula el Gasto Energético Total Diario (TDEE) ajustando la TMB por el nivel de actividad."""
         factores = {'SEDE': 1.2, 'LIGE': 1.375, 'MODE': 1.55, 'INTE': 1.725, 'ATLE': 1.9}
         return self.calcular_tmb() * factores.get(self.nivel_actividad, 1.2)
 
     def generar_informe_nutricional(self):
+        """
+        Genera un informe completo con las metas calóricas y de macronutrientes (proteínas, carbohidratos, grasas)
+        ajustadas según el objetivo del usuario (ganar, perder o mantener peso).
+        """
         peso = float(self.obtener_peso_actual() or 0)
         tmb_pura = float(self.calcular_tmb() or 0)
         mantenimiento = float(self.calcular_tdee() or 0)
@@ -141,16 +154,17 @@ class Perfil(models.Model):
         elif self.somatotipo == 'ECTO' and imc < 20: cuerpo = "flaco"
         elif self.somatotipo == 'ENDO' and imc > 25: cuerpo = "ancho"
 
-        # 2. Ánimo (Basado en Sueño y Racha)
+        # 2. Ánimo (Basado en Sueño)
         # Obtenemos último registro de sueño
         ultimo_sueno = self.historial_sueno.first()
         racha = LoginStreak.calcular_racha(self)
         
         animo = "normal"
-        if (ultimo_sueno and ultimo_sueno.calidad <= 2) or racha < 2:
-            animo = "cansado"
-        elif racha >= 3 and (ultimo_sueno and ultimo_sueno.calidad >= 4):
-            animo = "energico"
+        if ultimo_sueno:
+            if ultimo_sueno.calidad <= 2:
+                animo = "cansado"
+            elif ultimo_sueno.calidad >= 4:
+                animo = "energico"
         
         # 3. Hidratación (Hoy)
         registro_agua = self.registros_agua.filter(fecha=date.today()).first()
@@ -182,6 +196,7 @@ class Perfil(models.Model):
 
 
     def calcular_porcentaje_grasa_marina(self):
+        """Calcula el porcentaje de grasa corporal estimado usando el método de la Marina de EE.UU."""
         import math
         if not self.altura or not self.medida_cintura or not self.medida_cuello: return None
         a, ci, cu = float(self.altura), float(self.medida_cintura), float(self.medida_cuello)
@@ -207,20 +222,26 @@ def guardar_perfil(sender, instance, **kwargs):
     if hasattr(instance, 'perfil'): instance.perfil.save()
 
 class RegistroPeso(models.Model):
+    """Modelo para almacenar el historial de peso del usuario a lo largo del tiempo."""
     perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name='historial_peso')
     peso = models.DecimalField(max_digits=5, decimal_places=2)
     fecha = models.DateField(auto_now_add=True)
     class Meta: ordering = ['-fecha']
 
 class RegistroSueno(models.Model):
+    """Modelo para registrar las horas y calidad del sueño diario del usuario."""
     perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name='historial_sueno')
     fecha = models.DateField(auto_now_add=True)
     hora_acostarse = models.TimeField()
     hora_levantarse = models.TimeField()
     calidad = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
 
+    class Meta:
+        ordering = ['-fecha']
+
     @property
     def horas_totales(self):
+        """Calcula la duración total del sueño basándose en la hora de acostarse y levantarse."""
         d = date.today()
         i = datetime.combine(d, self.hora_acostarse)
         f = datetime.combine(d, self.hora_levantarse)
@@ -246,6 +267,7 @@ class Alimento(models.Model):
     def __str__(self): return self.nombre
 
 class Receta(models.Model):
+    """Modelo que representa una receta de cocina con su información nutricional e instrucciones."""
     titulo = models.CharField(max_length=200)
     descripcion = models.TextField(blank=True)
     imagen = models.ImageField(upload_to='recetas/', null=True, blank=True)
@@ -294,6 +316,7 @@ class ArticuloGuardado(models.Model):
     class Meta: unique_together = ('perfil', 'articulo')
 
 class ComidaDiaria(models.Model):
+    """Modelo para registrar las comidas consumidas por el usuario en un día específico (Diario de Alimentos)."""
     perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name='comidas_diarias')
     nombre = models.CharField(max_length=200)
     calorias = models.IntegerField()
@@ -308,12 +331,14 @@ class ComidaDiaria(models.Model):
     def __str__(self): return f"{self.nombre} ({self.calorias} kcal)"
 
 class LoginStreak(models.Model):
+    """Modelo para rastrear los días consecutivos que el usuario ha iniciado sesión (Racha)."""
     perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name='login_streaks')
-    fecha = models.DateField(auto_now_add=True)
+    fecha = models.DateField(default=date.today)
     class Meta: ordering = ['-fecha']; unique_together = ('perfil', 'fecha')
 
     @staticmethod
     def calcular_racha(perfil):
+        """Calcula el número actual de días consecutivos de inicio de sesión."""
         from datetime import date, timedelta
         registros = LoginStreak.objects.filter(perfil=perfil).order_by('-fecha')
         if not registros.exists(): return 0
@@ -329,6 +354,7 @@ class LoginStreak(models.Model):
         return racha
 
 class RegistroAgua(models.Model):
+    """Modelo para el seguimiento diario de la ingesta de agua."""
     perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name='registros_agua')
     fecha = models.DateField(default=date.today)
     cantidad_vasos = models.IntegerField(default=0)
@@ -344,6 +370,7 @@ class RegistroAgua(models.Model):
         if self.meta_vasos <= 0: return 0
         return min(round((self.cantidad_vasos / self.meta_vasos) * 100), 100)
     def actualizar_meta(self):
+        """Actualiza la meta de vasos de agua recomendada según el peso actual del usuario."""
         peso = self.perfil.obtener_peso_actual()
         if peso and peso > 0:
             self.meta_vasos = max(8, round(float(peso) * 0.14))
@@ -380,6 +407,7 @@ class LogActividad(models.Model):
 
 
 class Logro(models.Model):
+    """Modelo para gestionar los logros y medallas desbloqueados por el usuario."""
     TIPO_LOGRO = [
         ('RACHA', 'Racha de Sesión'),
         ('REGISTRO', 'Nutrición'),

@@ -1110,14 +1110,11 @@
 
                             <div class="d-flex flex-wrap gap-1 mb-3">
                                 <span class="macro-pill"
-                                    style="background: var(--macro-protein); color: var(--macro-protein-text);">P: {{
-                                    receta.proteinas }}g</span>
+                                    style="background: var(--macro-protein); color: var(--macro-protein-text);">P: {{  receta.proteinas }}g</span>
                                 <span class="macro-pill"
-                                    style="background: var(--macro-carbs); color: var(--macro-carbs-text);">C: {{
-                                    receta.carbos }}g</span>
+                                    style="background: var(--macro-carbs); color: var(--macro-carbs-text);">C: {{  receta.carbos }}g</span>
                                 <span class="macro-pill"
-                                    style="background: var(--macro-fats); color: var(--macro-fats-text);">G: {{
-                                    receta.grasas }}g</span>
+                                    style="background: var(--macro-fats); color: var(--macro-fats-text);">G: {{ receta.grasas }}g</span>
                             </div>
 
                             <div
@@ -1203,8 +1200,7 @@
                                 {% if comida.categoria == 'desayuno' %}text-warning{% elif comida.categoria == 'almuerzo' %}text-success{% else %}text-info{% endif %}"
                                 style="width: 40px; height: 40px;">
                                 <span class="material-symbols-outlined">
-                                    {% if comida.categoria == 'desayuno' %}wb_sunny{% elif comida.categoria ==
-                                    'almuerzo' %}restaurant{% else %}nights_stay{% endif %}
+                                    {% if comida.categoria == 'desayuno' %}wb_sunny{% elif comida.categoria == 'almuerzo' %}restaurant{% else %}nights_stay{% endif %}
                                 </span>
                             </div>
                             <div class="flex-grow-1 min-width-0">

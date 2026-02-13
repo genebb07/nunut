@@ -8,6 +8,11 @@ from django.conf import settings
 
 @login_required
 def generar_receta_ia(request):
+    """
+    Genera una receta completa usando IA (Gemini).
+    Toma en cuenta el perfil del usuario (dieta, objetivos, localidad)
+    para crear una opción personalizada y nutricionalmente balanceada.
+    """
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
     
@@ -161,6 +166,12 @@ def generar_receta_ia(request):
 
 @login_required
 def generar_plan_ia(request):
+    """
+    Crea un plan nutricional diario completo con IA.
+    Calcula calorías totales y macronutrientes necesarios
+    y genera múltiples comidas (desayuno, almuerzo, cena, etc.)
+    que se ajusten al presupuesto calórico del usuario.
+    """
     """Genera un plan diario de comidas adaptado al perfil completo del usuario."""
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
@@ -335,7 +346,11 @@ def generar_plan_ia(request):
 
 @login_required
 def analizar_comida_ia(request):
-    """Analiza una comida usando NLP local + Base de Datos, con fallback a Gemini."""
+    """
+    Analiza una descripción de comida en texto natural.
+    Intenta primero un análisis local (NLP simple sobre base de datos),
+    y si falla, recurre a la IA para estimar macros e ingredientes.
+    """
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
     
@@ -522,6 +537,11 @@ def analizar_comida_ia(request):
 @login_required
 def transcribir_audio(request):
     """
+    Transcribe audio (voz del usuario) a texto y extrae información nutricional básica
+    usando las capacidades multimodales de Gemini.
+    Útil para registro rápido de comidas por voz.
+    """
+    """
     Maneja la transcripción de audio.
     """
     if request.method != 'POST' or not request.FILES.get('audio_file'):
@@ -535,10 +555,7 @@ def transcribir_audio(request):
         if not api_key:
             return JsonResponse({'success': False, 'error': 'API Key no configurada'}, status=500)
 
-        from google import genai
-        from google.genai import types
-
-        client = genai.Client(api_key=api_key, http_options={'api_version': 'v1'})
+        client = genai.Client(api_key=api_key)
         
         # Prompt más específico para extracción JSON
         prompt_text = """
@@ -551,9 +568,8 @@ def transcribir_audio(request):
         """
 
         # Construcción correcta del contenido multimodal
-        # Nota: En la versión 'genai', se prefiere pasar create_content con partes
         response = client.models.generate_content(
-            model='models/gemini-1.5-flash',
+            model='gemini-1.5-flash',
             contents=[
                 types.Part.from_text(text=prompt_text),
                 types.Part.from_bytes(data=audio_data, mime_type="audio/webm")
